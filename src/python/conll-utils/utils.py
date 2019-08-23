@@ -27,16 +27,16 @@ class Sentence(list):
 
     def __init__(self, tokens, metadata=None):
         super().__init__(tokens)
+        self.tokens = self
         self.metadata = metadata
 
     def get(self, id):
-        for i in range(id - 1, len(self)):
-            token = self[i]
+        for token in self.tokens[id-1:]:
             if token[ID] == id:
                 return token
         raise IndexError(f"token with id {id} not found")
 
-    def to_tree(self):
+    def as_tree(self):
         return DependencyTree(self)
 
 class Node:
@@ -125,7 +125,7 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
         return Sentence(tokens, _parse_metadata(comments))
 
     def _parse_metadata(comments):
-        return comments
+        return [comment[1:].strip() for comment in comments]
 
     def _parse_token(line):
         fields = line.split("\t")
@@ -193,16 +193,15 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
         for line in file:
             line = line.rstrip("\r\n")
             if line.startswith("#"):
-                comments.append(line[1:])
-                continue
-            if not line:
-                if len(lines) != 0:
+                comments.append(line)
+            elif line:
+                lines.append(line)
+            else :
+                if len(lines) > 0:
                     yield _parse_sentence(lines, comments)
                     lines = []
                     comments = []
-                continue
-            lines.append(line)
-        if len(lines) != 0:
+        if len(lines) > 0:
             yield _parse_sentence(lines, comments)
 
 def _open_file(filename, encoding="utf-8", errors="strict"):
@@ -297,7 +296,7 @@ def shuffled_stream(data, size=0):
     while True:
         random.shuffle(data)
         for d in data:
-            if size <= 0 and i > size:
+            if size > 0 and i >= size:
                 return
             i += 1
             yield d
