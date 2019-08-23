@@ -72,10 +72,12 @@ class DependencyTree:
         for token in sentence:
             if token[ID] == id:
                 node = Node(token, parent)
-                parent.children.append(node)
                 DependencyTree._build(sentence, node)
                 if parent == None:
                     root = node
+                    break
+                else:
+                    parent.children.append(node)
 
         return root
 
