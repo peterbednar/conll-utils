@@ -5,13 +5,18 @@ import lzma
 from io import  TextIOWrapper
 from collections import OrderedDict, Counter 
 
-ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC, FORM_NORM, LEMMA_NORM, UPOS_FEATS, \
+ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC, \
+FORM_NORM, LEMMA_NORM, \
+UPOS_FEATS, \
 FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS = range(17)
 
 EMPTY = 0
 MULTIWORD = 1
 
 class Token(dict):
+
+    def __init(self, fields):
+        super().__init__(fields)
 
     @property
     def is_empty(self):
@@ -66,7 +71,6 @@ class DependencyTree:
 
     @staticmethod
     def _build(sentence, parent):
-        root = None
         id = parent.token[ID] if parent is not None else 0
         
         for token in sentence:
@@ -74,12 +78,11 @@ class DependencyTree:
                 node = Node(token, parent)
                 DependencyTree._build(sentence, node)
                 if parent == None:
-                    root = node
-                    break
+                    return node
                 else:
                     parent.children.append(node)
 
-        return root
+        return parent
 
 _NUM_REGEX = re.compile("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"
@@ -129,8 +132,7 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
 
     def _parse_token(line):
         fields = line.split("\t")
-        fields = fields[:MISC + 1]
-        fields += [None] * (LEMMA_NORM_CHARS - MISC)
+        fields = {f : fields[f] for f in range(max(len(fields), MISC + 1))}
 
         if "." in fields[ID]:
             token_id, index = fields[ID].split(".")
@@ -172,7 +174,7 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
             for (f, ch) in _CHARS_FIELDS.items():
                 fields[ch] = splitter(f, fields[f])
 
-        return fields
+        return Token(fields)
 
     def _parse_feats(str):
         feats = OrderedDict()
