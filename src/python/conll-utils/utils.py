@@ -2,16 +2,26 @@ import re
 import random
 import gzip
 import lzma
+import os
 from io import  TextIOWrapper
 from collections import OrderedDict, Counter 
 
-ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC, \
-FORM_NORM, LEMMA_NORM, \
-UPOS_FEATS, \
-FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS = range(17)
+ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC, FORM_NORM, LEMMA_NORM, \
+FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS, UPOS_FEATS = range(17)
 
 EMPTY = 0
 MULTIWORD = 1
+
+FIELD_TO_STR = ["id", "form", "lemma", "upos", "xpos", "feats", "head", "deprel", "deps", "misc",
+                "form_norm", "lemma_norm", "form_chars", "lemma_chars", "form_norm_chars", "lemma_norm_chars",
+                "upos_feats"]
+STR_TO_FIELD = {k : v for v, k in enumerate(FIELD_TO_STR)}
+
+def str_to_field(s):
+    return STR_TO_FIELD[s.lower()]
+
+def field_to_str(f):
+    return FIELD_TO_STR[f]
 
 class Token(dict):
 
@@ -118,6 +128,8 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
 
     def _parse_sentence(lines, comments):
         tokens = []
+        metadata = _parse_metadata(comments)
+
         for line in lines:
             token = _parse_token(line)
             if skip_empty and token.is_empty:
@@ -125,7 +137,8 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
             if skip_multiword and token.is_multiword:
                 continue
             tokens.append(token)
-        return Sentence(tokens, _parse_metadata(comments))
+
+        return Sentence(tokens, metadata)
 
     def _parse_metadata(comments):
         return [comment[1:].strip() for comment in comments]
@@ -196,7 +209,7 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
             line = line.rstrip("\r\n")
             if line.startswith("#"):
                 comments.append(line)
-            elif line:
+            elif line.lstrip():
                 lines.append(line)
             else :
                 if len(lines) > 0:
@@ -213,6 +226,57 @@ def _open_file(filename, encoding="utf-8", errors="strict"):
     elif filename.endswith(".xz"):
         f = lzma.open(f, "rb")
     return TextIOWrapper(f, encoding=encoding, errors=errors)
+
+def write_conll(file, sentences):
+
+    def _write_metadata(fp, metadata):
+        for comment in metadata:
+            print("# " + comment, file=fp)
+
+    def _write_tokens(fp, tokens):
+        for token in tokens:
+            fields = "\t".join([_field_to_str(field, token) for field in [ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC]])
+            print(fields, file=fp)
+
+    def _field_to_str(field, token):
+
+        if field == ID:
+            id = token[ID]
+            if isinstance(tuple):
+                return str(id[0]) + "." + str(id[1]) if id[2] == EMPTY else str(id[0] + "-" + str(id[1]))
+            else:
+                return str(id)
+
+        if field not in token or token[field] is None:
+            return "_"
+
+        if field == FEATS:
+            return _feats_to_str(token[FEATS])
+
+        if field == DEPS:
+            return _deps_to_str(token[DEPS])
+
+        return str(token[field])
+
+    def _feats_to_str(feats):
+        if isinstance(feats, str):
+            return feats
+        feats = [key + "=" + (",".join(value) if isinstance(value, list) else value) for key, value in feats.items()]
+        return "|".join(feats)        
+
+    def _deps_to_str(deps):
+        if isinstance(deps, str):
+            return deps
+        deps = [str(rel[0]) + ":" + str(rel[1]) for rel in deps]
+        return "|".join(deps)
+
+    if isinstance(file, str):
+        file = open(file, "wt", encoding="utf-8")
+    with file as fp:
+        for sentence in sentences:
+            _write_metadata(fp, sentence.metadata)
+            _write_tokens(fp, sentence.tokens)
+            print(file=fp)
 
 def create_dictionary(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}):
     dic = {f: Counter() for f in fields}
