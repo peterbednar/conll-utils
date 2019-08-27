@@ -158,7 +158,7 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
         fields[ID] = id
 
         for f in [FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC]:
-            if fields[f] == "_":
+            if f not in fields or fields[f] == "_":
                 fields[f] = None
 
         if upos_feats:
@@ -203,7 +203,7 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
     lines = []
     comments = []
     if isinstance(file, str):
-        file = _open_file(file)
+        file = open(file, "rt", encoding="utf-8")
     with file:
         for line in file:
             line = line.rstrip("\r\n")
@@ -219,15 +219,7 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
         if len(lines) > 0:
             yield _parse_sentence(lines, comments)
 
-def _open_file(filename, encoding="utf-8", errors="strict"):
-    f = open(filename, "rb")
-    if filename.endswith(".gz"):
-        f = gzip.open(f, "rb")
-    elif filename.endswith(".xz"):
-        f = lzma.open(f, "rb")
-    return TextIOWrapper(f, encoding=encoding, errors=errors)
-
-def write_conll(file, sentences):
+def write_conllu(file, sentences):
 
     def _write_metadata(fp, metadata):
         for comment in metadata:
