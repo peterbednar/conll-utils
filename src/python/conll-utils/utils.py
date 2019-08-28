@@ -1,10 +1,9 @@
 import re
 import random
-import gzip
-import lzma
 import os
 from io import  TextIOWrapper
 from collections import OrderedDict, Counter 
+import numpy as np
 
 ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC, FORM_NORM, LEMMA_NORM, \
 FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS, UPOS_FEATS = range(17)
@@ -93,6 +92,9 @@ class DependencyTree:
                     parent.children.append(node)
 
         return parent
+
+class Instance(dict):
+    pass
 
 _NUM_REGEX = re.compile("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"
@@ -349,12 +351,41 @@ def count_frequency(sentences, index, fields=None):
                     count[f][i] += 1
     return count
 
-def shuffled_stream(data, size=0):
+def map_to_instances(sentences, index, fields=None):
+    for sentence in sentences:
+        yield map_to_instance(sentence, index)
+
+def map_to_instance(sentence, index, fields=None):
+    if fields is None:
+        fields = [DEPREL, HEAD] + index.keys()
+
+    l = len(sentence)
+    instance = Instance()
+
+    for field in fields:
+        dtype = np.object if field in {FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS} else np.int
+        value = np.array(l, dtype=dtype)
+
+        for i, token in enumerate(sentence):
+            v = token[field]
+            if isinstance(v, int):
+                value[i] = v
+            elif isinstance(v, (list, tuple)):
+                chars = [index[field][ch] for ch in v]
+                value[i] = np.array(chars, dtype=np.int)
+            else:
+                value[i] = index[field][v]
+
+        instance[field] = value
+    
+    return instance
+
+def shuffled_stream(instances, size=0):
     i = 0
     while True:
-        random.shuffle(data)
-        for d in data:
+        random.shuffle(instances)
+        for instance in instances:
             if size > 0 and i >= size:
                 return
             i += 1
-            yield d
+            yield instance
