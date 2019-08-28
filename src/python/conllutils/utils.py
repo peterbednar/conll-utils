@@ -1,7 +1,6 @@
 import re
 import random
 import os
-from io import  TextIOWrapper
 from collections import OrderedDict, Counter 
 import numpy as np
 
@@ -24,7 +23,7 @@ def field_to_str(f):
 
 class Token(dict):
 
-    def __init(self, fields):
+    def __init__(self, fields={}):
         super().__init__(fields)
 
     @property
@@ -39,7 +38,7 @@ class Token(dict):
 
 class Sentence(list):
 
-    def __init__(self, tokens, metadata=None):
+    def __init__(self, tokens=[], metadata=None):
         super().__init__(tokens)
         self.tokens = self
         self.metadata = metadata
@@ -94,7 +93,9 @@ class DependencyTree:
         return parent
 
 class Instance(dict):
-    pass
+    
+    def __init__(self, fields={}):
+        super().__init__(fields)
 
 _NUM_REGEX = re.compile("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"
@@ -224,15 +225,16 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
 def write_conllu(file, sentences):
 
     def _write_metadata(fp, metadata):
-        for comment in metadata:
-            print("# " + comment, file=fp)
+        if metadata:
+            for comment in metadata:
+                print("# " + comment, file=fp)
 
     def _write_tokens(fp, tokens):
         for token in tokens:
-            fields = "\t".join([_field_to_str(field, token) for field in [ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC]])
+            fields = "\t".join([_field_to_str(token, field) for field in [ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC]])
             print(fields, file=fp)
 
-    def _field_to_str(field, token):
+    def _field_to_str(token, field):
 
         if field == ID:
             id = token[ID]
@@ -353,7 +355,7 @@ def count_frequency(sentences, index, fields=None):
 
 def map_to_instances(sentences, index, fields=None):
     for sentence in sentences:
-        yield map_to_instance(sentence, index)
+        yield map_to_instance(sentence, index, fields)
 
 def map_to_instance(sentence, index, fields=None):
     if fields is None:
@@ -379,6 +381,13 @@ def map_to_instance(sentence, index, fields=None):
         instance[field] = value
     
     return instance
+
+def map_to_sentences(instances, index):
+    for instance in instances:
+        yield map_to_instance(instance, index)
+
+def map_to_sentence(instance, index):
+    pass
 
 def shuffled_stream(instances, size=0):
     i = 0
