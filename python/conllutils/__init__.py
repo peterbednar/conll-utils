@@ -4,8 +4,8 @@ import os
 from collections import OrderedDict, Counter 
 import numpy as np
 
-ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC, FORM_NORM, LEMMA_NORM, \
-FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS, UPOS_FEATS = range(17)
+ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC, \
+FORM_NORM, LEMMA_NORM, FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS, UPOS_FEATS = range(17)
 
 EMPTY = 0
 MULTIWORD = 1
@@ -17,8 +17,8 @@ STR_TO_FIELD = {k : v for v, k in enumerate(FIELD_TO_STR)}
 
 _BASE_FIELDS = [ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC]
 
-_CHAR_FIELDS = {FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS}
 _CHARS_FIELDS_MAP = {FORM: FORM_CHARS, LEMMA: LEMMA_CHARS, FORM_NORM: FORM_NORM_CHARS, LEMMA_NORM: LEMMA_NORM_CHARS}
+_CHARS_FIELDS = set(_CHARS_FIELDS_MAP.values())
 
 def str_to_field(s):
     return STR_TO_FIELD[s.lower()]
@@ -375,7 +375,7 @@ def map_to_instance(sentence, index, fields=None):
     instance.metadata = sentence.metadata
 
     for field in fields:
-        dtype = np.object if field in _CHAR_FIELDS else np.int
+        dtype = np.object if field in _CHARS_FIELDS else np.int
         value = np.array(l, dtype=dtype)
 
         for i, token in enumerate(sentence):
