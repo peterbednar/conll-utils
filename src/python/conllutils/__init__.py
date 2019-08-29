@@ -392,11 +392,16 @@ def map_to_instance(sentence, index, fields=None):
     
     return instance
 
-def map_to_sentences(instances, index):
-    for instance in instances:
-        yield map_to_instance(instance, index)
+def join_default(field, value):
+    if value is None:
+        return None
+    return "".join(value)
 
-def map_to_sentence(instance, index, fields=None):
+def map_to_sentences(instances, index, fields=None, join=join_default):
+    for instance in instances:
+        yield map_to_sentence(instance, index, fields, join)
+
+def map_to_sentence(instance, index, fields=None, join=join_default):
     if fields is None:
         fields = instance.keys()
 
@@ -413,6 +418,12 @@ def map_to_sentence(instance, index, fields=None):
             else:
                 value = index[field][v]
             token[field] = value
+        
+        if join:
+            for f, ch in _CHARS_FIELDS_MAP.items():
+                if ch in token:
+                    token[f] = join(ch, token[ch])
+
         tokens.append(token)
     
     return Sentence(tokens, metadata)
