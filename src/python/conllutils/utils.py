@@ -15,6 +15,11 @@ FIELD_TO_STR = ["id", "form", "lemma", "upos", "xpos", "feats", "head", "deprel"
                 "upos_feats"]
 STR_TO_FIELD = {k : v for v, k in enumerate(FIELD_TO_STR)}
 
+_BASE_FIELDS = [ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC]
+
+_CHAR_FIELDS = {FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS}
+_CHARS_FIELDS_MAP = {FORM: FORM_CHARS, LEMMA: LEMMA_CHARS, FORM_NORM: FORM_NORM_CHARS, LEMMA_NORM: LEMMA_NORM_CHARS}
+
 def str_to_field(s):
     return STR_TO_FIELD[s.lower()]
 
@@ -94,14 +99,17 @@ class DependencyTree:
 
 class Instance(dict):
     
-    def __init__(self, fields={}):
+    def __init__(self, length=0, fields={}, metadata=None):
         super().__init__(fields)
+        self._length = length
+        self.metadata = metadata
+
+    def __len__(self):
+        return self._length
 
 _NUM_REGEX = re.compile("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"
 _NUM_NORM_CHARS = (u"0",)
-
-_CHARS_FIELDS = {FORM: FORM_CHARS, LEMMA: LEMMA_CHARS, FORM_NORM: FORM_NORM_CHARS, LEMMA_NORM: LEMMA_NORM_CHARS}
 
 def normalize_lower(field, value):
     if value is None:
@@ -119,7 +127,7 @@ def normalize_default(field, value):
         return value.lower()
     return value
 
-def splitter_default(field, value):
+def split_default(field, value):
     if value is None:
         return None
     if (field == FORM_NORM or field == LEMMA_NORM) and value == NUM_NORM:
@@ -127,7 +135,7 @@ def splitter_default(field, value):
     return tuple(value)
 
 def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
-                normalize=normalize_default, splitter=splitter_default):
+                normalize=normalize_default, split=split_default):
 
     def _parse_sentence(lines, comments):
         tokens = []
@@ -186,9 +194,10 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
             fields[FORM_NORM] = normalize(FORM, fields[FORM])
             fields[LEMMA_NORM] = normalize(LEMMA, fields[LEMMA])
 
-        if splitter:
-            for (f, ch) in _CHARS_FIELDS.items():
-                fields[ch] = splitter(f, fields[f])
+        if split:
+            for (f, ch) in _CHARS_FIELDS_MAP.items():
+                if f in fields:
+                    fields[ch] = split(f, fields[f])
 
         return Token(fields)
 
@@ -231,7 +240,7 @@ def write_conllu(file, sentences):
 
     def _write_tokens(fp, tokens):
         for token in tokens:
-            fields = "\t".join([_field_to_str(token, field) for field in [ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC]])
+            fields = "\t".join([_field_to_str(token, field) for field in _BASE_FIELDS])
             print(fields, file=fp)
 
     def _field_to_str(token, field):
@@ -362,10 +371,11 @@ def map_to_instance(sentence, index, fields=None):
         fields = [DEPREL, HEAD] + index.keys()
 
     l = len(sentence)
-    instance = Instance()
+    instance = Instance(l)
+    instance.metadata = sentence.metadata
 
     for field in fields:
-        dtype = np.object if field in {FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS} else np.int
+        dtype = np.object if field in _CHAR_FIELDS else np.int
         value = np.array(l, dtype=dtype)
 
         for i, token in enumerate(sentence):
@@ -386,8 +396,26 @@ def map_to_sentences(instances, index):
     for instance in instances:
         yield map_to_instance(instance, index)
 
-def map_to_sentence(instance, index):
-    pass
+def map_to_sentence(instance, index, fields=None):
+    if fields is None:
+        fields = instance.keys()
+
+    tokens = []
+    metadata = instance.metadata
+
+    for i in range(len(instance)):
+        token = Token()
+        token[ID] = i + 1
+        for field in fields:
+            v = instance[field]
+            if isinstance(v, np.ndarray):
+                value = [index[field][ch] for ch in v]
+            else:
+                value = index[field][v]
+            token[field] = value
+        tokens.append(token)
+    
+    return Sentence(tokens, metadata)
 
 def shuffled_stream(instances, size=0):
     i = 0
