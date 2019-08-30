@@ -49,7 +49,8 @@ class Sentence(list):
         self.metadata = metadata
 
     def get(self, id):
-        for token in self.tokens[id-1:]:
+        start = id[0] if isinstance(id, tuple) else id
+        for token in self.tokens[start-1:]:
             if token[ID] == id:
                 return token
         raise IndexError(f"token with id {id} not found")
@@ -57,7 +58,7 @@ class Sentence(list):
     def as_tree(self):
         return DependencyTree(self)
 
-class Node:
+class Node(object):
 
     def __init__(self, token, parent):
         self.token = token
@@ -72,7 +73,7 @@ class Node:
     def deprel(self):
         return self.token[DEPREL]
 
-class DependencyTree:
+class DependencyTree(object):
 
     def __init__(self, sentence):
         self.root = DependencyTree.build(sentence)
