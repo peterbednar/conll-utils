@@ -156,7 +156,7 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
 
     def _parse_token(line):
         fields = line.split("\t")
-        fields = {f : fields[f] for f in range(max(len(fields), MISC + 1))}
+        fields = {f : fields[f] for f in range(min(len(fields), MISC + 1))}
 
         if "." in fields[ID]:
             token_id, index = fields[ID].split(".")
