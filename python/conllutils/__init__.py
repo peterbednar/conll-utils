@@ -26,6 +26,12 @@ def str_to_field(s):
 def field_to_str(f):
     return FIELD_TO_STR[f]
 
+def id_to_str(id):
+    if isinstance(tuple):
+        return f"{id[0]}.{id[1]}" if id[2] == EMPTY else f"{id[0]}-{id[1]}"
+    else:
+        return str(id)
+
 class Token(dict):
 
     def __init__(self, fields={}):
@@ -246,11 +252,7 @@ def write_conllu(file, sentences):
     def _field_to_str(token, field):
 
         if field == ID:
-            id = token[ID]
-            if isinstance(tuple):
-                return str(id[0]) + "." + str(id[1]) if id[2] == EMPTY else str(id[0] + "-" + str(id[1]))
-            else:
-                return str(id)
+            return id_to_str(token[ID])
 
         if field not in token or token[field] is None:
             return "_"
