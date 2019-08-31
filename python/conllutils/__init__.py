@@ -352,7 +352,7 @@ def count_frequency(sentences, index, fields=None):
     for sentence in sentences:
         for token in sentence:
             for f in fields:
-                s = token[f]
+                s = token.get(f)
                 if isinstance(s, (list, tuple)):
                     for ch in s:
                         i = index[f][ch]
@@ -393,15 +393,13 @@ def map_to_instance(sentence, index, fields=None):
     return instance
 
 def join_default(field, value):
-    if value is None:
-        return None
     return "".join(value)
 
 def map_to_sentences(instances, index, fields=None, join=join_default):
     for instance in instances:
         yield map_to_sentence(instance, index, fields, join)
 
-def map_to_sentence(instance, index, fields=None, join=join_default):
+def map_to_sentence(instance, index, fields=None, normalize=normalize_default, join=join_default):
     if fields is None:
         fields = instance.keys()
 
@@ -412,18 +410,22 @@ def map_to_sentence(instance, index, fields=None, join=join_default):
         token = Token()
         token[ID] = i + 1
         for field in fields:
-            v = instance[field]
+            v = instance[field][i]
             if isinstance(v, np.ndarray):
                 value = [index[field][ch] for ch in v]
             else:
                 value = index[field][v]
-            token[field] = value
-        
+            if value:
+                token[field] = value
         if join:
             for f, ch in _CHARS_FIELDS_MAP.items():
                 if ch in token:
                     token[f] = join(ch, token[ch])
-
+                    if normalize:
+                        if f == FORM_NORM:
+                            token[f] = normalize(FORM, token[f])
+                        elif f == LEMMA_NORM:
+                            token[f] = normalize(LEMMA, token[f])
         tokens.append(token)
     
     return Sentence(tokens, metadata)
