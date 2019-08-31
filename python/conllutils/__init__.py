@@ -33,12 +33,12 @@ class Token(dict):
 
     @property
     def is_empty(self):
-        id = self[ID]
+        id = self.get(ID)
         return id[2] == EMPTY if isinstance(id, tuple) else False
 
     @property
     def is_multiword(self):
-        id = self[ID]
+        id = self.get(ID)
         return id[2] == MULTIWORD if isinstance(id, tuple) else False
 
 class Sentence(list):
@@ -113,15 +113,11 @@ NUM_NORM = u"__number__"
 _NUM_NORM_CHARS = (u"0",)
 
 def normalize_lower(field, value):
-    if value is None:
-        return None
     if field == FORM or field == LEMMA:
         return value.lower()
     return value
 
 def normalize_default(field, value):
-    if value is None:
-        return None
     if field == FORM or field == LEMMA:
         if _NUM_REGEX.match(value):
             return NUM_NORM
@@ -170,30 +166,33 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
         fields[ID] = id
 
         for f in [FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC]:
-            if f not in fields or fields[f] == "_":
-                fields[f] = None
+            if f in fields and fields[f] == "_":
+                del(fields[f])
 
         if upos_feats:
-            upos = fields[UPOS]
-            feats = fields[FEATS]
+            upos = fields.get(UPOS)
+            feats = fields.get(FEATS)
             if upos:
                 tag = f"POS={upos}|{feats}" if feats else f"POS={upos}"
             else:
                 tag = feats
-            fields[UPOS_FEATS] = tag
+            if tag:
+                fields[UPOS_FEATS] = tag
 
-        if parse_feats and fields[FEATS]:
+        if parse_feats and FEATS in fields:
             fields[FEATS] = _parse_feats(fields[FEATS])
 
-        if fields[HEAD]:
+        if HEAD in fields:
             fields[HEAD] = int(fields[HEAD])
 
-        if parse_deps and fields[DEPS]:
+        if parse_deps and DEPS in fields:
             fields[DEPS] = _parse_deps(fields[DEPS])
 
         if normalize:
-            fields[FORM_NORM] = normalize(FORM, fields[FORM])
-            fields[LEMMA_NORM] = normalize(LEMMA, fields[LEMMA])
+            if FORM in fields:
+                fields[FORM_NORM] = normalize(FORM, fields[FORM])
+            if LEMMA in fields:
+                fields[LEMMA_NORM] = normalize(LEMMA, fields[LEMMA])
 
         if split:
             for (f, ch) in _CHARS_FIELDS_MAP.items():
@@ -273,7 +272,7 @@ def write_conllu(file, sentences):
     def _deps_to_str(deps):
         if isinstance(deps, str):
             return deps
-        deps = [str(rel[0]) + ":" + str(rel[1]) for rel in deps]
+        deps = [f"{rel[0]}:{rel[1]}" for rel in deps]
         return "|".join(deps)
 
     if isinstance(file, str):
@@ -289,7 +288,7 @@ def create_dictionary(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}
     for sentence in sentences:
         for token in sentence:
             for f in fields:
-                s = token[f]
+                s = token.get(f)
                 if isinstance(s, (list, tuple)):
                     for ch in s:
                         dic[f][ch] += 1
