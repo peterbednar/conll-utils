@@ -12,9 +12,18 @@ def _data_file(name):
 def _fields(*values):
     return {i : v for i, v in enumerate(values) if v is not None}
 
-def test_read_conllu():
-    sentences = list(read_conllu(_data_filename("data1.conllu"), skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
+@pytest.fixture
+def data1():
+    return _data_filename("data1.conllu")
+@pytest.fixture
+def data2():
+    return _data_filename("data2.conllu")
+@pytest.fixture
+def data3():
+    return _data_filename("data3.conllu")
 
+def test_read_conllu(data1):
+    sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
     assert sentences == [[
             _fields((1,2,MULTIWORD), "vámonos"),
             _fields(1, "vamos", "ir"),
@@ -33,8 +42,8 @@ def test_read_conllu():
             _fields(6, "tea", "tea"),
         ]]
 
-def test_empty_multiword():
-    sentences = list(read_conllu(_data_filename("data1.conllu"), skip_empty=False, skip_multiword=False))
+def test_empty_multiword(data1):
+    sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False))
 
     assert [token.is_multiword for token in sentences[0]] == [True, False, False, True, False, False, False]
     assert [token.is_empty for token in sentences[0]] == [False, False, False, False, False, False, False]
@@ -60,7 +69,7 @@ def test_empty_multiword():
     with pytest.raises(IndexError):
         sentences[0].get((1,2,EMPTY))
 
-    sentences = list(read_conllu(_data_filename("data1.conllu"), skip_empty=True, skip_multiword=True))
+    sentences = list(read_conllu(data1, skip_empty=True, skip_multiword=True))
     for sentence in sentences:
         for token in sentence:
             assert (not token.is_empty) and (not token.is_multiword)
