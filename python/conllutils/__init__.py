@@ -116,7 +116,6 @@ class Instance(dict):
 
 _NUM_REGEX = re.compile("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"
-_NUM_NORM_CHARS = (u"0",)
 
 def normalize_lower(field, value):
     if field == FORM or field == LEMMA:
@@ -131,10 +130,8 @@ def normalize_default(field, value):
     return value
 
 def split_default(field, value):
-    if value is None:
-        return None
     if (field == FORM_NORM or field == LEMMA_NORM) and value == NUM_NORM:
-        return _NUM_NORM_CHARS
+        return None
     return tuple(value)
 
 def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
@@ -195,15 +192,18 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
             fields[DEPS] = _parse_deps(fields[DEPS])
 
         if normalize:
-            if FORM in fields:
-                fields[FORM_NORM] = normalize(FORM, fields[FORM])
-            if LEMMA in fields:
-                fields[LEMMA_NORM] = normalize(LEMMA, fields[LEMMA])
+            for (f, n) in [(FORM, FORM_NORM), (LEMMA, LEMMA_NORM)]:
+                if f in fields:
+                    norm = normalize(f, fields[f])
+                    if norm is not None:
+                        fields[n] = norm
 
         if split:
             for (f, ch) in _CHARS_FIELDS_MAP.items():
                 if f in fields:
-                    fields[ch] = split(f, fields[f])
+                    chars = split(f, fields[f])
+                    if chars is not None:
+                        fields[ch] = chars
 
         return Token(fields)
 
@@ -378,19 +378,22 @@ def map_to_instance(sentence, index, fields=None):
 
     for field in fields:
         dtype = np.object if field in _CHARS_FIELDS else np.int
-        value = np.array(l, dtype=dtype)
+        array = np.array(l, dtype=dtype)
 
         for i, token in enumerate(sentence):
-            v = token[field]
-            if isinstance(v, int):
-                value[i] = v
-            elif isinstance(v, (list, tuple)):
-                chars = [index[field][ch] for ch in v]
-                value[i] = np.array(chars, dtype=np.int)
+            value = token.get(field)
+            if field == HEAD:
+                array[i] = value
+            elif field in _CHARS_FIELDS:
+                if value is None:
+                    array[i] = None
+                else:
+                    chars = [index[field][ch] for ch in value]
+                    array[i] = np.array(chars, dtype=np.int)
             else:
-                value[i] = index[field][v]
+                array[i] = index[field][value]
 
-        instance[field] = value
+        instance[field] = array
     
     return instance
 
@@ -401,7 +404,7 @@ def map_to_sentences(instances, index, fields=None, join=join_default):
     for instance in instances:
         yield map_to_sentence(instance, index, fields, join)
 
-def map_to_sentence(instance, index, fields=None, normalize=normalize_default, join=join_default):
+def map_to_sentence(instance, index, fields=None, join=join_default):
     if fields is None:
         fields = instance.keys()
 
@@ -411,23 +414,25 @@ def map_to_sentence(instance, index, fields=None, normalize=normalize_default, j
     for i in range(len(instance)):
         token = Token()
         token[ID] = i + 1
+
         for field in fields:
             v = instance[field][i]
-            if isinstance(v, np.ndarray):
+            if v is None:
+                value = None
+            elif isinstance(v, np.ndarray):
                 value = [index[field][ch] for ch in v]
             else:
                 value = index[field][v]
-            if value:
+            if value is not None:
                 token[field] = value
+
         if join:
             for f, ch in _CHARS_FIELDS_MAP.items():
                 if ch in token:
-                    token[f] = join(ch, token[ch])
-                    if normalize:
-                        if f == FORM_NORM:
-                            token[f] = normalize(FORM, token[f])
-                        elif f == LEMMA_NORM:
-                            token[f] = normalize(LEMMA, token[f])
+                    value = join(ch, token[ch])
+                    if value is not None:
+                        token[f] = value
+
         tokens.append(token)
     
     return Sentence(tokens, metadata)
