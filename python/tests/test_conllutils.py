@@ -40,7 +40,20 @@ def test_read_conllu(data1):
             _fields(5, "Bill", "Bill"),
             _fields((5,1,EMPTY), "likes", "like"),
             _fields(6, "tea", "tea"),
-        ]]
+    ]]
+
+def test_parse_deps_feats(data2):
+    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, parse_deps=True, parse_feats=True, upos_feats=False, normalize=None, split=None))
+    assert sentences[0][0][FEATS] == {"Case":"Nom", "Number":"Plur"}
+    assert sentences[0][0][DEPS] == [(2, "nsubj"), (4, "nsubj")]
+    assert FEATS not in sentences[0][2]
+    assert DEPS not in sentences[1][0]
+
+    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, parse_deps=False, parse_feats=False, upos_feats=False, normalize=None, split=None))
+    assert sentences[0][0][FEATS] == "Case=Nom|Number=Plur"
+    assert sentences[0][0][DEPS] == "2:nsubj|4:nsubj"
+    assert FEATS not in sentences[0][2]
+    assert DEPS not in sentences[1][0]
 
 def test_empty_multiword(data1):
     sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False))
