@@ -10,7 +10,7 @@ def _data_file(name):
     return open(_data_filename(name), "rt", encoding="utf-8")
 
 def _fields(*values):
-    return {i : v for i, v in enumerate(values) if v is not None}
+    return {FIELDS[i] : v for i, v in enumerate(values) if v is not None}
 
 @pytest.fixture
 def data1():

@@ -4,27 +4,20 @@ import os
 from collections import OrderedDict, Counter 
 import numpy as np
 
+EMPTY = "."
+MULTIWORD = "-"
+
+FIELDS = ["id", "form", "lemma", "upos", "xpos", "feats", "head", "deprel", "deps", "misc",
+          "form_norm", "lemma_norm", "form_chars", "lemma_chars", "form_norm_chars", "lemma_norm_chars", "upos_feats"]
+
 ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC, \
-FORM_NORM, LEMMA_NORM, FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS, UPOS_FEATS = range(17)
+FORM_NORM, LEMMA_NORM, FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS, UPOS_FEATS = FIELDS
 
-EMPTY = 0
-MULTIWORD = 1
-
-FIELD_TO_STR = ["id", "form", "lemma", "upos", "xpos", "feats", "head", "deprel", "deps", "misc",
-                "form_norm", "lemma_norm", "form_chars", "lemma_chars", "form_norm_chars", "lemma_norm_chars",
-                "upos_feats"]
-STR_TO_FIELD = {k : v for v, k in enumerate(FIELD_TO_STR)}
 
 _BASE_FIELDS = [ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC]
 
 _CHARS_FIELDS_MAP = {FORM: FORM_CHARS, LEMMA: LEMMA_CHARS, FORM_NORM: FORM_NORM_CHARS, LEMMA_NORM: LEMMA_NORM_CHARS}
 _CHARS_FIELDS = set(_CHARS_FIELDS_MAP.values())
-
-def str_to_field(s):
-    return STR_TO_FIELD[s.lower()]
-
-def field_to_str(f):
-    return FIELD_TO_STR[f]
 
 def id_to_str(id):
     if isinstance(tuple):
@@ -152,11 +145,11 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
         return Sentence(tokens, metadata)
 
     def _parse_metadata(comments):
-        return [comment[1:].strip() for comment in comments]
+        return [comment[1:].lstrip() for comment in comments]
 
     def _parse_token(line):
         fields = line.split("\t")
-        fields = {f : fields[f] for f in range(min(len(fields), MISC + 1))}
+        fields = {FIELDS[i] : fields[i] for i in range(min(len(fields), len(FIELDS)))}
 
         if "." in fields[ID]:
             token_id, index = fields[ID].split(".")
@@ -320,7 +313,7 @@ def write_index(index, fields=None, basename=""):
         fields = index.keys()
     index = create_inverse_index(index)
     for f in fields:
-        filename = INDEX_FILENAME.format(basename, field_to_str(f))
+        filename = INDEX_FILENAME.format(basename, f)
         with open(filename, "wt", encoding="utf-8") as fp:
             c = index[f]
             for i in range(1, len(c) + 1):
@@ -331,10 +324,10 @@ def write_index(index, fields=None, basename=""):
 
 def read_index(fields=None, basename=""):
     if fields is None:
-        fields = range(len(FIELD_TO_STR))
+        fields = FIELDS
     index = {}
     for f in fields:
-        filename = INDEX_FILENAME.format(basename, field_to_str(f))
+        filename = INDEX_FILENAME.format(basename, f)
         if os.path.isfile(filename):
             with open(filename, "rt", encoding="utf-8") as fp:
                 index[f] = Counter()
@@ -370,7 +363,7 @@ def map_to_instances(sentences, index, fields=None):
 
 def map_to_instance(sentence, index, fields=None):
     if fields is None:
-        fields = [DEPREL, HEAD] + index.keys()
+        fields = {DEPREL, HEAD} + set(index.keys())
 
     l = len(sentence)
     instance = Instance(l)
