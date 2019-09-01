@@ -22,6 +22,18 @@ def data2():
 def data3():
     return _data_filename("data3.conllu")
 
+def test_token():
+    token = Token()
+    assert str(token) == "<None,None,None>"
+    token[ID] = (1,2,MULTIWORD)
+    token[FORM] = "vámonos"
+    assert str(token) == "<1-2,vámonos,None>"
+
+def test_dependency_tree(data2):
+    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
+    tree0 = sentences[0].as_tree()    
+    assert tree0.root is not None
+
 def test_read_conllu(data1):
     sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
     assert sentences == [[

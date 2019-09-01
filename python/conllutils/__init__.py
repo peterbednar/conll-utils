@@ -13,14 +13,13 @@ FIELDS = ["id", "form", "lemma", "upos", "xpos", "feats", "head", "deprel", "dep
 ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC, \
 FORM_NORM, LEMMA_NORM, FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS, UPOS_FEATS = FIELDS
 
-
 _BASE_FIELDS = [ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC]
 
 _CHARS_FIELDS_MAP = {FORM: FORM_CHARS, LEMMA: LEMMA_CHARS, FORM_NORM: FORM_NORM_CHARS, LEMMA_NORM: LEMMA_NORM_CHARS}
 _CHARS_FIELDS = set(_CHARS_FIELDS_MAP.values())
 
 def id_to_str(id):
-    if isinstance(tuple):
+    if isinstance(id, tuple):
         return f"{id[0]}.{id[1]}" if id[2] == EMPTY else f"{id[0]}-{id[1]}"
     else:
         return str(id)
@@ -39,6 +38,9 @@ class Token(dict):
     def is_multiword(self):
         id = self.get(ID)
         return id[2] == MULTIWORD if isinstance(id, tuple) else False
+
+    def __repr__(self):
+        return f"<{id_to_str(self.get(ID))},{self.get(FORM)},{self.get(UPOS)}>"
 
 class Sentence(list):
 
@@ -70,7 +72,10 @@ class Node(object):
 
     @property
     def deprel(self):
-        return self.token[DEPREL]
+        return self.token.get(DEPREL)
+
+    def __repr__(self):
+        return f"<{self.token},{self.deprel},{self.children}>"
 
 class DependencyTree(object):
 
@@ -96,6 +101,9 @@ class DependencyTree(object):
                     parent.children.append(node)
 
         return parent
+
+    def __repr__(self):
+        return repr(self.root)
 
 class Instance(dict):
     
