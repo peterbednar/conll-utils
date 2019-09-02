@@ -1,16 +1,45 @@
 import os
 import pytest
+from io import StringIO
 
 from conllutils import *
+
+class _StringIO(StringIO):
+
+    def close(self):
+        pass
+    
+    def release(self):
+        super().close()
 
 def _data_filename(name):
     return os.path.join(os.path.dirname(__file__), name)
 
-def _data_file(name):
-    return open(_data_filename(name), "rt", encoding="utf-8")
+def _read_file(name):
+    with open(name, "rt", encoding="utf-8") as f:
+        return f.read()
 
 def _fields(*values):
     return {FIELDS[i] : v for i, v in enumerate(values) if v is not None}
+
+_DATA1_CONLLU = """\
+1-2	vámonos	_	_	_	_	_	_	_	_
+1	vamos	ir	_	_	_	_	_	_	_
+2	nos	nosotros	_	_	_	_	_	_	_
+3-4	al	_	_	_	_	_	_	_	_
+3	a	a	_	_	_	_	_	_	_
+4	el	el	_	_	_	_	_	_	_
+5	mar	mar	_	_	_	_	_	_	_
+
+1	Sue	Sue	_	_	_	_	_	_	_
+2	likes	like	_	_	_	_	_	_	_
+3	coffee	coffee	_	_	_	_	_	_	_
+4	and	and	_	_	_	_	_	_	_
+5	Bill	Bill	_	_	_	_	_	_	_
+5.1	likes	like	_	_	_	_	_	_	_
+6	tea	tea	_	_	_	_	_	_	_
+
+"""
 
 @pytest.fixture
 def data1():
@@ -104,3 +133,23 @@ def test_empty_multiword(data1):
         for token in sentence:
             assert (not token.is_empty) and (not token.is_multiword)
 
+def test_write_conllu(data1, data2, data3):
+    sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, parse_deps=True, parse_feats=True, upos_feats=False, normalize=None, split=None))
+    output = _StringIO()
+    write_conllu(output, sentences)
+    assert output.getvalue() == _DATA1_CONLLU
+    output.release()
+
+    input = _read_file(data2)
+    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, parse_deps=True, parse_feats=True, upos_feats=False, normalize=None, split=None))
+    output = _StringIO()
+    write_conllu(output, sentences)
+    assert output.getvalue() == input
+    output.release()
+
+    input = _read_file(data3)
+    sentences = list(read_conllu(data3, skip_empty=False, skip_multiword=False, parse_deps=True, parse_feats=True, upos_feats=False, normalize=None, split=None))
+    output = _StringIO()
+    write_conllu(output, sentences)
+    assert output.getvalue() == input
+    output.release()
