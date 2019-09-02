@@ -3,3 +3,5 @@
 **/*.py[cod]
 .vscode
 build/
+htmlcov
+.coverage
