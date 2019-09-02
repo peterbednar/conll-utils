@@ -129,19 +129,15 @@ _NUM_REGEX = re.compile("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"
 
 def normalize_lower(field, value):
-    if field == FORM or field == LEMMA:
-        return value.lower()
-    return value
+    return value.lower()
 
 def normalize_default(field, value):
-    if field == FORM or field == LEMMA:
-        if _NUM_REGEX.match(value):
-            return NUM_NORM
-        return value.lower()
-    return value
+    if _NUM_REGEX.match(value):
+        return NUM_NORM
+    return value.lower()
 
 def split_default(field, value):
-    if (field == FORM_NORM or field == LEMMA_NORM) and value == NUM_NORM:
+    if value == NUM_NORM:
         return None
     return tuple(value)
 

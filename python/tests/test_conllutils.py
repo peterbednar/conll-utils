@@ -101,6 +101,20 @@ def test_parse_deps_feats(data2):
     assert FEATS not in sentences[0][2]
     assert DEPS not in sentences[1][0]
 
+def test_upos_feats(data1, data2):
+    sentences = list(read_conllu(data1, parse_deps=True, parse_feats=True, upos_feats=True, normalize=None, split=None))
+    assert [UPOS_FEATS not in sentences[0][i] for i in range(len(sentences[0]))]
+
+    sentences = list(read_conllu(data2, parse_deps=True, parse_feats=True, upos_feats=True, normalize=None, split=None))
+    assert [sentences[0][i][UPOS_FEATS] for i in range(len(sentences[0]))] == [
+            "POS=PRON|Case=Nom|Number=Plur",
+            "POS=VERB|Number=Plur|Person=3|Tense=Pres",
+            "POS=CONJ",
+            "POS=VERB|Number=Plur|Person=3|Tense=Pres",
+            "POS=NOUN|Number=Plur",
+            "POS=PUNCT"
+        ]
+
 def test_empty_multiword(data1):
     sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False))
 
