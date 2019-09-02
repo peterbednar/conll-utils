@@ -33,6 +33,11 @@ def test_dependency_tree(data2):
     sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
     tree0 = sentences[0].as_tree()    
     assert tree0.root is not None
+    assert str(tree0) == "<<2,buy,VERB>,root,[<<1,They,PRON>,nsubj,[]>, <<4,sell,VERB>,conj,[<<3,and,CONJ>,cc,[]>]>, <<5,books,NOUN>,obj,[]>, <<6,.,PUNCT>,punct,[]>]>"
+
+    nodes = []
+    tree0.visit(lambda node: nodes.append(node))
+    assert [node.is_root for node in nodes] == [True, False, False, False, False, False]
 
 def test_read_conllu(data1):
     sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))

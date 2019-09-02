@@ -83,6 +83,16 @@ class DependencyTree(object):
         self.root = DependencyTree.build(sentence)
         self.metadata = sentence.metadata
 
+    def visit(self, f):
+        if self.root:
+            self._visit(self.root, f)
+    
+    @staticmethod
+    def _visit(node, f):
+        f(node)
+        for ch in node.children:
+            DependencyTree._visit(ch, f)
+
     @staticmethod
     def build(sentence):
         return DependencyTree._build(sentence, None)
@@ -92,7 +102,7 @@ class DependencyTree(object):
         id = parent.token[ID] if parent is not None else 0
         
         for token in sentence:
-            if token[ID] == id:
+            if token.get(HEAD) == id:
                 node = Node(token, parent)
                 DependencyTree._build(sentence, node)
                 if parent == None:
