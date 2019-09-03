@@ -1,0 +1,10 @@
+# sent_id = dev-s216
+# text = Posledná revízia vyšla v roku 1984.
+# orig_file_sentence 003#16
+1	Posledná	posledný	ADJ	AAfs1x	Case=Nom|Degree=Pos|Gender=Fem|Number=Sing	2	amod	2:amod	_
+2	revízia	revízia	NOUN	SSfs1	Case=Nom|Gender=Fem|Number=Sing	3	nsubj	3:nsubj	_
+3	vyšla	vyjsť	VERB	VLdscf+	Aspect=Perf|Gender=Fem|Number=Sing|Polarity=Pos|Tense=Past|VerbForm=Part	0	root	0:root	_
+4	v	v	ADP	Eu6	AdpType=Prep|Case=Loc	5	case	5:case	_
+5	roku	rok	NOUN	SSis6	Animacy=Inan|Case=Loc|Gender=Masc|Number=Sing	3	obl	3:obl	_
+6	1984	1984	NUM	0	NumForm=Digit	5	nummod	5:nummod	SpaceAfter=No
+7	.	.	PUNCT	Z	_	3	punct	3:punct	_

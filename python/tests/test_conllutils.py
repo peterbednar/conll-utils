@@ -50,6 +50,9 @@ def data2():
 @pytest.fixture
 def data3():
     return _data_filename("data3.conllu")
+@pytest.fixture
+def data4():
+    return _data_filename("data4.conllu")
 
 def test_token():
     token = Token()
