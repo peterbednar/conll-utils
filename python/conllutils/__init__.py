@@ -309,7 +309,7 @@ def create_index(dic, min_frequency=1):
     index = {f: Counter() for f in dic.keys()}
     for f, c in dic.items():
         ordered = c.most_common()
-        min_fq = min_frequency[f] if isinstance(min_frequency, (list, tuple, dict)) else min_frequency
+        min_fq = min_frequency[f] if isinstance(min_frequency, dict) else min_frequency
         for i, (s, fq) in enumerate(ordered):
             if fq >= min_fq:
                 index[f][s] = i + 1

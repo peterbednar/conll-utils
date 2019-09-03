@@ -167,3 +167,30 @@ def test_write_conllu(data1, data2, data3):
     write_conllu(output, sentences)
     assert output.getvalue() == input
     output.release()
+
+def test_create_dictionary(data2):
+        sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
+        dictionary = create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD})
+
+        assert dictionary.keys() == set(FIELDS)-{ID, HEAD}
+        assert dictionary[FORM] == {"They":1, "buy":1, "and":1, "sell":1, "books":1, ".":2, "I":1, "have":1, "no":1, "clue":1}
+        assert dictionary[FORM_NORM_CHARS] == {"e":4, "l":3, "o":3, "h":2, "y":2, "b":2, "u":2, "a":2, "n":2, "s":2, ".":2, "t":1, "d":1, "k":1, "i":1, "v":1, "c":1}
+
+def test_create_index(data2):
+    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
+    dictionary = create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD})
+    
+    index = create_index(dictionary)
+    assert [list(index[f].values()) for f in index.keys()] == [list(range(1, len(index[f])+1)) for f in index.keys()]
+    assert [index[f].keys() for f in index.keys()] == [dictionary[f].keys() for f in index.keys()]
+
+    index = create_index(dictionary, min_frequency=2)
+    assert index[FORM] == {".":1}
+    assert index[FORM_NORM_CHARS] == {"e":1, "l":2, "o":3, "h":4, "y":5, "b":6, "u":7, "a":8, "n":9, "s":10, ".":11}
+
+def test_create_inverse_index(data2):
+    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
+    index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
+
+    inverse_index = create_inverse_index(index)
+    assert create_inverse_index(inverse_index) == index
