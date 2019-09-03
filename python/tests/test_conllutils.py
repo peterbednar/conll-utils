@@ -1,5 +1,6 @@
 import os
 import pytest
+import random
 from io import StringIO
 
 from conllutils import *
@@ -221,3 +222,20 @@ def test_map_to_instances(data2):
 
     instances = list(map_to_instances(sentences, index))
     assert list(map_to_sentences(instances, inverse_index)) == sentences
+
+def test_shuffled_stream():
+    random.seed(1)
+    data = list(range(5))
+    assert list(shuffled_stream(data, size=10)) == [2, 3, 4, 0, 1, 2, 4, 3, 1, 0]
+
+    data = list(range(5))
+    random.seed(1)
+
+    i = 0
+    values = []
+    for value in shuffled_stream(data):
+        values.append(value)
+        i += 1
+        if i >= 10:
+            break
+    assert values == [2, 3, 4, 0, 1, 2, 4, 3, 1, 0]

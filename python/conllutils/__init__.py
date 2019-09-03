@@ -444,7 +444,7 @@ def map_to_sentence(instance, index, fields=None, join=join_default):
     
     return Sentence(tokens, metadata)
 
-def shuffled_stream(instances, size=0):
+def shuffled_stream(instances, size=0, random=random):
     i = 0
     while True:
         random.shuffle(instances)
