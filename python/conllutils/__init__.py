@@ -384,19 +384,17 @@ def map_to_instance(sentence, index, fields=None):
     instance.metadata = sentence.metadata
 
     for field in fields:
-        dtype = np.object if field in _CHARS_FIELDS else np.int
-        array = np.array(l, dtype=dtype)
+        array = np.full(l, None, dtype=np.object) if field in _CHARS_FIELDS else np.full(l, -1, dtype=np.int)
 
         for i, token in enumerate(sentence):
             value = token.get(field)
             if field == HEAD:
                 array[i] = value
             elif field in _CHARS_FIELDS:
-                if value is None:
-                    array[i] = None
-                else:
+                if value is not None:
                     chars = [index[field][ch] for ch in value]
-                    array[i] = np.array(chars, dtype=np.int)
+                    value = np.array(chars, dtype=np.int)
+                array[i] = value
             else:
                 array[i] = index[field][value]
 
@@ -423,13 +421,15 @@ def map_to_sentence(instance, index, fields=None, join=join_default):
         token[ID] = i + 1
 
         for field in fields:
-            v = instance[field][i]
-            if v is None:
-                value = None
-            elif isinstance(v, np.ndarray):
-                value = [index[field][ch] for ch in v]
+            vi = instance[field][i]
+            if vi is None:
+                continue
+            if field == HEAD:
+                value = vi
+            elif field in _CHARS_FIELDS:
+                value = tuple([index[field][ch] for ch in vi])
             else:
-                value = index[field][v]
+                value = index[field][vi]
             if value is not None:
                 token[field] = value
 

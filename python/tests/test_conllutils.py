@@ -214,6 +214,7 @@ def test_count_frequency(data2):
 def test_map_to_instances(data2):
     sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
     index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
+    inverse_index = create_inverse_index(index)
 
     instances = list(map_to_instances(sentences, index))
-    assert list(map_to_sentences(instances, index)) == sentences
+    assert list(map_to_sentences(instances, inverse_index)) == sentences
