@@ -223,6 +223,15 @@ def test_map_to_instances(data2):
     instances = list(map_to_instances(sentences, index))
     assert list(map_to_sentences(instances, inverse_index)) == sentences
 
+def test_iterate_tokens(data2):
+    sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
+    index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
+    instances = list(map_to_instances(sentences, index))
+    tokens = list(iterate_tokens(instances))
+
+    assert len(tokens) == sum(len(sentence) for sentence in sentences)
+    assert tokens[0] == {f : instances[0][f][0] for f in instances[0].keys()}
+
 def test_shuffled_stream():
     random.seed(1)
     data = list(range(5))

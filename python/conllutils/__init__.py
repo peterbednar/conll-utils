@@ -125,6 +125,12 @@ class Instance(dict):
     def __len__(self):
         return self._length
 
+    def tokens(self, fields=None):
+        if fields == None:
+            fields = self.keys()
+        for i in range(self._length):
+            yield Instance(fields={f : self[f][i] for f in fields}, metadata=self.metadata)
+
 _NUM_REGEX = re.compile("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"
 
@@ -443,6 +449,11 @@ def map_to_sentence(instance, index, fields=None, join=join_default):
         tokens.append(token)
     
     return Sentence(tokens, metadata)
+
+def iterate_tokens(instances, fields=None):
+    for instance in instances:
+        for token in instance.tokens(fields):
+            yield token
 
 def shuffled_stream(instances, size=0, random=random):
     i = 0
