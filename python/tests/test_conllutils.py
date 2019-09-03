@@ -194,3 +194,26 @@ def test_create_inverse_index(data2):
 
     inverse_index = create_inverse_index(index)
     assert create_inverse_index(inverse_index) == index
+
+def test_write_read_index(data2, tmpdir):
+    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
+    index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
+
+    write_index(tmpdir + "/", index)
+    assert read_index(tmpdir + "/") == index
+
+def test_count_frequency(data2):
+    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
+    dictionary = create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD})
+    index = create_index(dictionary)
+
+    frequencies = count_frequency(sentences, index)
+    for f in index.keys():
+        assert {index[f][k]:v for k,v in dictionary[f].items()} == frequencies[f]
+
+def test_map_to_instances(data2):
+    sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
+    index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
+
+    instances = list(map_to_instances(sentences, index))
+    assert list(map_to_sentences(instances, index)) == sentences

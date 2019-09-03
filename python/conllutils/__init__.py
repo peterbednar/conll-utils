@@ -322,7 +322,7 @@ INDEX_FILENAME = "{0}index_{1}.txt"
 
 _NONE_TOKEN = u"__none__"
 
-def write_index(index, fields=None, basename=""):
+def write_index(basename, index, fields=None):
     if fields is None:
         fields = index.keys()
     index = create_inverse_index(index)
@@ -336,7 +336,7 @@ def write_index(index, fields=None, basename=""):
                     token = _NONE_TOKEN
                 print(token, file=fp)
 
-def read_index(fields=None, basename=""):
+def read_index(basename, fields=None):
     if fields is None:
         fields = FIELDS
     index = {}
@@ -377,7 +377,7 @@ def map_to_instances(sentences, index, fields=None):
 
 def map_to_instance(sentence, index, fields=None):
     if fields is None:
-        fields = {DEPREL, HEAD} + set(index.keys())
+        fields = {DEPREL, HEAD} | set(index.keys())
 
     l = len(sentence)
     instance = Instance(l)
