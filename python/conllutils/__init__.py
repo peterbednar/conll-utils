@@ -83,6 +83,7 @@ class DependencyTree(object):
     def __init__(self, sentence):
         self.root = DependencyTree.build(sentence)
         self.metadata = sentence.metadata
+        self.tokens = sentence
 
     def visit(self, f):
         if self.root:
@@ -306,15 +307,15 @@ def write_conllu(file, data, write_metadata=True):
             _write_tokens(fp, sentence.tokens)
             print(file=fp)
 
+class _StringIO(StringIO):
+
+    def close(self):
+        pass
+
+    def release(self):
+        super().close()
+
 def serialize_conllu(data, serialize_metadata=True):
-    class _StringIO(StringIO):
-
-        def close(self):
-            pass
-
-        def release(self):
-            super().close()
-
     f = _StringIO()
     write_conllu(f, data, serialize_metadata)
     s = f.getvalue()
