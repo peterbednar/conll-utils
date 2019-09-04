@@ -252,10 +252,6 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
         if len(lines) > 0:
             yield _parse_sentence(lines, comments)
 
-def parse_conllu(str, skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
-                normalize=normalize_default, split=split_default):
-    return read_conllu(StringIO(str), skip_empty, skip_multiword, parse_feats, parse_deps, upos_feats, normalize, split)
-
 def write_conllu(file, data, write_metadata=True):
     if isinstance(data, Sentence):
         data = (data,)
@@ -315,7 +311,11 @@ class _StringIO(StringIO):
     def release(self):
         super().close()
 
-def serialize_conllu(data, serialize_metadata=True):
+def decode_conllu(str, skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
+                  normalize=normalize_default, split=split_default):
+    return read_conllu(StringIO(str), skip_empty, skip_multiword, parse_feats, parse_deps, upos_feats, normalize, split)
+
+def encode_conllu(data, serialize_metadata=True):
     f = _StringIO()
     write_conllu(f, data, serialize_metadata)
     s = f.getvalue()
