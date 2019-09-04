@@ -4,11 +4,11 @@ import os
 from collections import OrderedDict, Counter 
 import numpy as np
 
-EMPTY = "."
-MULTIWORD = "-"
+_EMPTY = "."
+_MULTIWORD = "-"
 
-FIELDS = ["id", "form", "lemma", "upos", "xpos", "feats", "head", "deprel", "deps", "misc",
-          "form_norm", "lemma_norm", "form_chars", "lemma_chars", "form_norm_chars", "lemma_norm_chars", "upos_feats"]
+FIELDS = ("id", "form", "lemma", "upos", "xpos", "feats", "head", "deprel", "deps", "misc",
+          "form_norm", "lemma_norm", "form_chars", "lemma_chars", "form_norm_chars", "lemma_norm_chars", "upos_feats")
 
 ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC, \
 FORM_NORM, LEMMA_NORM, FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS, UPOS_FEATS = FIELDS
@@ -18,9 +18,9 @@ _BASE_FIELDS = [ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC]
 _CHARS_FIELDS_MAP = {FORM: FORM_CHARS, LEMMA: LEMMA_CHARS, FORM_NORM: FORM_NORM_CHARS, LEMMA_NORM: LEMMA_NORM_CHARS}
 _CHARS_FIELDS = set(_CHARS_FIELDS_MAP.values())
 
-def id_to_str(id):
+def _id_to_str(id):
     if isinstance(id, tuple):
-        return f"{id[0]}.{id[1]}" if id[2] == EMPTY else f"{id[0]}-{id[1]}"
+        return f"{id[0]}.{id[1]}" if id[2] == _EMPTY else f"{id[0]}-{id[1]}"
     else:
         return str(id)
 
@@ -32,15 +32,15 @@ class Token(dict):
     @property
     def is_empty(self):
         id = self.get(ID)
-        return id[2] == EMPTY if isinstance(id, tuple) else False
+        return id[2] == _EMPTY if isinstance(id, tuple) else False
 
     @property
     def is_multiword(self):
         id = self.get(ID)
-        return id[2] == MULTIWORD if isinstance(id, tuple) else False
+        return id[2] == _MULTIWORD if isinstance(id, tuple) else False
 
     def __repr__(self):
-        return f"<{id_to_str(self.get(ID))},{self.get(FORM)},{self.get(UPOS)}>"
+        return f"<{_id_to_str(self.get(ID))},{self.get(FORM)},{self.get(UPOS)}>"
 
 class Sentence(list):
 
@@ -173,10 +173,10 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
 
         if "." in fields[ID]:
             token_id, index = fields[ID].split(".")
-            id = (int(token_id), int(index), EMPTY)
+            id = (int(token_id), int(index), _EMPTY)
         elif "-" in fields[ID]:
             start, end = fields[ID].split("-")
-            id = (int(start), int(end), MULTIWORD)
+            id = (int(start), int(end), _MULTIWORD)
         else:
             id = int(fields[ID])
         fields[ID] = id
@@ -265,7 +265,7 @@ def write_conllu(file, sentences):
     def _field_to_str(token, field):
 
         if field == ID:
-            return id_to_str(token[ID])
+            return _id_to_str(token[ID])
 
         if field not in token or token[field] is None:
             return "_"

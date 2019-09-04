@@ -4,6 +4,7 @@ import random
 from io import StringIO
 
 from conllutils import *
+from conllutils import _MULTIWORD, _EMPTY
 
 class _StringIO(StringIO):
 
@@ -58,7 +59,7 @@ def data4():
 def test_token():
     token = Token()
     assert str(token) == "<None,None,None>"
-    token[ID] = (1,2,MULTIWORD)
+    token[ID] = (1,2,_MULTIWORD)
     token[FORM] = "vámonos"
     assert str(token) == "<1-2,vámonos,None>"
 
@@ -75,10 +76,10 @@ def test_dependency_tree(data2):
 def test_read_conllu(data1):
     sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
     assert sentences == [[
-            _fields((1,2,MULTIWORD), "vámonos"),
+            _fields((1,2,_MULTIWORD), "vámonos"),
             _fields(1, "vamos", "ir"),
             _fields(2, "nos", "nosotros"),
-            _fields((3,4,MULTIWORD), "al"),
+            _fields((3,4,_MULTIWORD), "al"),
             _fields(3, "a", "a"),
             _fields(4, "el", "el"),
             _fields(5, "mar", "mar")
@@ -88,7 +89,7 @@ def test_read_conllu(data1):
             _fields(3, "coffee", "coffee"),
             _fields(4, "and", "and"),
             _fields(5, "Bill", "Bill"),
-            _fields((5,1,EMPTY), "likes", "like"),
+            _fields((5,1,_EMPTY), "likes", "like"),
             _fields(6, "tea", "tea"),
     ]]
 
@@ -131,8 +132,8 @@ def test_empty_multiword(data1):
     assert [sentences[0].get(i)[FORM] for i in range(1, 6)] == ["vamos", "nos", "a", "el", "mar"]
     assert [sentences[1].get(i)[FORM] for i in range(1, 7)] == ["Sue", "likes", "coffee", "and", "Bill", "tea"]
 
-    assert sentences[0].get((1,2,MULTIWORD))[FORM] == "vámonos"
-    assert sentences[1].get((5,1,EMPTY))[FORM] == "likes"
+    assert sentences[0].get((1,2,_MULTIWORD))[FORM] == "vámonos"
+    assert sentences[1].get((5,1,_EMPTY))[FORM] == "likes"
 
     with pytest.raises(IndexError):
         sentences[0].get(0)
@@ -141,10 +142,10 @@ def test_empty_multiword(data1):
         sentences[0].get(6)
 
     with pytest.raises(IndexError):
-        sentences[0].get((1,3,MULTIWORD))
+        sentences[0].get((1,3,_MULTIWORD))
 
     with pytest.raises(IndexError):
-        sentences[0].get((1,2,EMPTY))
+        sentences[0].get((1,2,_EMPTY))
 
     sentences = list(read_conllu(data1, skip_empty=True, skip_multiword=True))
     for sentence in sentences:
