@@ -315,9 +315,9 @@ def decode_conllu(str, skip_empty=True, skip_multiword=True, parse_feats=False, 
                   normalize=normalize_default, split=split_default):
     return read_conllu(StringIO(str), skip_empty, skip_multiword, parse_feats, parse_deps, upos_feats, normalize, split)
 
-def encode_conllu(data, serialize_metadata=True):
+def encode_conllu(data, encode_metadata=True):
     f = _StringIO()
-    write_conllu(f, data, serialize_metadata)
+    write_conllu(f, data, encode_metadata)
     s = f.getvalue()
     f.release()
     return s
