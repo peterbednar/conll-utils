@@ -351,12 +351,12 @@ INDEX_FILENAME = "{0}index_{1}.txt"
 
 _NONE_TOKEN = u"__none__"
 
-def write_index(basename, index, fields=None):
+def write_index(dirname, index, fields=None):
     if fields is None:
         fields = index.keys()
     index = create_inverse_index(index)
     for f in fields:
-        filename = INDEX_FILENAME.format(basename, f)
+        filename = INDEX_FILENAME.format(dirname, f)
         with open(filename, "wt", encoding="utf-8") as fp:
             c = index[f]
             for i in range(1, len(c) + 1):
@@ -365,12 +365,12 @@ def write_index(basename, index, fields=None):
                     token = _NONE_TOKEN
                 print(token, file=fp)
 
-def read_index(basename, fields=None):
+def read_index(dirname, fields=None):
     if fields is None:
         fields = FIELDS
     index = {}
     for f in fields:
-        filename = INDEX_FILENAME.format(basename, f)
+        filename = INDEX_FILENAME.format(dirname, f)
         if os.path.isfile(filename):
             with open(filename, "rt", encoding="utf-8") as fp:
                 index[f] = Counter()

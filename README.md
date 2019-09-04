@@ -1,2 +1,3 @@
-# conllutils
-Utility classes and functions for working with Conll-U files
+# CoNLLUtils
+
+Utility classes and functions for working with CoNLL-U files.

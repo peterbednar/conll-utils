@@ -113,10 +113,6 @@ def test_parse_conllu():
             _fields(6, "tea", "tea"),
     ]]
 
-def test_serialize_conllu():
-    sentences = list(parse_conllu(_DATA1_CONLLU, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
-    assert serialize_conllu(sentences) == _DATA1_CONLLU
-
 def test_parse_deps_feats(data2):
     sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, parse_deps=True, parse_feats=True, upos_feats=False, normalize=None, split=None))
     assert sentences[0][0][FEATS] == {"Case":"Nom", "Number":"Plur"}
@@ -203,6 +199,10 @@ def test_write_conllu(data1, data2, data3):
     write_conllu(output, sentences)
     assert output.getvalue() == input
     output.release()
+
+def test_serialize_conllu():
+    sentences = list(parse_conllu(_DATA1_CONLLU, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
+    assert serialize_conllu(sentences) == _DATA1_CONLLU
 
 def test_create_dictionary(data2):
         sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
