@@ -166,6 +166,13 @@ def test_write_conllu(data1, data2, data3):
     assert output.getvalue() == input
     output.release()
 
+    input = _read_file(data2)
+    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, parse_deps=False, parse_feats=False, upos_feats=False, normalize=None, split=None))
+    output = _StringIO()
+    write_conllu(output, sentences)
+    assert output.getvalue() == input
+    output.release()
+
     input = _read_file(data3)
     sentences = list(read_conllu(data3, skip_empty=False, skip_multiword=False, parse_deps=True, parse_feats=True, upos_feats=False, normalize=None, split=None))
     output = _StringIO()
@@ -232,6 +239,18 @@ def test_iterate_tokens(data2):
 
     assert len(tokens) == sum(len(sentence) for sentence in sentences)
     assert tokens[0] == {f : instances[0][f][0] for f in instances[0].keys()}
+
+def test_normalize(data4):
+    sentences = list(read_conllu(data4, skip_empty=False, skip_multiword=False))
+    index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
+    instances = list(map_to_instances(sentences, index))
+
+    assert sentences[0][5][FORM_NORM] == NUM_NORM and sentences[0][5][LEMMA_NORM] == NUM_NORM
+    assert FORM_NORM_CHARS not in sentences[0][5] and LEMMA_NORM_CHARS not in sentences[0][5]
+    assert instances[0][FORM_NORM_CHARS][5] == None and instances[0][LEMMA_NORM_CHARS][5] == None    
+
+    inverse_index = create_inverse_index(index)
+    assert list(map_to_sentences(instances, inverse_index)) == sentences
 
 def test_shuffled_stream():
     random.seed(1)
