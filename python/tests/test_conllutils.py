@@ -93,6 +93,30 @@ def test_read_conllu(data1):
             _fields(6, "tea", "tea"),
     ]]
 
+def test_parse_conllu():
+    sentences = list(parse_conllu(_DATA1_CONLLU, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
+    assert sentences == [[
+            _fields((1,2,_MULTIWORD), "vámonos"),
+            _fields(1, "vamos", "ir"),
+            _fields(2, "nos", "nosotros"),
+            _fields((3,4,_MULTIWORD), "al"),
+            _fields(3, "a", "a"),
+            _fields(4, "el", "el"),
+            _fields(5, "mar", "mar")
+        ], [
+            _fields(1, "Sue", "Sue"),
+            _fields(2, "likes", "like"),
+            _fields(3, "coffee", "coffee"),
+            _fields(4, "and", "and"),
+            _fields(5, "Bill", "Bill"),
+            _fields((5,1,_EMPTY), "likes", "like"),
+            _fields(6, "tea", "tea"),
+    ]]
+
+def test_serialize_conllu():
+    sentences = list(parse_conllu(_DATA1_CONLLU, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
+    assert serialize_conllu(sentences) == _DATA1_CONLLU
+
 def test_parse_deps_feats(data2):
     sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, parse_deps=True, parse_feats=True, upos_feats=False, normalize=None, split=None))
     assert sentences[0][0][FEATS] == {"Case":"Nom", "Number":"Plur"}

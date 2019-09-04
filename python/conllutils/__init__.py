@@ -1,7 +1,8 @@
+import os
 import re
 import random
-import os
-from collections import OrderedDict, Counter 
+from collections import OrderedDict, Counter
+from io import StringIO
 import numpy as np
 
 _EMPTY = "."
@@ -250,6 +251,10 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
         if len(lines) > 0:
             yield _parse_sentence(lines, comments)
 
+def parse_conllu(str, skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
+                normalize=normalize_default, split=split_default):
+    return read_conllu(StringIO(str), skip_empty, skip_multiword, parse_feats, parse_deps, upos_feats, normalize, split)
+
 def write_conllu(file, sentences):
 
     def _write_metadata(fp, metadata):
@@ -297,6 +302,21 @@ def write_conllu(file, sentences):
             _write_metadata(fp, sentence.metadata)
             _write_tokens(fp, sentence.tokens)
             print(file=fp)
+
+def serialize_conllu(sentences):
+    class _StringIO(StringIO):
+
+        def close(self):
+            pass
+
+        def release(self):
+            super().close()
+
+    f = _StringIO()
+    write_conllu(f, sentences)
+    s = f.getvalue()
+    f.release()
+    return s
 
 def create_dictionary(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}):
     dic = {f: Counter() for f in fields}
