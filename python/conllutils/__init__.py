@@ -255,7 +255,9 @@ def parse_conllu(str, skip_empty=True, skip_multiword=True, parse_feats=False, p
                 normalize=normalize_default, split=split_default):
     return read_conllu(StringIO(str), skip_empty, skip_multiword, parse_feats, parse_deps, upos_feats, normalize, split)
 
-def write_conllu(file, sentences):
+def write_conllu(file, data, write_metadata=True):
+    if isinstance(data, Sentence):
+        data = (data,)
 
     def _write_metadata(fp, metadata):
         if metadata:
@@ -298,12 +300,13 @@ def write_conllu(file, sentences):
     if isinstance(file, str):
         file = open(file, "wt", encoding="utf-8")
     with file as fp:
-        for sentence in sentences:
-            _write_metadata(fp, sentence.metadata)
+        for sentence in data:
+            if write_metadata:
+                _write_metadata(fp, sentence.metadata)
             _write_tokens(fp, sentence.tokens)
             print(file=fp)
 
-def serialize_conllu(sentences):
+def serialize_conllu(data, serialize_metadata=True):
     class _StringIO(StringIO):
 
         def close(self):
@@ -313,7 +316,7 @@ def serialize_conllu(sentences):
             super().close()
 
     f = _StringIO()
-    write_conllu(f, sentences)
+    write_conllu(f, data, serialize_metadata)
     s = f.getvalue()
     f.release()
     return s
