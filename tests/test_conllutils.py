@@ -281,9 +281,7 @@ def test_shuffled_stream():
     data = list(range(5))
     assert list(shuffled_stream(data, size=10)) == [2, 3, 4, 0, 1, 2, 4, 3, 1, 0]
 
-    data = list(range(5))
     random.seed(1)
-
     i = 0
     values = []
     for value in shuffled_stream(data):

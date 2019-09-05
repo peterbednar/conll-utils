@@ -1,7 +1,7 @@
 import os
 from setuptools import setup
 
-VERSION = "0.9.0"
+VERSION = "0.9.1"
 
 setup(
     name="CoNLLUtils",

@@ -481,6 +481,7 @@ def iterate_tokens(instances, fields=None):
 
 def shuffled_stream(instances, size=0, random=random):
     i = 0
+    instances = list(instances)
     while True:
         random.shuffle(instances)
         for instance in instances:
