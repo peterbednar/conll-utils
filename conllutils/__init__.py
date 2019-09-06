@@ -311,9 +311,9 @@ class _StringIO(StringIO):
     def release(self):
         super().close()
 
-def decode_conllu(str, skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
+def decode_conllu(s, skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
                   normalize=normalize_default, split=split_default):
-    return read_conllu(StringIO(str), skip_empty, skip_multiword, parse_feats, parse_deps, upos_feats, normalize, split)
+    return read_conllu(StringIO(s), skip_empty, skip_multiword, parse_feats, parse_deps, upos_feats, normalize, split)
 
 def encode_conllu(data, encode_metadata=True):
     f = _StringIO()
