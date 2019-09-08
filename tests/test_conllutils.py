@@ -279,7 +279,7 @@ def test_normalize(data4):
 def test_shuffled_stream():
     random.seed(1)
     data = list(range(5))
-    assert list(shuffled_stream(data, size=10)) == [2, 3, 4, 0, 1, 2, 4, 3, 1, 0]
+    assert list(shuffled_stream(data, total_size=10)) == [2, 3, 4, 0, 1, 2, 4, 3, 1, 0]
 
     random.seed(1)
     i = 0
@@ -290,3 +290,13 @@ def test_shuffled_stream():
         if i >= 10:
             break
     assert values == [2, 3, 4, 0, 1, 2, 4, 3, 1, 0]
+
+    random.seed(1)
+    i = 0
+    values = []
+    for value in shuffled_stream(data, batch_size=3):
+        values.append(value)
+        i += 1
+        if i >= 3:
+            break
+    assert values == [[2, 3, 4], [0, 1, 2], [4, 3, 1]]

@@ -479,13 +479,20 @@ def iterate_tokens(instances, fields=None):
         for token in instance.tokens(fields):
             yield token
 
-def shuffled_stream(instances, size=0, random=random):
+def shuffled_stream(instances, total_size=None, batch_size=None, random=random):
     i = 0
+    batch = []
     instances = list(instances)
     while True:
         random.shuffle(instances)
         for instance in instances:
-            if size > 0 and i >= size:
+            if total_size is not None and i >= total_size:
                 return
             i += 1
-            yield instance
+            if batch_size is not None:
+                if len(batch) >= batch_size:
+                    yield batch
+                    batch = []
+                batch.append(instance)
+            else:
+                yield instance
