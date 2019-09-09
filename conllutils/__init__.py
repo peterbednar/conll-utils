@@ -483,6 +483,8 @@ def shuffled_stream(instances, total_size=None, batch_size=None, random=random):
     i = 0
     batch = []
     instances = list(instances)
+    if not instances:
+        return
     while True:
         random.shuffle(instances)
         for instance in instances:
@@ -490,9 +492,9 @@ def shuffled_stream(instances, total_size=None, batch_size=None, random=random):
                 return
             i += 1
             if batch_size is not None:
+                batch.append(instance)
                 if len(batch) >= batch_size:
                     yield batch
                     batch = []
-                batch.append(instance)
             else:
                 yield instance

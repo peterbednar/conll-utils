@@ -300,3 +300,11 @@ def test_shuffled_stream():
         if i >= 3:
             break
     assert values == [[2, 3, 4], [0, 1, 2], [4, 3, 1]]
+
+    random.seed(1)
+    values = list(shuffled_stream(data, total_size=10, batch_size=5))
+    assert values == [[2, 3, 4, 0, 1], [2, 4, 3, 1, 0]]
+
+    random.seed(1)
+    for value in shuffled_stream([]):
+        assert False
