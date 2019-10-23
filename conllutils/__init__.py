@@ -43,6 +43,9 @@ class Token(dict):
     def __repr__(self):
         return f"<{_id_to_str(self.get(ID))},{self.get(FORM)},{self.get(UPOS)}>"
 
+    def copy(self):
+        return Token(self)
+
 class Sentence(list):
 
     def __init__(self, tokens=[], metadata=None):
@@ -59,6 +62,9 @@ class Sentence(list):
 
     def as_tree(self):
         return DependencyTree(self)
+
+    def copy(self):
+        return Sentence(self.tokens, self.metadata)
 
 class Node(object):
 
@@ -132,6 +138,9 @@ class Instance(dict):
             fields = self.keys()
         for i in range(self._length):
             yield Instance(fields={f : self[f][i] for f in fields}, metadata=self.metadata)
+
+    def copy(self):
+        return Instance(self._length, self, self.metadata)
 
 _NUM_REGEX = re.compile("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"

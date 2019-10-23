@@ -308,3 +308,16 @@ def test_shuffled_stream():
     random.seed(1)
     for value in shuffled_stream([]):
         assert False
+
+def test_copy(data2):
+    token = Token()
+    token[ID] = (1,2,_MULTIWORD)
+    token[FORM] = "vámonos"
+    assert token.copy() == token
+
+    sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
+    assert sentences == list([sentence.copy() for sentence in sentences])
+    
+    index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
+    instances = list(map_to_instances(sentences, index))
+    assert instances == list([instance.copy() for instance in instances])
