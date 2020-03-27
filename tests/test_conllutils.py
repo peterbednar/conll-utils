@@ -1,18 +1,9 @@
 import os
 import pytest
 import random
-from io import StringIO
 
 from conllutils import *
-from conllutils import _MULTIWORD, _EMPTY
-
-class _StringIO(StringIO):
-
-    def close(self):
-        pass
-    
-    def release(self):
-        super().close()
+from conllutils import _MULTIWORD, _EMPTY, _StringIO
 
 def _data_filename(name):
     return os.path.join(os.path.dirname(__file__), name)
