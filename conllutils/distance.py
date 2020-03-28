@@ -63,8 +63,8 @@ def levenshtein_distance(s1, s2, cost=default_token_cost, damerau=False, return_
         if d[opr[1], opr[2]] != d[i, j]:
             if opr[0] == DEL:
                 oprs.append((opr[0], opr[1], -1))
-            elif opr[1] == INS:
-                oprs.append((opr[1], -1, opr[2]))
+            elif opr[0] == INS:
+                oprs.append((opr[0], -1, opr[2]))
             else:
                 oprs.append(opr)
         i = opr[1]
@@ -158,10 +158,10 @@ def _treedist(i, j, l1, l2, nodes1, nodes2, TD, TD_oprs, cost, return_oprs):
                 d[x, y] = min_cost
                 TD[xi, yj] = d[x, y]
                 if return_oprs:
-                    if cost == costs[0]:
+                    if min_cost == costs[0]:
                         _merge(x, y, x-1, y, [(DEL, xi, -1)])
-                    elif cost == costs[1]:
-                        _merge(x, y, y, y-1, [(INS, -1, yj)])
+                    elif min_cost == costs[1]:
+                        _merge(x, y, x, y-1, [(INS, -1, yj)])
                     else:
                         opr = [(SUB, xi, yj)] if d[x, y] != d[x-1, y-1] else []
                         _merge(x, y, x-1, y-1, opr)
