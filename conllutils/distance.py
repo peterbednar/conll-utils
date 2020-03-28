@@ -27,9 +27,9 @@ def levenshtein_distance(s1, s2, cost=default_token_cost, damerau=False, return_
     d = np.zeros((n + 1, m + 1), dtype=np.float)
 
     for i in range(1, n + 1):
-        d[i, 0] = d[i-1, 0] + cost(s1[i-1], None, DEL)      # deletion
+        d[i, 0] = d[i-1, 0] + cost(s1[i-1], None, DEL)     # deletion
     for j in range(1, m + 1):
-        d[0, j] = d[0, j-1] + cost(None, s2[j-1], INS)      # insertion
+        d[0, j] = d[0, j-1] + cost(None, s2[j-1], INS)     # insertion
 
     for i in range(1, n + 1):
         for j in range(1, m + 1):
@@ -61,12 +61,17 @@ def levenshtein_distance(s1, s2, cost=default_token_cost, damerau=False, return_
             neighbours.append((DEL, i-1, j))
         opr = min(neighbours, key=lambda x: d[x[1], x[2]])
         if d[opr[1], opr[2]] != d[i, j]:
-            oprs.append(opr)
+            if opr[0] == DEL:
+                oprs.append((opr[0], opr[1], -1))
+            elif opr[1] == INS:
+                oprs.append((opr[1], -1, opr[2]))
+            else:
+                oprs.append(opr)
         i = opr[1]
         j = opr[2]
     oprs.reverse()
 
-    return oprs
+    return d[n, m], oprs
 
 class _AnnotatedNode(object):
 
@@ -116,42 +121,75 @@ def _annotate(root):
             keyroots.append(i)
     return nodes, l, keyroots
 
-def _treedist(i, j, l1, l2, nodes1, nodes2, TD, cost):
+def _treedist(i, j, l1, l2, nodes1, nodes2, TD, TD_oprs, cost, return_oprs):
+
+    def _merge(x1, y1, x2, y2, l):
+        d_oprs[x1, y1] = l if d_oprs[x2, y2] is None else d_oprs[x2, y2] + l
+
     n = i - l1[i] + 2
     m = j - l2[j] + 2
     d = np.zeros((n, m), dtype=np.float)
+    if return_oprs:
+        d_oprs = np.full((n, m), None, dtype=np.object)
     i_off = l1[i] - 1
     j_off = l2[j] - 1
 
     for x in range(1, n):
         d[x, 0] = d[x-1, 0] + cost(nodes1[x+i_off], None, DEL)      # delete
+        if return_oprs:
+            _merge(x, 0, x-1, 0, [(DEL, x+i_off, -1)])
+
     for y in range(1, m):
         d[0, y] = d[0, y-1] + cost(None, nodes2[y+j_off], INS)      # insert
+        if return_oprs:
+            _merge(0, y, 0, y-1, [(INS, -1, y+j_off)])
 
     for x in range(1, n):
         for y in range(1, m):
             xi = x + i_off
             yj = y + j_off
             if l1[i] == l1[xi] and l2[j] == l2[yj]:
-                d[x, y] = min(
+                costs = (
                     d[x-1, y] + cost(nodes1[xi], None, DEL),        # delete
                     d[x, y-1] + cost(None, nodes2[yj], INS),        # insert
                     d[x-1, y-1] + cost(nodes1[xi], nodes2[yj], SUB) # substitute
                 )
+                min_cost = min(costs)
+                d[x, y] = min_cost
                 TD[xi, yj] = d[x, y]
+                if return_oprs:
+                    if cost == costs[0]:
+                        _merge(x, y, x-1, y, [(DEL, xi, -1)])
+                    elif cost == costs[1]:
+                        _merge(x, y, y, y-1, [(INS, -1, yj)])
+                    else:
+                        opr = [(SUB, xi, yj)] if d[x, y] != d[x-1, y-1] else []
+                        _merge(x, y, x-1, y-1, opr)
+                    TD_oprs[xi, yj] = d_oprs[x, y]
             else:
-                d[x, y] = min(
+                x_tmp = l1[xi]-1-i_off
+                y_tmp = l2[yj]-1-j_off
+                costs = (
                     d[x-1, y] + cost(nodes1[xi], None, DEL),
                     d[x, y-1] + cost(None, nodes2[yj], INS),
-                    d[l1[xi]-1-i_off, l2[yj]-1-j_off] + TD[xi, yj]
+                    d[x_tmp, y_tmp] + TD[xi, yj]
                 )
+                min_cost = min(costs)
+                d[x, y] = min_cost
+                if return_oprs:
+                    if min_cost == costs[0]:
+                        _merge(x, y, x-1, y, [(DEL, xi, -1)])
+                    elif min_cost == costs[1]:
+                        _merge(x, y, x, y-1, [(INS, -1, yj)])
+                    else:
+                        _merge(x, y, x_tmp, y_tmp, TD_oprs[xi, yj])
 
 def default_node_cost(n1, n2, opr):
     t1 = None if n1 is None else n1.token
     t2 = None if n2 is None else n2.token
     return default_token_cost(t1, t2, opr)
 
-def tree_edit_distance(t1, t2, cost=default_node_cost):
+def tree_edit_distance(t1, t2, cost=default_node_cost, return_oprs=False):
 
     def _get_root(t):
         if isinstance(t, DependencyTree):
@@ -165,16 +203,32 @@ def tree_edit_distance(t1, t2, cost=default_node_cost):
 
     n = len(nodes1)
     m = len(nodes2)
+
     if n == 0 and m == 0:
-        return 0
-    if n != 0 and m == 0:
-        return sum(cost(node, None, DEL) for node in nodes1)
-    if n == 0 and m != 0:
-        return sum(cost(None, node, INS) for node in nodes2)
+        dist = 0
+        if return_oprs:
+            oprs = []
+    elif n != 0 and m == 0:
+        dist = sum(cost(node, None, DEL) for node in nodes1)
+        if return_oprs:
+            oprs = [(DEL, i, -1) for i in range(n)]
+    elif n == 0 and m != 0:
+        dist = sum(cost(None, node, INS) for node in nodes2)
+        if return_oprs:
+            oprs = [(INS, -1, j) for j in range(m)]
+    else:
+        TD = np.zeros((n, m), dtype=np.float)
+        TD_oprs = np.full((n, m), None, dtype=np.object) if return_oprs else None
 
-    TD = np.zeros((n, m), dtype=np.float)
-    for i in keyroots1:
-        for j in keyroots2:
-            _treedist(i, j, l1, l2, nodes1, nodes2, TD, cost)
+        for i in keyroots1:
+            for j in keyroots2:
+                _treedist(i, j, l1, l2, nodes1, nodes2, TD, TD_oprs, cost, return_oprs)
 
-    return TD[n-1, m-1]
+        dist = TD[n-1, m-1]
+        if return_oprs:
+            oprs = TD_oprs[n-1, m-1]
+    
+    if return_oprs:
+        return dist, oprs
+    else:
+        return dist

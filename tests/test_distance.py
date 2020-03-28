@@ -1,38 +1,33 @@
+from conllutils import FORM
 from conllutils.distance import DEL, INS, SUB, TRN
 from conllutils.distance import levenshtein_distance, tree_edit_distance
 
-def token_edit_distance(t1, t2, opr):
-    if opr == DEL:
-        return 1    # insertion
-    if opr == INS:
-        return 1    # deletion
-    if opr == TRN:
-        return 1    # transposition
-    return 0 if t1 == t2 else 1  # substitution
+from conllutils.distance import _annotate
+
+def sentence(s):
+    return [{FORM: ch} for ch in s]
 
 def test_levenshtein_distance():
-    assert levenshtein_distance("abcabc", "abcabc", cost=token_edit_distance) == 0
-    assert levenshtein_distance("", "", cost=token_edit_distance) == 0
-    assert levenshtein_distance("abcabc", "", cost=token_edit_distance) == 6
-    assert levenshtein_distance("", "abcabc", cost=token_edit_distance) == 6
-    assert levenshtein_distance("abcabc", "bcab", cost=token_edit_distance) == 2
-    assert levenshtein_distance("abcabc", "abccabc", cost=token_edit_distance) == 1
-    assert levenshtein_distance("abcabc", "abacbc", cost=token_edit_distance) == 2
-    assert levenshtein_distance("abcabc", "abacbc", cost=token_edit_distance, damerau=True) == 1
-    assert levenshtein_distance("abcabc", "abacbca", cost=token_edit_distance, return_oprs=True) == [(SUB, 2, 2), (SUB, 3, 3), (INS, 6, 6)]
-    assert levenshtein_distance("abcabc", "abacbca", cost=token_edit_distance, damerau=True, return_oprs=True) == [(TRN, 2, 2), (INS, 6, 6)]
+    assert levenshtein_distance(sentence("abcabc"), sentence("abcabc")) == 0
+    assert levenshtein_distance(sentence(""), sentence("")) == 0
+    assert levenshtein_distance(sentence("abcabc"), sentence("")) == 6
+    assert levenshtein_distance(sentence(""), sentence("abcabc")) == 6
+    assert levenshtein_distance(sentence("abcabc"), sentence("bcab")) == 2
+    assert levenshtein_distance(sentence("abcabc"), sentence("abccabc")) == 1
+    assert levenshtein_distance(sentence("abcabc"), sentence("abacbc")) == 2
+    assert levenshtein_distance(sentence("abcabc"), sentence("abacbc"), damerau=True) == 1
 
-def node_edit_distance(n1, n2, opr):
-    if opr == DEL:
-        return 1    # insertion
-    if opr == INS:
-        return 1    # deletion
-    return 0 if n1.token == n2.token else 1  # substitution
+    assert levenshtein_distance(sentence("abcabc"), sentence("abcabc"), return_oprs=True)[1] == []
+    assert levenshtein_distance(sentence(""), sentence(""), return_oprs=True)[1] == []
+    assert levenshtein_distance(sentence("abcabc"), sentence(""), return_oprs=True)[1] == [(DEL, 0, -1), (DEL, 1, -1), (DEL, 2, -1), (DEL, 3, -1), (DEL, 4, -1), (DEL, 5, -1)]
+    assert levenshtein_distance(sentence(""), sentence("abcabc"), return_oprs=True)[1] == [(INS, 0, 0), (INS, 0, 1), (INS, 0, 2), (INS, 0, 3), (INS, 0, 4), (INS, 0, 5)]
+    assert levenshtein_distance(sentence("abcabc"), sentence("abacbca"), return_oprs=True)[1] == [(SUB, 2, 2), (SUB, 3, 3), (INS, 6, 6)]
+    assert levenshtein_distance(sentence("abcabc"), sentence("abacbca"), damerau=True, return_oprs=True)[1] == [(TRN, 2, 2), (INS, 6, 6)]
 
 class _TestNode(object):
 
-    def __init__(self, token):
-        self.token = token
+    def __init__(self, form):
+        self.token = {FORM: form}
         self.children = []
 
 def tree(s):
@@ -50,10 +45,27 @@ def _parse(s, index):
     return node, index
 
 def test_tree_edit_distance():
-    assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(d))"), cost=node_edit_distance) == 0
-    assert tree_edit_distance(None, None, cost=node_edit_distance) == 0
-    assert tree_edit_distance(tree("a(bc(d))"), None, cost=node_edit_distance) == 4
-    assert tree_edit_distance(None, tree("a(bc(d))"), cost=node_edit_distance) == 4
-    assert tree_edit_distance(tree("a(bc(d))"), tree("a(cb(d))"), cost=node_edit_distance) == 2
-    assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc)"), cost=node_edit_distance) == 1
-    assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(de))"), cost=node_edit_distance) == 1
+    assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(d))")) == 0
+    assert tree_edit_distance(None, None) == 0
+    assert tree_edit_distance(tree("a(bc(d))"), None) == 4
+    assert tree_edit_distance(None, tree("a(bc(d))")) == 4
+    assert tree_edit_distance(tree("a(bc(d))"), tree("a(cb(d))")) == 2
+    assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc)")) == 1
+    assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(de))")) == 1
+
+    assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(d))"), return_oprs=True)[1] == []
+    assert tree_edit_distance(None, None, return_oprs=True)[1] == []
+    assert tree_edit_distance(tree("a(bc(d))"), None, return_oprs=True)[1] == [(DEL, 0, -1), (DEL, 1, -1), (DEL, 2, -1), (DEL, 3, -1)]
+    assert tree_edit_distance(None, tree("a(bc(d))"), return_oprs=True)[1] == [(INS, -1, 0), (INS, -1, 1), (INS, -1, 2), (INS, -1, 3)]
+    assert tree_edit_distance(tree("a(bc(d))"), tree("a(cb(d))"), return_oprs=True)[1] == [(SUB, 0, 0), (SUB, 2, 2)]
+    assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(de))"), return_oprs=True)[1] == [(INS, -1, 2)]
+
+    nodes1, _, _ = _annotate(tree("a(bc(d))"))
+    nodes2, _, _ = _annotate(tree("a(cb(d))"))
+    assert nodes1[0].token[FORM] == "b"
+    assert nodes2[0].token[FORM] == "c"
+    assert nodes1[2].token[FORM] == "c"
+    assert nodes2[2].token[FORM] == "b"
+
+    nodes3, _, _ = _annotate(tree("a(bc(de))"))
+    assert nodes3[2].token[FORM] == "e"
