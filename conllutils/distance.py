@@ -51,14 +51,14 @@ def levenshtein_distance(s1, s2, cost=default_token_cost, damerau=False, return_
     oprs = []
     while i > 0 or j > 0:
         neighbours = []
-        if i > 0:
-            neighbours.append((DEL, i-1, j))
-        if j > 0:
-            neighbours.append((INS, i, j-1))
-        if i > 0 and j > 0:
-            neighbours.append((SUB, i-1, j-1))
         if damerau and i > 1 and j > 1 and _equals(s1[i-1], s2[j-2]) and _equals(s1[i-2], s2[i-1]):
             neighbours.append((TRN, i-2, j-2))
+        if i > 0 and j > 0:
+            neighbours.append((SUB, i-1, j-1))
+        if j > 0:
+            neighbours.append((INS, i, j-1))
+        if i > 0:
+            neighbours.append((DEL, i-1, j))
         opr = min(neighbours, key=lambda x: d[x[1], x[2]])
         if d[opr[1], opr[2]] != d[i, j]:
             oprs.append(opr)
