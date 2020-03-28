@@ -91,15 +91,23 @@ class DependencyTree(object):
         self.metadata = sentence.metadata
         self.tokens = sentence
 
-    def visit(self, f):
+    def nodes(self, postorder=False):
+        nodes = []
+        self.visit(lambda n: nodes.append(n), postorder)
+        return nodes
+
+    def visit(self, f, postorder=False):
         if self.root:
-            self._visit(self.root, f)
+            self._visit(self.root, f, postorder)
     
     @staticmethod
-    def _visit(node, f):
-        f(node)
+    def _visit(node, f, postorder):
+        if not postorder:
+            f(node)
         for ch in node.children:
-            DependencyTree._visit(ch, f)
+            DependencyTree._visit(ch, f, postorder)
+        if postorder:
+            f(node)
 
     @staticmethod
     def build(sentence):

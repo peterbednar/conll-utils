@@ -60,9 +60,14 @@ def test_dependency_tree(data2):
     assert tree0.root is not None
     assert str(tree0) == "<<2,buy,VERB>,root,[<<1,They,PRON>,nsubj,[]>, <<4,sell,VERB>,conj,[<<3,and,CONJ>,cc,[]>]>, <<5,books,NOUN>,obj,[]>, <<6,.,PUNCT>,punct,[]>]>"
 
-    nodes = []
-    tree0.visit(lambda node: nodes.append(node))
+    nodes = tree0.nodes()
     assert [node.is_root for node in nodes] == [True, False, False, False, False, False]
+
+    nodes = tree0.nodes()
+    assert [node.token[FORM] for node in nodes] == ["buy", "They", "sell", "and", "books", "."]
+
+    nodes = tree0.nodes(postorder=True)
+    assert [node.token[FORM] for node in nodes] == ["They", "and", "sell", "books", ".", "buy"]
 
 def test_read_conllu(data1):
     sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
