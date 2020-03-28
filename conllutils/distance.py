@@ -101,6 +101,8 @@ class _AnnotatedNode(object):
         return anode
 
 def _annotate(root):
+    if root is None:
+        return [], [], []        
     nodes, l = _AnnotatedNode.build(root).collect()
     keyroots = []
     n = len(l)
@@ -163,6 +165,13 @@ def tree_edit_distance(t1, t2, cost=default_node_cost):
 
     n = len(nodes1)
     m = len(nodes2)
+    if n == 0 and m == 0:
+        return 0
+    if n != 0 and m == 0:
+        return sum(cost(node, None, DEL) for node in nodes1)
+    if n == 0 and m != 0:
+        return sum(cost(None, node, INS) for node in nodes2)
+
     TD = np.zeros((n, m), dtype=np.float)
     for i in keyroots1:
         for j in keyroots2:
