@@ -19,12 +19,6 @@ _BASE_FIELDS = (ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC)
 _CHARS_FIELDS_MAP = {FORM: FORM_CHARS, LEMMA: LEMMA_CHARS, FORM_NORM: FORM_NORM_CHARS, LEMMA_NORM: LEMMA_NORM_CHARS}
 _CHARS_FIELDS = set(_CHARS_FIELDS_MAP.values())
 
-def _id_to_str(id):
-    if isinstance(id, tuple):
-        return f"{id[0]}.{id[1]}" if id[2] == _EMPTY else f"{id[0]}-{id[1]}"
-    else:
-        return str(id)
-
 class Token(dict):
 
     def __init__(self, fields={}):
@@ -166,90 +160,91 @@ def split_default(field, value):
         return None
     return tuple(value)
 
+def _parse_sentence(lines, comments=[], skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
+                    normalize=normalize_default, split=split_default):
+    tokens = []
+    metadata = _parse_metadata(comments)
+
+    for line in lines:
+        token = _parse_token(line, parse_feats, parse_deps, upos_feats, normalize, split)
+        if skip_empty and token.is_empty:
+            continue
+        if skip_multiword and token.is_multiword:
+            continue
+        tokens.append(token)
+
+    return Sentence(tokens, metadata)
+
+def _parse_metadata(comments):
+    return [comment[1:].lstrip() for comment in comments]
+
+def _parse_token(line, parse_feats=False, parse_deps=False, upos_feats=True, normalize=normalize_default, split=split_default):
+    fields = line.split("\t")
+    fields = {FIELDS[i] : fields[i] for i in range(min(len(fields), len(FIELDS)))}
+
+    fields[ID] = _parse_id(fields[ID])
+
+    for f in [FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC]:
+        if f in fields and fields[f] == "_":
+            del(fields[f])
+
+    if upos_feats:
+        upos = fields.get(UPOS)
+        feats = fields.get(FEATS)
+        if upos:
+            tag = f"POS={upos}|{feats}" if feats else f"POS={upos}"
+        else:
+            tag = feats
+        if tag:
+            fields[UPOS_FEATS] = tag
+
+    if parse_feats and FEATS in fields:
+        fields[FEATS] = _parse_feats(fields[FEATS])
+
+    if HEAD in fields:
+        fields[HEAD] = int(fields[HEAD])
+
+    if parse_deps and DEPS in fields:
+        fields[DEPS] = _parse_deps(fields[DEPS])
+
+    if normalize:
+        for (f, n) in [(FORM, FORM_NORM), (LEMMA, LEMMA_NORM)]:
+            if f in fields:
+                norm = normalize(f, fields[f])
+                if norm is not None:
+                    fields[n] = norm
+
+    if split:
+        for (f, ch) in _CHARS_FIELDS_MAP.items():
+            if f in fields:
+                chars = split(f, fields[f])
+                if chars is not None:
+                    fields[ch] = chars
+
+    return Token(fields)
+
+def _parse_id(s):
+    if "." in s:
+        token_id, index = s.split(".")
+        return (int(token_id), int(index), _EMPTY)
+    if "-" in s:
+        start, end = s.split("-")
+        return (int(start), int(end), _MULTIWORD)
+    return int(s)
+
+def _parse_feats(s):
+    feats = OrderedDict()
+    for key, value in [feat.split("=") for feat in s.split("|")]:
+        if "," in value:
+            value = value.split(",")
+        feats[key] = value
+    return feats
+
+def _parse_deps(s):
+    return list(map(lambda rel: (int(rel[0]), rel[1]), [rel.split(":") for rel in s.split("|")]))
+
 def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
                 normalize=normalize_default, split=split_default):
-
-    def _parse_sentence(lines, comments):
-        tokens = []
-        metadata = _parse_metadata(comments)
-
-        for line in lines:
-            token = _parse_token(line)
-            if skip_empty and token.is_empty:
-                continue
-            if skip_multiword and token.is_multiword:
-                continue
-            tokens.append(token)
-
-        return Sentence(tokens, metadata)
-
-    def _parse_metadata(comments):
-        return [comment[1:].lstrip() for comment in comments]
-
-    def _parse_token(line):
-        fields = line.split("\t")
-        fields = {FIELDS[i] : fields[i] for i in range(min(len(fields), len(FIELDS)))}
-
-        if "." in fields[ID]:
-            token_id, index = fields[ID].split(".")
-            id = (int(token_id), int(index), _EMPTY)
-        elif "-" in fields[ID]:
-            start, end = fields[ID].split("-")
-            id = (int(start), int(end), _MULTIWORD)
-        else:
-            id = int(fields[ID])
-        fields[ID] = id
-
-        for f in [FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC]:
-            if f in fields and fields[f] == "_":
-                del(fields[f])
-
-        if upos_feats:
-            upos = fields.get(UPOS)
-            feats = fields.get(FEATS)
-            if upos:
-                tag = f"POS={upos}|{feats}" if feats else f"POS={upos}"
-            else:
-                tag = feats
-            if tag:
-                fields[UPOS_FEATS] = tag
-
-        if parse_feats and FEATS in fields:
-            fields[FEATS] = _parse_feats(fields[FEATS])
-
-        if HEAD in fields:
-            fields[HEAD] = int(fields[HEAD])
-
-        if parse_deps and DEPS in fields:
-            fields[DEPS] = _parse_deps(fields[DEPS])
-
-        if normalize:
-            for (f, n) in [(FORM, FORM_NORM), (LEMMA, LEMMA_NORM)]:
-                if f in fields:
-                    norm = normalize(f, fields[f])
-                    if norm is not None:
-                        fields[n] = norm
-
-        if split:
-            for (f, ch) in _CHARS_FIELDS_MAP.items():
-                if f in fields:
-                    chars = split(f, fields[f])
-                    if chars is not None:
-                        fields[ch] = chars
-
-        return Token(fields)
-
-    def _parse_feats(str):
-        feats = OrderedDict()
-        for key, value in [feat.split("=") for feat in str.split("|")]:
-            if "," in value:
-                value = value.split(",")
-            feats[key] = value
-        return feats
-
-    def _parse_deps(str):
-        return list(map(lambda rel: (int(rel[0]), rel[1]), [rel.split(":") for rel in str.split("|")]))
-
     lines = []
     comments = []
     if isinstance(file, str):
@@ -263,11 +258,52 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
                 lines.append(line)
             else :
                 if len(lines) > 0:
-                    yield _parse_sentence(lines, comments)
+                    yield _parse_sentence(lines, comments, skip_empty, skip_multiword,
+                            parse_feats, parse_deps, upos_feats,
+                            normalize, split)
                     lines = []
                     comments = []
         if len(lines) > 0:
-            yield _parse_sentence(lines, comments)
+            yield _parse_sentence(lines, comments, skip_empty, skip_multiword,
+                    parse_feats, parse_deps, upos_feats,
+                    normalize, split)
+
+def _token_to_str(token):
+    return "\t".join([_field_to_str(token, field) for field in _BASE_FIELDS])
+
+def _field_to_str(token, field):
+
+    if field == ID:
+        return _id_to_str(token[ID])
+
+    if field not in token or token[field] is None:
+        return "_"
+
+    if field == FEATS:
+        return _feats_to_str(token[FEATS])
+
+    if field == DEPS:
+        return _deps_to_str(token[DEPS])
+
+    return str(token[field])
+
+def _id_to_str(id):
+    if isinstance(id, tuple):
+        return f"{id[0]}.{id[1]}" if id[2] == _EMPTY else f"{id[0]}-{id[1]}"
+    else:
+        return str(id)
+
+def _feats_to_str(feats):
+    if isinstance(feats, str):
+        return feats
+    feats = [key + "=" + (",".join(value) if isinstance(value, list) else value) for key, value in feats.items()]
+    return "|".join(feats)        
+
+def _deps_to_str(deps):
+    if isinstance(deps, str):
+        return deps
+    deps = [f"{rel[0]}:{rel[1]}" for rel in deps]
+    return "|".join(deps)
 
 def write_conllu(file, data, write_metadata=True):
     if isinstance(data, Sentence):
@@ -280,36 +316,7 @@ def write_conllu(file, data, write_metadata=True):
 
     def _write_tokens(fp, tokens):
         for token in tokens:
-            fields = "\t".join([_field_to_str(token, field) for field in _BASE_FIELDS])
-            print(fields, file=fp)
-
-    def _field_to_str(token, field):
-
-        if field == ID:
-            return _id_to_str(token[ID])
-
-        if field not in token or token[field] is None:
-            return "_"
-
-        if field == FEATS:
-            return _feats_to_str(token[FEATS])
-
-        if field == DEPS:
-            return _deps_to_str(token[DEPS])
-
-        return str(token[field])
-
-    def _feats_to_str(feats):
-        if isinstance(feats, str):
-            return feats
-        feats = [key + "=" + (",".join(value) if isinstance(value, list) else value) for key, value in feats.items()]
-        return "|".join(feats)        
-
-    def _deps_to_str(deps):
-        if isinstance(deps, str):
-            return deps
-        deps = [f"{rel[0]}:{rel[1]}" for rel in deps]
-        return "|".join(deps)
+            print(_token_to_str(token), file=fp)
 
     if isinstance(file, str):
         file = open(file, "wt", encoding="utf-8")
