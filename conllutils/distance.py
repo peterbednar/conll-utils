@@ -2,6 +2,7 @@
 from . import FORM
 from . import Sentence, DependencyTree, Instance
 
+import heapq
 import numpy as np
 
 DEL = "del"
@@ -277,13 +278,13 @@ def dict_edit_distance(d1, d2, cost=default_value_cost, normalize=False, return_
 
     for key in all_keys:
         if key not in d2:
-            c = cost(key, d1[key], None, DEL)
+            c = cost(key, d1[key], None, DEL)   # delete
             opr = (DEL, key)
         elif key not in d1:
-            c = cost(key, None, d2[key], INS)
+            c = cost(key, None, d2[key], INS)   # insert
             opr = (INS, key)
         else:
-            c = cost(key, d1[key], d2[key], SUB)
+            c = cost(key, d1[key], d2[key], SUB)    # substitute
             opr = (SUB, key)
         if c != 0:
             dist += c
@@ -296,3 +297,10 @@ def dict_edit_distance(d1, d2, cost=default_value_cost, normalize=False, return_
         return dist, oprs
     else:
         return dist
+
+def k_nearest_neighbors(itm1, itms2, k=1, distance=levenshtein_distance, return_distance=True):
+    knn = heapq.nsmallest(k, [(idx2, distance(itm1, itm2)) for idx2, itm2 in enumerate(itms2)], key=lambda x: x[1])
+    if return_distance:
+        return knn
+    else:
+        return [itm2[0] for itm2 in knn]

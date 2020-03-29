@@ -1,6 +1,6 @@
 from conllutils import FORM
 from conllutils.distance import DEL, INS, SUB, TRN
-from conllutils.distance import levenshtein_distance, tree_edit_distance, dict_edit_distance
+from conllutils.distance import levenshtein_distance, tree_edit_distance, dict_edit_distance, k_nearest_neighbors
 
 from conllutils.distance import _annotate
 
@@ -111,3 +111,7 @@ def test_dict_edit_distance():
     assert dict_edit_distance({}, "a=a|b=b|c=c", return_oprs=True)[1] == {(INS, "a"), (INS, "b"), (INS, "c")}
     assert dict_edit_distance("a=a|b=b|c=c", "b=b", return_oprs=True)[1] == {(DEL, "a"), (DEL, "c")}
     assert dict_edit_distance("a=a|b=b|c=c", "a=b|b=a", return_oprs=True)[1] == {(SUB, "a"), (SUB, "b"), (DEL, "c")}
+
+def test_k_nearest_neighbours():
+    assert k_nearest_neighbors(sentence("a"), [sentence(s) for s in ["abcd", "abc", "ab", "a", "ba", "bac"]], k=3) == [(3, 0), (2, 1), (4, 1)]
+    assert k_nearest_neighbors(sentence("a"), [sentence(s) for s in ["abcd", "abc", "ab", "a", "ba", "bac"]], k=3, return_distance=False) == [3, 2, 4]
