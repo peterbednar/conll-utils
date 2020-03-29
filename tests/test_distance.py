@@ -18,6 +18,15 @@ def test_levenshtein_distance():
     assert levenshtein_distance(sentence("abcabc"), sentence("abacbc")) == 2
     assert levenshtein_distance(sentence("abcabc"), sentence("abacbc"), damerau=True) == 1
 
+    assert levenshtein_distance(sentence("abcabc"), sentence("abcabc"), normalize=True) == 0
+    assert levenshtein_distance(sentence(""), sentence(""), normalize=True) == 0
+    assert levenshtein_distance(sentence("abcabc"), sentence(""), normalize=True) == 1
+    assert levenshtein_distance(sentence(""), sentence("abcabc"), normalize=True) == 1
+    assert levenshtein_distance(sentence("abcabc"), sentence("abccabc"), normalize=True) == 2*1/(6 + 7 + 1)
+    assert levenshtein_distance(sentence("abccabc"), sentence("abcabc"), normalize=True) == 2*1/(7 + 6 + 1)
+    assert levenshtein_distance(sentence("abcabc"), sentence("abacbca"), normalize=True) == 2*3/(6 + 7 + 3)
+    assert levenshtein_distance(sentence("abcabc"), sentence("abacbca"), damerau=True, normalize=True) == 2*2/(6 + 7 + 2)
+
     assert levenshtein_distance(sentence("abcabc"), sentence("abcabc"), return_oprs=True)[1] == []
     assert levenshtein_distance(sentence(""), sentence(""), return_oprs=True)[1] == []
     assert levenshtein_distance(sentence("abcabc"), sentence(""), return_oprs=True)[1] == [(DEL, 0), (DEL, 1), (DEL, 2), (DEL, 3), (DEL, 4), (DEL, 5)]
@@ -55,6 +64,14 @@ def test_tree_edit_distance():
     assert tree_edit_distance(tree("a(bc(d))"), tree("a(cb(d))")) == 2
     assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc)")) == 1
     assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(de))")) == 1
+
+    assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(d))"), normalize=True) == 0
+    assert tree_edit_distance(None, None, normalize=True) == 0
+    assert tree_edit_distance(tree("a(bc(d))"), None, normalize=True) == 1
+    assert tree_edit_distance(None, tree("a(bc(d))"), normalize=True) == 1
+    assert tree_edit_distance(tree("a(bc(d))"), tree("a(cb(d))"), normalize=True) == 2*2/(4 + 4 + 2)
+    assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc)"), normalize=True) == 2*1/(4 + 3 + 1)
+    assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(de))"), normalize=True) == 2*1/(4 + 5 + 1)
 
     assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(d))"), return_oprs=True)[1] == []
     assert tree_edit_distance(None, None, return_oprs=True)[1] == []

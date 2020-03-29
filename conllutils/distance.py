@@ -9,6 +9,9 @@ INS = "ins"
 SUB = "sub"
 TRN = "trn"
 
+def _normalize(dist, n, m):
+    return 2*dist / (n + m + dist) if dist != 0 else 0
+
 def default_token_cost(t1, t2, opr):
     if opr == DEL:
         return 1    # insertion
@@ -18,7 +21,7 @@ def default_token_cost(t1, t2, opr):
         return 1    # transposition
     return 0 if t1[FORM] == t2[FORM] else 1  # substitution
 
-def levenshtein_distance(s1, s2, cost=default_token_cost, damerau=False, return_oprs=False):
+def levenshtein_distance(s1, s2, cost=default_token_cost, damerau=False, normalize=False, return_oprs=False):
     def _equals(t1, t2):
         return cost(t1, t2, SUB) == 0
 
@@ -44,7 +47,10 @@ def levenshtein_distance(s1, s2, cost=default_token_cost, damerau=False, return_
                     d[i-2, j-2] + cost(s1[i-2], s2[i-2], TRN)  # transposition
                     )
     if not return_oprs:
-        return d[n, m]
+        if normalize:
+            return _normalize(d[n, m], n, m)
+        else:
+            return d[n, m]
 
     i = n
     j = m
@@ -71,7 +77,10 @@ def levenshtein_distance(s1, s2, cost=default_token_cost, damerau=False, return_
         j = opr[2]
     oprs.reverse()
 
-    return d[n, m], oprs
+    if normalize:
+        return _normalize(d[n, m], n, m), oprs
+    else:
+        return d[n, m], oprs
 
 class _AnnotatedNode(object):
 
@@ -190,7 +199,7 @@ def default_node_cost(n1, n2, opr):
     t2 = None if n2 is None else n2.token
     return default_token_cost(t1, t2, opr)
 
-def tree_edit_distance(t1, t2, cost=default_node_cost, return_oprs=False):
+def tree_edit_distance(t1, t2, cost=default_node_cost, normalize=False, return_oprs=False):
 
     def _get_root(t):
         if isinstance(t, DependencyTree):
@@ -232,7 +241,10 @@ def tree_edit_distance(t1, t2, cost=default_node_cost, return_oprs=False):
         dist = TD[n-1, m-1]
         if return_oprs:
             oprs = TD_oprs[n-1, m-1]
-    
+
+    if normalize:
+        dist = _normalize(dist, n, m)
+
     if return_oprs:
         return dist, oprs
     else:
