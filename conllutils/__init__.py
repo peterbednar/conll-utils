@@ -135,11 +135,14 @@ class Instance(dict):
     def __len__(self):
         return self._length
 
-    def tokens(self, fields=None):
+    def token(self, index, fields=None):
         if fields == None:
             fields = self.keys()
+        return Instance(fields={f : self[f][index] for f in fields}, metadata=self.metadata)
+
+    def tokens(self, fields=None):
         for i in range(self._length):
-            yield Instance(fields={f : self[f][i] for f in fields}, metadata=self.metadata)
+            yield self.token(i)
 
     def copy(self):
         return Instance(self._length, self, self.metadata)

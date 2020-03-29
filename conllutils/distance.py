@@ -1,6 +1,6 @@
 
 from . import FORM
-from . import Sentence, DependencyTree
+from . import Sentence, DependencyTree, Instance
 
 import numpy as np
 
@@ -24,6 +24,11 @@ def default_token_cost(t1, t2, opr):
 def levenshtein_distance(s1, s2, cost=default_token_cost, damerau=False, normalize=False, return_oprs=False):
     def _equals(t1, t2):
         return cost(t1, t2, SUB) == 0
+
+    if isinstance(s1, Instance):
+        s1 = list(s1.tokens())
+    if isinstance(s2, Instance):
+        s2 = list(s2.tokens())
 
     n = len(s1)
     m = len(s2)
@@ -147,12 +152,12 @@ def _treedist(i, j, l1, l2, nodes1, nodes2, TD, TD_oprs, cost, return_oprs):
     for x in range(1, n):
         d[x, 0] = d[x-1, 0] + cost(nodes1[x+i_off], None, DEL)      # delete
         if return_oprs:
-            _merge(x, 0, x-1, 0, [(DEL, x+i_off, -1)])
+            _merge(x, 0, x-1, 0, [(DEL, x+i_off)])
 
     for y in range(1, m):
         d[0, y] = d[0, y-1] + cost(None, nodes2[y+j_off], INS)      # insert
         if return_oprs:
-            _merge(0, y, 0, y-1, [(INS, -1, y+j_off)])
+            _merge(0, y, 0, y-1, [(INS, y+j_off)])
 
     for x in range(1, n):
         for y in range(1, m):
