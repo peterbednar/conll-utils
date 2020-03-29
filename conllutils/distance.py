@@ -62,9 +62,9 @@ def levenshtein_distance(s1, s2, cost=default_token_cost, damerau=False, return_
         opr = min(neighbours, key=lambda x: d[x[1], x[2]])
         if d[opr[1], opr[2]] != d[i, j]:
             if opr[0] == DEL:
-                oprs.append((opr[0], opr[1], -1))
+                oprs.append((DEL, opr[1]))
             elif opr[0] == INS:
-                oprs.append((opr[0], -1, opr[2]))
+                oprs.append((INS, opr[2]))
             else:
                 oprs.append(opr)
         i = opr[1]
@@ -124,13 +124,14 @@ def _annotate(root):
 def _treedist(i, j, l1, l2, nodes1, nodes2, TD, TD_oprs, cost, return_oprs):
 
     def _merge(x1, y1, x2, y2, l):
-        d_oprs[x1, y1] = l if d_oprs[x2, y2] is None else d_oprs[x2, y2] + l
+        d_oprs[x1, y1] = d_oprs[x2, y2] + l
 
     n = i - l1[i] + 2
     m = j - l2[j] + 2
     d = np.zeros((n, m), dtype=np.float)
     if return_oprs:
-        d_oprs = np.full((n, m), None, dtype=np.object)
+        d_oprs = np.empty((n, m), dtype=np.object)
+        d_oprs.fill([])
     i_off = l1[i] - 1
     j_off = l2[j] - 1
 
@@ -159,9 +160,9 @@ def _treedist(i, j, l1, l2, nodes1, nodes2, TD, TD_oprs, cost, return_oprs):
                 TD[xi, yj] = d[x, y]
                 if return_oprs:
                     if min_cost == costs[0]:
-                        _merge(x, y, x-1, y, [(DEL, xi, -1)])
+                        _merge(x, y, x-1, y, [(DEL, xi)])
                     elif min_cost == costs[1]:
-                        _merge(x, y, x, y-1, [(INS, -1, yj)])
+                        _merge(x, y, x, y-1, [(INS, yj)])
                     else:
                         opr = [(SUB, xi, yj)] if d[x, y] != d[x-1, y-1] else []
                         _merge(x, y, x-1, y-1, opr)
@@ -178,9 +179,9 @@ def _treedist(i, j, l1, l2, nodes1, nodes2, TD, TD_oprs, cost, return_oprs):
                 d[x, y] = min_cost
                 if return_oprs:
                     if min_cost == costs[0]:
-                        _merge(x, y, x-1, y, [(DEL, xi, -1)])
+                        _merge(x, y, x-1, y, [(DEL, xi)])
                     elif min_cost == costs[1]:
-                        _merge(x, y, x, y-1, [(INS, -1, yj)])
+                        _merge(x, y, x, y-1, [(INS, yj)])
                     else:
                         _merge(x, y, x_tmp, y_tmp, TD_oprs[xi, yj])
 
@@ -211,14 +212,18 @@ def tree_edit_distance(t1, t2, cost=default_node_cost, return_oprs=False):
     elif n != 0 and m == 0:
         dist = sum(cost(node, None, DEL) for node in nodes1)
         if return_oprs:
-            oprs = [(DEL, i, -1) for i in range(n)]
+            oprs = [(DEL, i) for i in range(n)]
     elif n == 0 and m != 0:
         dist = sum(cost(None, node, INS) for node in nodes2)
         if return_oprs:
-            oprs = [(INS, -1, j) for j in range(m)]
+            oprs = [(INS, j) for j in range(m)]
     else:
         TD = np.zeros((n, m), dtype=np.float)
-        TD_oprs = np.full((n, m), None, dtype=np.object) if return_oprs else None
+        if return_oprs:
+            TD_oprs = np.empty((n, m), dtype=np.object)
+            TD_oprs.fill([])
+        else:
+            TD_oprs = None
 
         for i in keyroots1:
             for j in keyroots2:

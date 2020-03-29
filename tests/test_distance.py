@@ -20,12 +20,12 @@ def test_levenshtein_distance():
 
     assert levenshtein_distance(sentence("abcabc"), sentence("abcabc"), return_oprs=True)[1] == []
     assert levenshtein_distance(sentence(""), sentence(""), return_oprs=True)[1] == []
-    assert levenshtein_distance(sentence("abcabc"), sentence(""), return_oprs=True)[1] == [(DEL, 0, -1), (DEL, 1, -1), (DEL, 2, -1), (DEL, 3, -1), (DEL, 4, -1), (DEL, 5, -1)]
-    assert levenshtein_distance(sentence(""), sentence("abcabc"), return_oprs=True)[1] == [(INS, -1, 0), (INS, -1, 1), (INS, -1, 2), (INS, -1, 3), (INS, -1, 4), (INS, -1, 5)]
-    assert levenshtein_distance(sentence("abcabc"), sentence("abccabc"), return_oprs=True)[1] == [(INS, -1, 3)]
-    assert levenshtein_distance(sentence("abccabc"), sentence("abcabc"), return_oprs=True)[1] == [(DEL, 3, -1)]
-    assert levenshtein_distance(sentence("abcabc"), sentence("abacbca"), return_oprs=True)[1] == [(SUB, 2, 2), (SUB, 3, 3), (INS, -1, 6)]
-    assert levenshtein_distance(sentence("abcabc"), sentence("abacbca"), damerau=True, return_oprs=True)[1] == [(TRN, 2, 2), (INS, -1, 6)]
+    assert levenshtein_distance(sentence("abcabc"), sentence(""), return_oprs=True)[1] == [(DEL, 0), (DEL, 1), (DEL, 2), (DEL, 3), (DEL, 4), (DEL, 5)]
+    assert levenshtein_distance(sentence(""), sentence("abcabc"), return_oprs=True)[1] == [(INS, 0), (INS, 1), (INS, 2), (INS, 3), (INS, 4), (INS, 5)]
+    assert levenshtein_distance(sentence("abcabc"), sentence("abccabc"), return_oprs=True)[1] == [(INS, 3)]
+    assert levenshtein_distance(sentence("abccabc"), sentence("abcabc"), return_oprs=True)[1] == [(DEL, 3)]
+    assert levenshtein_distance(sentence("abcabc"), sentence("abacbca"), return_oprs=True)[1] == [(SUB, 2, 2), (SUB, 3, 3), (INS, 6)]
+    assert levenshtein_distance(sentence("abcabc"), sentence("abacbca"), damerau=True, return_oprs=True)[1] == [(TRN, 2, 2), (INS, 6)]
 
 class _TestNode(object):
 
@@ -58,10 +58,10 @@ def test_tree_edit_distance():
 
     assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(d))"), return_oprs=True)[1] == []
     assert tree_edit_distance(None, None, return_oprs=True)[1] == []
-    assert tree_edit_distance(tree("a(bc(d))"), None, return_oprs=True)[1] == [(DEL, 0, -1), (DEL, 1, -1), (DEL, 2, -1), (DEL, 3, -1)]
-    assert tree_edit_distance(None, tree("a(bc(d))"), return_oprs=True)[1] == [(INS, -1, 0), (INS, -1, 1), (INS, -1, 2), (INS, -1, 3)]
+    assert tree_edit_distance(tree("a(bc(d))"), None, return_oprs=True)[1] == [(DEL, 0), (DEL, 1), (DEL, 2), (DEL, 3)]
+    assert tree_edit_distance(None, tree("a(bc(d))"), return_oprs=True)[1] == [(INS, 0), (INS, 1), (INS, 2), (INS, 3)]
     assert tree_edit_distance(tree("a(bc(d))"), tree("a(cb(d))"), return_oprs=True)[1] == [(SUB, 0, 0), (SUB, 2, 2)]
-    assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(de))"), return_oprs=True)[1] == [(INS, -1, 2)]
+    assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(de))"), return_oprs=True)[1] == [(INS, 2)]
 
     nodes1, _, _ = _annotate(tree("a(bc(d))"))
     nodes2, _, _ = _annotate(tree("a(cb(d))"))
