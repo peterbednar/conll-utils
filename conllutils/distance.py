@@ -1,9 +1,8 @@
+import heapq
+import numpy as np
 
 from . import FORM
 from . import Sentence, DependencyTree, Instance
-
-import heapq
-import numpy as np
 
 DEL = "del"
 INS = "ins"

@@ -199,6 +199,8 @@ def _parse_token(line, parse_feats=False, parse_deps=False, upos_feats=True, nor
         else:
             tag = feats
         if tag:
+            if parse_feats:
+                tag = _parse_feats(tag)
             fields[UPOS_FEATS] = tag
 
     if parse_feats and FEATS in fields:
