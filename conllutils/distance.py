@@ -45,12 +45,12 @@ def levenshtein_distance(s1, s2, cost=default_token_cost, damerau=False, normali
                 d[i-1, j] + cost(s1[i-1], None, DEL),      # deletion
                 d[i, j-1] + cost(None, s2[j-1], INS),      # insertion
                 d[i-1, j-1] + cost(s1[i-1], s2[j-1], SUB)  # substitution
-                )
+            )
             if damerau and i > 1 and j > 1 and _equals(s1[i-1], s2[j-2]) and _equals(s1[i-2], s2[i-1]):
                 d[i, j] = min(
                     d[i, j],
                     d[i-2, j-2] + cost(s1[i-2], s2[i-2], TRN)  # transposition
-                    )
+                )
     if not return_oprs:
         if normalize:
             return _normalize(d[n, m], n, m)
@@ -250,6 +250,48 @@ def tree_edit_distance(t1, t2, cost=default_node_cost, normalize=False, return_o
     if normalize:
         dist = _normalize(dist, n, m)
 
+    if return_oprs:
+        return dist, oprs
+    else:
+        return dist
+
+def default_value_cost(key, v1, v2, opr):
+    if opr == DEL:
+        return 1
+    if opr == INS:
+        return 1
+    return 1 if v1 != v2 else 0
+
+from . import _parse_feats
+
+def dict_edit_distance(d1, d2, cost=default_value_cost, normalize=False, return_oprs=False):
+
+    if isinstance(d1, str):
+        d1 = _parse_feats(d1)
+    if isinstance(d2, str):
+        d2 = _parse_feats(d2)
+
+    all_keys = set(d1.keys()).union(d2.keys())
+    dist = 0
+    oprs = set()
+
+    for key in all_keys:
+        if key not in d2:
+            c = cost(key, d1[key], None, DEL)
+            opr = (DEL, key)
+        elif key not in d1:
+            c = cost(key, None, d2[key], INS)
+            opr = (INS, key)
+        else:
+            c = cost(key, d1[key], d2[key], SUB)
+            opr = (SUB, key)
+        if c != 0:
+            dist += c
+            if return_oprs:
+                oprs.add(opr)
+
+    if normalize:
+        dist = dist / len(all_keys) if dist != 0 else 0
     if return_oprs:
         return dist, oprs
     else:

@@ -1,6 +1,6 @@
 from conllutils import FORM
 from conllutils.distance import DEL, INS, SUB, TRN
-from conllutils.distance import levenshtein_distance, tree_edit_distance
+from conllutils.distance import levenshtein_distance, tree_edit_distance, dict_edit_distance
 
 from conllutils.distance import _annotate
 
@@ -89,3 +89,25 @@ def test_tree_edit_distance():
 
     nodes3, _, _ = _annotate(tree("a(bc(de))"))
     assert nodes3[2].token[FORM] == "e"
+
+def test_dict_edit_distance():
+    assert dict_edit_distance({}, {}) == 0
+    assert dict_edit_distance("a=a|b=b|c=c", "a=a|b=b|c=c") == 0
+    assert dict_edit_distance("a=a|b=b|c=c", {}) == 3
+    assert dict_edit_distance({}, "a=a|b=b|c=c") == 3
+    assert dict_edit_distance("a=a|b=b|c=c", "b=b") == 2
+    assert dict_edit_distance("a=a|b=b|c=c", "a=b|b=a") == 3
+
+    assert dict_edit_distance({}, {}, normalize=True) == 0
+    assert dict_edit_distance("a=a|b=b|c=c", "a=a|b=b|c=c", normalize=True) == 0
+    assert dict_edit_distance("a=a|b=b|c=c", {}, normalize=True) == 1
+    assert dict_edit_distance({}, "a=a|b=b|c=c", normalize=True) == 1
+    assert dict_edit_distance("a=a|b=b|c=c", "b=b", normalize=True) == 2/3
+    assert dict_edit_distance("a=a|b=b|c=c", "a=b|b=a", normalize=True) == 3/3
+
+    assert dict_edit_distance({}, {}, return_oprs=True)[1] == set()
+    assert dict_edit_distance("a=a|b=b|c=c", "a=a|b=b|c=c", return_oprs=True)[1] == set()
+    assert dict_edit_distance("a=a|b=b|c=c", {}, return_oprs=True)[1] == {(DEL, "a"), (DEL, "b"), (DEL, "c")}
+    assert dict_edit_distance({}, "a=a|b=b|c=c", return_oprs=True)[1] == {(INS, "a"), (INS, "b"), (INS, "c")}
+    assert dict_edit_distance("a=a|b=b|c=c", "b=b", return_oprs=True)[1] == {(DEL, "a"), (DEL, "c")}
+    assert dict_edit_distance("a=a|b=b|c=c", "a=b|b=a", return_oprs=True)[1] == {(SUB, "a"), (SUB, "b"), (DEL, "c")}
