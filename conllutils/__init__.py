@@ -163,8 +163,8 @@ def split_default(field, value):
         return None
     return tuple(value)
 
-def _parse_sentence(lines, comments=[], skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
-                    normalize=normalize_default, split=split_default):
+def _parse_sentence(lines, comments=[], skip_empty=True, skip_multiword=True,
+                    parse_feats=False, parse_deps=False, upos_feats=True, normalize=normalize_default, split=split_default):
     tokens = []
     metadata = _parse_metadata(comments)
 

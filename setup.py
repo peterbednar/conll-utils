@@ -8,7 +8,7 @@ setup(
     packages=["conllutils"],
     version=VERSION,
     license="MIT",
-    description="Utility classes and functions for parsing and indexing of files in CoNLL-U format.",
+    description="Utility classes and functions for parsing and indexing files in CoNLL-U format.",
     author=u"Peter Bednár",
     author_email="peter.bednar@tuke.sk",
     url="https://github.com/peterbednar/conllutils",

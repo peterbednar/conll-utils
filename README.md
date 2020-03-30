@@ -1,3 +1,3 @@
 # CoNLLUtils
 
-Utility classes and functions for parsing and indexing of files in CoNLL-U format.
+Utility classes and functions for parsing and indexing files in CoNLL-U format.
