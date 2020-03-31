@@ -454,7 +454,7 @@ def map_to_instances(sentences, index, fields=None):
 
 def map_to_instance(sentence, index, fields=None):
     if fields is None:
-        fields = {DEPREL, HEAD} | set(index.keys())
+        fields = {HEAD} | set(index.keys())
 
     l = len(sentence)
     instance = Instance(l)
