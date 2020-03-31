@@ -48,8 +48,10 @@ class Sentence(list):
         self.metadata = metadata
 
     def get(self, id):
-        start = id[0] if isinstance(id, tuple) else id
-        for token in self.tokens[start-1:]:
+        start = id[0]-1 if isinstance(id, tuple) else id-1
+        if start < 0:
+            start = 0
+        for token in self.tokens[start:]:
             if token[ID] == id:
                 return token
         raise IndexError(f"token with id {id} not found")
@@ -62,7 +64,7 @@ class Sentence(list):
 
 class Node(object):
 
-    def __init__(self, token, parent):
+    def __init__(self, token=None, parent=None):
         self.token = token
         self.parent = parent
         self.children = []
@@ -81,9 +83,8 @@ class Node(object):
 class DependencyTree(object):
 
     def __init__(self, sentence):
-        self.root = DependencyTree.build(sentence)
+        self.root = self._build(sentence)
         self.metadata = sentence.metadata
-        self.tokens = sentence
 
     def nodes(self, postorder=False):
         nodes = []
@@ -104,23 +105,31 @@ class DependencyTree(object):
             f(node)
 
     @staticmethod
-    def build(sentence):
-        return DependencyTree._build(sentence, None)
+    def _build(sentence):
+        root = None
+        tokens = sentence.tokens
+        nodes = [Node() for _ in range(len(tokens))]
 
-    @staticmethod
-    def _build(sentence, parent):
-        id = parent.token[ID] if parent is not None else 0
-        
-        for token in sentence:
-            if token.get(HEAD) == id:
-                node = Node(token, parent)
-                DependencyTree._build(sentence, node)
-                if parent == None:
-                    return node
+        for i, token in enumerate(tokens):
+            id = token.get(ID)
+            head = token.get(HEAD)
+
+            if isinstance(id, tuple) or head is None:
+                continue # skip empty and multiword tokens and tokens without HEAD
+            index = id - 1 if id is not None else i
+
+            nodes[index].token = token
+            if head == 0:
+                if root == None:
+                    root = nodes[index]
                 else:
-                    parent.children.append(node)
+                    raise ValueError("multiple roots")
+            else:
+                parent = nodes[head-1]
+                nodes[index].parent = parent
+                parent.children.append(nodes[index])
 
-        return parent
+        return root
 
     def __repr__(self):
         return repr(self.root)
@@ -140,9 +149,12 @@ class Instance(dict):
             fields = self.keys()
         return Instance(fields={f : self[f][index] for f in fields}, metadata=self.metadata)
 
-    def tokens(self, fields=None):
-        for i in range(self._length):
-            yield self.token(i)
+    @property
+    def tokens(self):
+        return [self.token(i) for i in range(self._length)]
+
+    def as_tree(self):
+        return DependencyTree(self)
 
     def copy(self):
         return Instance(self._length, self, self.metadata)
@@ -165,8 +177,8 @@ def split_default(field, value):
 
 def _parse_sentence(lines, comments=[], skip_empty=True, skip_multiword=True,
                     parse_feats=False, parse_deps=False, upos_feats=True, normalize=normalize_default, split=split_default):
-    tokens = []
-    metadata = _parse_metadata(comments)
+    sentence = Sentence()
+    sentence.metadata = _parse_metadata(comments)
 
     for line in lines:
         token = _parse_token(line, parse_feats, parse_deps, upos_feats, normalize, split)
@@ -174,9 +186,9 @@ def _parse_sentence(lines, comments=[], skip_empty=True, skip_multiword=True,
             continue
         if skip_multiword and token.is_multiword:
             continue
-        tokens.append(token)
+        sentence.append(token)
 
-    return Sentence(tokens, metadata)
+    return sentence
 
 def _parse_metadata(comments):
     return [comment[1:].lstrip() for comment in comments]
@@ -472,8 +484,8 @@ def map_to_sentence(instance, index, fields=None, join=join_default):
     if fields is None:
         fields = instance.keys()
 
-    tokens = []
-    metadata = instance.metadata
+    sentence = Sentence()
+    sentence.metadata = instance.metadata
 
     for i in range(len(instance)):
         token = Token()
@@ -499,14 +511,14 @@ def map_to_sentence(instance, index, fields=None, join=join_default):
                     if value is not None:
                         token[f] = value
 
-        tokens.append(token)
+        sentence.append(token)
     
-    return Sentence(tokens, metadata)
+    return sentence
 
 def iterate_tokens(instances, fields=None):
     for instance in instances:
-        for token in instance.tokens(fields):
-            yield token
+        for i in range(len(instance)):
+            yield instance.token(i, fields)
 
 def shuffled_stream(instances, total_size=None, batch_size=None, random=random):
     i = 0

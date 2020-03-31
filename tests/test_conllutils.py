@@ -69,6 +69,12 @@ def test_dependency_tree(data2):
     nodes = tree0.nodes(postorder=True)
     assert [node.token[FORM] for node in nodes] == ["They", "and", "sell", "books", ".", "buy"]
 
+    index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
+    instances = list(map_to_instances(sentences, index))
+
+    tree0 = instances[0].as_tree()
+    assert [node.token[FORM] for node in tree0.nodes()] == [index[FORM][f] for f in ["buy", "They", "sell", "and", "books", "."]]
+
 def test_read_conllu(data1):
     sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
     assert sentences == [[
