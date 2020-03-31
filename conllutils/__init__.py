@@ -367,6 +367,9 @@ def encode_conllu(data, encode_metadata=True):
     return s
 
 def create_dictionary(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}):
+    if ID in fields or HEAD in fields:
+        raise ValueError("indexing ID or HEAD fields")
+
     dic = {f: Counter() for f in fields}
     for sentence in sentences:
         for token in sentence:
@@ -463,7 +466,8 @@ def map_to_instance(sentence, index, fields=None):
         for i, token in enumerate(sentence):
             value = token.get(field)
             if field == HEAD:
-                array[i] = value
+                if value is not None:
+                    array[i] = value
             elif field in _CHARS_FIELDS:
                 if value is not None:
                     chars = [index[field][ch] for ch in value]

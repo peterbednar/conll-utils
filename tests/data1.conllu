@@ -1,10 +1,10 @@
-1-2	vámonos	_
-1	vamos	ir
-2	nos	nosotros
-3-4	al	_
-3	a	a
-4	el	el
-5	mar	mar
+1-2	vámonos	_	_	_	_	_
+1	vamos	ir	_	_	_	0
+2	nos	nosotros	_	_	_	1
+3-4	al	_	_	_	_	_
+3	a	a	_	_	_	5
+4	el	el	_	_	_	5
+5	mar	mar	_	_	_	1
 
 1	Sue	Sue
 2	likes	like

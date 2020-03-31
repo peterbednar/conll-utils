@@ -17,12 +17,12 @@ def _fields(*values):
 
 _DATA1_CONLLU = """\
 1-2	vámonos	_	_	_	_	_	_	_	_
-1	vamos	ir	_	_	_	_	_	_	_
-2	nos	nosotros	_	_	_	_	_	_	_
+1	vamos	ir	_	_	_	0	_	_	_
+2	nos	nosotros	_	_	_	1	_	_	_
 3-4	al	_	_	_	_	_	_	_	_
-3	a	a	_	_	_	_	_	_	_
-4	el	el	_	_	_	_	_	_	_
-5	mar	mar	_	_	_	_	_	_	_
+3	a	a	_	_	_	5	_	_	_
+4	el	el	_	_	_	5	_	_	_
+5	mar	mar	_	_	_	1	_	_	_
 
 1	Sue	Sue	_	_	_	_	_	_	_
 2	likes	like	_	_	_	_	_	_	_
@@ -54,7 +54,12 @@ def test_token():
     token[FORM] = "vámonos"
     assert str(token) == "<1-2,vámonos,None>"
 
-def test_dependency_tree(data2):
+def test_dependency_tree(data1, data2):
+    sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
+    tree0 = sentences[0].as_tree()
+    assert tree0.root is not None
+    assert str(tree0) == "<<1,vamos,None>,None,[<<2,nos,None>,None,[]>, <<5,mar,None>,None,[<<3,a,None>,None,[]>, <<4,el,None>,None,[]>]>]>"
+
     sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
     tree0 = sentences[0].as_tree()    
     assert tree0.root is not None
@@ -79,12 +84,12 @@ def test_read_conllu(data1):
     sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
     assert sentences == [[
             _fields((1,2,_MULTIWORD), "vámonos"),
-            _fields(1, "vamos", "ir"),
-            _fields(2, "nos", "nosotros"),
+            _fields(1, "vamos", "ir", None, None, None, 0),
+            _fields(2, "nos", "nosotros", None, None, None, 1),
             _fields((3,4,_MULTIWORD), "al"),
-            _fields(3, "a", "a"),
-            _fields(4, "el", "el"),
-            _fields(5, "mar", "mar")
+            _fields(3, "a", "a", None, None, None, 5),
+            _fields(4, "el", "el", None, None, None, 5),
+            _fields(5, "mar", "mar", None, None, None, 1)
         ], [
             _fields(1, "Sue", "Sue"),
             _fields(2, "likes", "like"),
@@ -196,12 +201,12 @@ def test_decode_conllu():
     sentences = list(decode_conllu(_DATA1_CONLLU, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
     assert sentences == [[
             _fields((1,2,_MULTIWORD), "vámonos"),
-            _fields(1, "vamos", "ir"),
-            _fields(2, "nos", "nosotros"),
+            _fields(1, "vamos", "ir", None, None, None, 0),
+            _fields(2, "nos", "nosotros", None, None, None, 1),
             _fields((3,4,_MULTIWORD), "al"),
-            _fields(3, "a", "a"),
-            _fields(4, "el", "el"),
-            _fields(5, "mar", "mar")
+            _fields(3, "a", "a", None, None, None, 5),
+            _fields(4, "el", "el", None, None, None, 5),
+            _fields(5, "mar", "mar", None, None, None, 1)
         ], [
             _fields(1, "Sue", "Sue"),
             _fields(2, "likes", "like"),
@@ -259,7 +264,7 @@ def test_count_frequency(data2):
     for f in index.keys():
         assert {index[f][k]:v for k,v in dictionary[f].items()} == frequencies[f]
 
-def test_map_to_instances(data2):
+def test_map_to_instances(data1, data2):
     sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
     index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
     inverse_index = create_inverse_index(index)
