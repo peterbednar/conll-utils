@@ -147,7 +147,10 @@ class Instance(dict):
     def token(self, index, fields=None):
         if fields == None:
             fields = self.keys()
-        return Instance(fields={f : self[f][index] for f in fields}, metadata=self.metadata)
+        token = Instance(metadata=self.metadata)
+        for f in fields:
+            token[f] = self[f][index]
+        return token
 
     @property
     def tokens(self):
