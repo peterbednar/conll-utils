@@ -26,9 +26,9 @@ def levenshtein_distance(s1, s2, cost=default_token_cost, damerau=False, normali
         return cost(t1, t2, SUB) == 0
 
     if isinstance(s1, Instance):
-        s1 = list(s1.tokens())
+        s1 = s1.tokens
     if isinstance(s2, Instance):
-        s2 = list(s2.tokens())
+        s2 = s2.tokens
 
     n = len(s1)
     m = len(s2)
@@ -209,7 +209,7 @@ def tree_edit_distance(t1, t2, cost=default_node_cost, normalize=False, return_o
     def _get_root(t):
         if isinstance(t, DependencyTree):
             return t.root
-        if isinstance(t, Sentence):
+        if isinstance(t, (Sentence, Instance)):
             return t.as_tree().root
         return t
 
