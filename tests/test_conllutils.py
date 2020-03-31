@@ -3,7 +3,7 @@ import pytest
 import random
 
 from conllutils import *
-from conllutils import _MULTIWORD, _EMPTY, _StringIO
+from conllutils import _StringIO
 
 def _data_filename(name):
     return os.path.join(os.path.dirname(__file__), name)
@@ -50,7 +50,7 @@ def data4():
 def test_token():
     token = Token()
     assert str(token) == "<None,None,None>"
-    token[ID] = (1,2,_MULTIWORD)
+    token[ID] = multiword_id(1, 2)
     token[FORM] = "vámonos"
     assert str(token) == "<1-2,vámonos,None>"
 
@@ -83,10 +83,10 @@ def test_dependency_tree(data1, data2):
 def test_read_conllu(data1):
     sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
     assert sentences == [[
-            _fields((1,2,_MULTIWORD), "vámonos"),
+            _fields(multiword_id(1, 2), "vámonos"),
             _fields(1, "vamos", "ir", None, None, None, 0),
             _fields(2, "nos", "nosotros", None, None, None, 1),
-            _fields((3,4,_MULTIWORD), "al"),
+            _fields(multiword_id(3, 4), "al"),
             _fields(3, "a", "a", None, None, None, 5),
             _fields(4, "el", "el", None, None, None, 5),
             _fields(5, "mar", "mar", None, None, None, 1)
@@ -96,7 +96,7 @@ def test_read_conllu(data1):
             _fields(3, "coffee", "coffee"),
             _fields(4, "and", "and"),
             _fields(5, "Bill", "Bill"),
-            _fields((5,1,_EMPTY), "likes", "like"),
+            _fields(empty_id(5, 1), "likes", "like"),
             _fields(6, "tea", "tea"),
     ]]
 
@@ -149,8 +149,8 @@ def test_empty_multiword(data1):
     assert [sentences[0].get(i)[FORM] for i in range(1, 6)] == ["vamos", "nos", "a", "el", "mar"]
     assert [sentences[1].get(i)[FORM] for i in range(1, 7)] == ["Sue", "likes", "coffee", "and", "Bill", "tea"]
 
-    assert sentences[0].get((1,2,_MULTIWORD))[FORM] == "vámonos"
-    assert sentences[1].get((5,1,_EMPTY))[FORM] == "likes"
+    assert sentences[0].get(multiword_id(1,2))[FORM] == "vámonos"
+    assert sentences[1].get(empty_id(5,1))[FORM] == "likes"
 
     with pytest.raises(IndexError):
         sentences[0].get(0)
@@ -159,10 +159,10 @@ def test_empty_multiword(data1):
         sentences[0].get(6)
 
     with pytest.raises(IndexError):
-        sentences[0].get((1,3,_MULTIWORD))
+        sentences[0].get(multiword_id(1,3))
 
     with pytest.raises(IndexError):
-        sentences[0].get((1,2,_EMPTY))
+        sentences[0].get(empty_id(1,2))
 
     sentences = list(read_conllu(data1, skip_empty=True, skip_multiword=True))
     for sentence in sentences:
@@ -200,10 +200,10 @@ def test_write_conllu(data1, data2, data3):
 def test_decode_conllu():
     sentences = list(decode_conllu(_DATA1_CONLLU, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
     assert sentences == [[
-            _fields((1,2,_MULTIWORD), "vámonos"),
+            _fields(multiword_id(1, 2), "vámonos"),
             _fields(1, "vamos", "ir", None, None, None, 0),
             _fields(2, "nos", "nosotros", None, None, None, 1),
-            _fields((3,4,_MULTIWORD), "al"),
+            _fields(multiword_id(3, 4), "al"),
             _fields(3, "a", "a", None, None, None, 5),
             _fields(4, "el", "el", None, None, None, 5),
             _fields(5, "mar", "mar", None, None, None, 1)
@@ -213,7 +213,7 @@ def test_decode_conllu():
             _fields(3, "coffee", "coffee"),
             _fields(4, "and", "and"),
             _fields(5, "Bill", "Bill"),
-            _fields((5,1,_EMPTY), "likes", "like"),
+            _fields(empty_id(5, 1), "likes", "like"),
             _fields(6, "tea", "tea"),
     ]]
 
@@ -328,7 +328,7 @@ def test_shuffled_stream():
 
 def test_copy(data2):
     token = Token()
-    token[ID] = (1,2,_MULTIWORD)
+    token[ID] = multiword_id(1,2)
     token[FORM] = "vámonos"
     assert token.copy() == token
 

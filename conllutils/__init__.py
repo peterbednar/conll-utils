@@ -19,6 +19,12 @@ _BASE_FIELDS = (ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC)
 _CHARS_FIELDS_MAP = {FORM: FORM_CHARS, LEMMA: LEMMA_CHARS, FORM_NORM: FORM_NORM_CHARS, LEMMA_NORM: LEMMA_NORM_CHARS}
 _CHARS_FIELDS = set(_CHARS_FIELDS_MAP.values())
 
+def empty_id(token_id, index):
+    return (token_id, index, _EMPTY)
+
+def multiword_id(start, end):
+    return (start, end, _MULTIWORD)
+
 class Token(dict):
 
     def __init__(self, fields={}):
@@ -54,7 +60,7 @@ class Sentence(list):
         for token in self.tokens[start:]:
             if token[ID] == id:
                 return token
-        raise IndexError(f"token with id {id} not found")
+        raise IndexError(f"token with ID {_id_to_str(id)} not found")
 
     def as_tree(self):
         return DependencyTree(self)
