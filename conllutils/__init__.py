@@ -26,17 +26,57 @@ def multiword_id(start, end):
     return (start, end, _MULTIWORD)
 
 class Token(dict):
+    """A dictionary object representing a token in the sentence.
+
+    A token can represent a regular syntactic word, or can be the multiword token spanning across multiple words (e.g.
+    like in Spanish *vámonos* = *vamos nos*), or can be the empty token (inserted e.g. for analysis of ellipsis). Type
+    of the token can be tested using the :py:attr:`is_multiword` and :py:attr:`is_empty` properties.
+
+    A token can contain mappings for the following standard CoNLL-U fields:
+        * ID: word index (integer starting from 1); or range of the indexes for multiword tokens; or decimal notation
+          for empty tokens.
+        * FORM: word form or punctuation symbol.
+        * LEMMA: lemma or stem of word form.
+        * UPOS: Universal part-of-speech tag.
+        * XPOS: language-specific part-of-speech tag.
+        * FEATS: list of morphological features from the universal feature inventory or language-specific extension.
+        * HEAD: head of the current word in the dependency tree representation (ID or 0 for root).
+        * DEPREL: Universal dependency relation to the HEAD.
+        * DEPS: enhanced dependency graph in the form of head-deprel pairs.
+        * MISC: any other annotation associated with the token. 
+
+    CoNLLUtils package additionally defines the following extended fields:
+        * UPOS_FEATS: concatenated POS and FEATS field (with added 'POS'=value pair to the FEATS list).
+        * FORM_NORM, LEMMA_NORM: custom-normalized string form for FORM and LEMMA fields.
+        * FORM_CHAR, LEMMA_CHAR, FORM_NORM_CHAR, LEMMA_NORM_CHAR: corresponding fields split to the list of characters.
+
+    The ID values are parsed as the integers for regular words or tuples for multiword and empty tokens (see
+    :py:func:`multiword_id` and :py:func:`empty_id` functions for more information).
+
+    The HEAD values are parsed as the integers.
+
+    The FORM, LEMMA, POS, XPOS, DEPREL, MISC, FORM_NORM and LEMMA_NORM values are strings.
+
+    The FEATS or UPOS_FEATS values are strings or parsed as the dictionaries with attribute-value mappings and multiple
+    values stored in the sets.
+
+    The DEPS values are strings or parsed as the set of head-deprel tuples.
+
+    """
 
     def __init__(self, fields={}):
+        """Return an empty token or token with the fields initialized from the provided mapping object."""
         super().__init__(fields)
 
     @property
     def is_empty(self):
+        """bool: True if the token is an *empty token*, otherwise False."""
         id = self.get(ID)
         return id[2] == _EMPTY if isinstance(id, tuple) else False
 
     @property
     def is_multiword(self):
+        """bool: True if the token is a *multiword token*, otherwise False."""
         id = self.get(ID)
         return id[2] == _MULTIWORD if isinstance(id, tuple) else False
 
@@ -44,6 +84,7 @@ class Token(dict):
         return f"<{_id_to_str(self.get(ID))},{self.get(FORM)},{self.get(UPOS)}>"
 
     def copy(self):
+        """Return a shallow copy of the token."""
         return Token(self)
 
 class Sentence(list):
