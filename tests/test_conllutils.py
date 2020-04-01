@@ -231,6 +231,12 @@ def test_create_dictionary(data2):
         assert dictionary[FORM] == {"They":1, "buy":1, "and":1, "sell":1, "books":1, ".":2, "I":1, "have":1, "no":1, "clue":1}
         assert dictionary[FORM_NORM_CHARS] == {"e":4, "l":3, "o":3, "h":2, "y":2, "b":2, "u":2, "a":2, "n":2, "s":2, ".":2, "t":1, "d":1, "k":1, "i":1, "v":1, "c":1}
 
+        with pytest.raises(ValueError):
+            create_dictionary(sentences, fields={ID})
+
+        with pytest.raises(ValueError):
+            create_dictionary(sentences, fields={HEAD})
+
 def test_create_index(data2):
     sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
     dictionary = create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD})
