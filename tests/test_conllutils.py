@@ -151,6 +151,8 @@ def test_empty_multiword(data1):
 
     assert sentences[0].get(multiword_id(1,2))[FORM] == "vámonos"
     assert sentences[1].get(empty_id(5,1))[FORM] == "likes"
+    assert sentences[0].get("1-2")[FORM] == "vámonos"
+    assert sentences[1].get("5.1")[FORM] == "likes"
 
     with pytest.raises(IndexError):
         sentences[0].get(0)

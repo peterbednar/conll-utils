@@ -54,6 +54,8 @@ class Sentence(list):
         self.metadata = metadata
 
     def get(self, id):
+        if isinstance(id, str):
+            id = _parse_id(id)
         start = id[0]-1 if isinstance(id, tuple) else id-1
         if start < 0:
             start = 0
@@ -262,7 +264,7 @@ def _parse_feats(s):
     feats = OrderedDict()
     for key, value in [feat.split("=") for feat in s.split("|")]:
         if "," in value:
-            value = value.split(",")
+            value = set(value.split(","))
         feats[key] = value
     return feats
 
@@ -322,7 +324,7 @@ def _id_to_str(id):
 def _feats_to_str(feats):
     if isinstance(feats, str):
         return feats
-    feats = [key + "=" + (",".join(value) if isinstance(value, list) else value) for key, value in feats.items()]
+    feats = [key + "=" + (",".join(sorted(value)) if isinstance(value, set) else value) for key, value in feats.items()]
     return "|".join(feats)        
 
 def _deps_to_str(deps):
