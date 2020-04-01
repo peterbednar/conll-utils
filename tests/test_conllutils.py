@@ -103,7 +103,7 @@ def test_read_conllu(data1):
 def test_parse_deps_feats(data2):
     sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, parse_deps=True, parse_feats=True, upos_feats=False, normalize=None, split=None))
     assert sentences[0][0][FEATS] == {"Case":"Nom", "Number":"Plur"}
-    assert sentences[0][0][DEPS] == [(2, "nsubj"), (4, "nsubj")]
+    assert sentences[0][0][DEPS] == {(2, "nsubj"), (4, "nsubj")}
     assert FEATS not in sentences[0][2]
     assert DEPS not in sentences[1][0]
 

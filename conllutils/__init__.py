@@ -269,7 +269,7 @@ def _parse_feats(s):
     return feats
 
 def _parse_deps(s):
-    return list(map(lambda rel: (int(rel[0]), rel[1]), [rel.split(":") for rel in s.split("|")]))
+    return set(map(lambda rel: (int(rel[0]), rel[1]), [rel.split(":") for rel in s.split("|")]))
 
 def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
                 normalize=normalize_default, split=split_default):
@@ -330,7 +330,7 @@ def _feats_to_str(feats):
 def _deps_to_str(deps):
     if isinstance(deps, str):
         return deps
-    deps = [f"{rel[0]}:{rel[1]}" for rel in deps]
+    deps = [f"{rel[0]}:{rel[1]}" for rel in sorted(deps, key=lambda rel: rel[0])]
     return "|".join(deps)
 
 def write_conllu(file, data, write_metadata=True):
