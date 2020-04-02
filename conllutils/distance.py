@@ -210,7 +210,7 @@ def tree_edit_distance(t1, t2, cost=default_node_cost, normalize=False, return_o
         if isinstance(t, DependencyTree):
             return t.root
         if isinstance(t, (Sentence, Instance)):
-            return t.as_tree().root
+            return t.to_tree().root
         return t
 
     nodes1, l1, keyroots1 = _annotate(_get_root(t1))

@@ -56,12 +56,12 @@ def test_token():
 
 def test_dependency_tree(data1, data2):
     sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
-    tree0 = sentences[0].as_tree()
+    tree0 = sentences[0].to_tree()
     assert tree0.root is not None
     assert str(tree0) == "<<1,vamos,None>,None,[<<2,nos,None>,None,[]>, <<5,mar,None>,None,[<<3,a,None>,None,[]>, <<4,el,None>,None,[]>]>]>"
 
     sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
-    tree0 = sentences[0].as_tree()    
+    tree0 = sentences[0].to_tree()    
     assert tree0.root is not None
     assert str(tree0) == "<<2,buy,VERB>,root,[<<1,They,PRON>,nsubj,[]>, <<4,sell,VERB>,conj,[<<3,and,CONJ>,cc,[]>]>, <<5,books,NOUN>,obj,[]>, <<6,.,PUNCT>,punct,[]>]>"
 
@@ -77,7 +77,7 @@ def test_dependency_tree(data1, data2):
     index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
     instances = list(map_to_instances(sentences, index))
 
-    tree0 = instances[0].as_tree()
+    tree0 = instances[0].to_tree()
     assert [node.token[FORM] for node in tree0.nodes()] == [index[FORM][f] for f in ["buy", "They", "sell", "and", "books", "."]]
 
 def test_read_conllu(data1):
@@ -309,6 +309,8 @@ def test_map_to_instances(data1, data2):
 
     instances = list(map_to_instances(sentences, index))
     assert list(map_to_sentences(instances, inverse_index)) == sentences
+
+    assert [sentence.to_instance(index).to_sentence(inverse_index) for sentence in sentences] == sentences
 
 def test_iterate_tokens(data2):
     sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))

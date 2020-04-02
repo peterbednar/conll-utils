@@ -19,7 +19,7 @@ _BASE_FIELDS = (ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC)
 _CHARS_FIELDS_MAP = {FORM: FORM_CHARS, LEMMA: LEMMA_CHARS, FORM_NORM: FORM_NORM_CHARS, LEMMA_NORM: LEMMA_NORM_CHARS}
 _CHARS_FIELDS = set(_CHARS_FIELDS_MAP.values())
 
-def empty_id(word_id, index):
+def empty_id(word_id, index=1):
     """Return new ID value for *empty token* indexed by `word_id` starting from 0 and `index` starting from 1.
 
     The empty token ID is encoded as a tuple with id[0] = `word_id` and id[1] = `index`. For more information about the
@@ -44,7 +44,7 @@ def multiword_id(start, end):
     """
 
     if start < 1 or end <= start:
-        raise ValueError("start-end must be integer interval with start >= 1 and end > start")
+        raise ValueError("start must be >= 1 and end > start")
     return (start, end, _MULTIWORD)
 
 class Token(dict):
@@ -133,11 +133,6 @@ class Sentence(list):
     def tokens(self):
         return iter(self)
 
-    def words(self):
-        for token in self:
-            if not (token.is_empty or token.is_multiword):
-                yield token
-
     def raw_tokens(self):
         index = 1
         prev_end = 0
@@ -152,8 +147,16 @@ class Sentence(list):
                     yield token
                 index += 1
 
-    def as_tree(self):
+    def words(self):
+        for token in self:
+            if not (token.is_empty or token.is_multiword):
+                yield token
+
+    def to_tree(self):
         return DependencyTree(self)
+    
+    def to_instance(self, index, fields=None):
+        return _map_to_instance(self, index, fields)
 
     def copy(self):
         return Sentence(self, self.metadata)
@@ -252,8 +255,11 @@ class Instance(dict):
         for i in range(self._length):
             yield self.token(i, fields)
 
-    def as_tree(self):
+    def to_tree(self):
         return DependencyTree(self)
+    
+    def to_sentence(self, inverse_index, fields=None):
+        return _map_to_sentence(self, inverse_index, fields)
 
     def copy(self):
         return Instance(self._length, self, self.metadata)
@@ -464,7 +470,7 @@ def encode_conllu(data, encode_metadata=True):
 
 def create_dictionary(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}):
     if ID in fields or HEAD in fields:
-        raise ValueError("indexing ID or HEAD fields")
+        raise ValueError("indexing ID or HEAD non-string fields")
 
     dic = {f: Counter() for f in fields}
     for sentence in sentences:
@@ -546,9 +552,9 @@ def count_frequency(sentences, index, fields=None):
 
 def map_to_instances(sentences, index, fields=None):
     for sentence in sentences:
-        yield map_to_instance(sentence, index, fields)
+        yield _map_to_instance(sentence, index, fields)
 
-def map_to_instance(sentence, index, fields=None):
+def _map_to_instance(sentence, index, fields=None):
     if fields is None:
         fields = {HEAD} | set(index.keys())
 
@@ -576,14 +582,11 @@ def map_to_instance(sentence, index, fields=None):
     
     return instance
 
-def join_default(field, value):
-    return "".join(value)
-
-def map_to_sentences(instances, index, fields=None, join=join_default):
+def map_to_sentences(instances, inverse_index, fields=None):
     for instance in instances:
-        yield map_to_sentence(instance, index, fields, join)
+        yield _map_to_sentence(instance, inverse_index, fields)
 
-def map_to_sentence(instance, index, fields=None, join=join_default):
+def _map_to_sentence(instance, inverse_index, fields=None, join=lambda _, value: "".join(value)):
     if fields is None:
         fields = instance.keys()
 
@@ -597,13 +600,13 @@ def map_to_sentence(instance, index, fields=None, join=join_default):
         for field in fields:
             vi = instance[field][i]
             if vi is None:
-                continue
+                continue    # for empty char fields
             if field == HEAD:
-                value = vi
+                value = None if vi == -1 else vi
             elif field in _CHARS_FIELDS:
-                value = tuple([index[field][ch] for ch in vi])
+                value = tuple([inverse_index[field][ch] for ch in vi])
             else:
-                value = index[field][vi]
+                value = inverse_index[field][vi]
             if value is not None:
                 token[field] = value
 
@@ -611,7 +614,8 @@ def map_to_sentence(instance, index, fields=None, join=join_default):
             for f, ch in _CHARS_FIELDS_MAP.items():
                 if ch in token:
                     value = join(ch, token[ch])
-                    if value is not None:
+                    f_value = token.get(f)
+                    if value is not None and f_value is None:
                         token[f] = value
 
         sentence.append(token)
