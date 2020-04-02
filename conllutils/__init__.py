@@ -22,7 +22,7 @@ _CHARS_FIELDS = set(_CHARS_FIELDS_MAP.values())
 def empty_id(word_id, index):
     """Return new ID value for *empty token* indexed by `word_id` starting from 0 and `index` starting from 1.
 
-    The empty ID is encoded as a tuple with id[0] = `word_id` and id[1] = `index`. For more information about the
+    The empty token ID is encoded as a tuple with id[0] = `word_id` and id[1] = `index`. For more information about the
     ordering of the empty tokens in the sentence, see :class:`Sentence` documentation.
 
     Raises:
@@ -36,7 +36,7 @@ def multiword_id(start, end):
     """Return new ID value for *multiword token* spanning in the sentence across the words with ID from `start` to `end`
     (inclusive).
 
-    The multiword ID is encoded as a tuple with id[0] = `start` and id[1] = `end`. For more information about the
+    The multiword token ID is encoded as a tuple with id[0] = `start` and id[1] = `end`. For more information about the
     ordering of the multiword tokens in the sentence, see :class:`Sentence` documentation.
 
     Raises:
@@ -117,7 +117,6 @@ class Sentence(list):
 
     def __init__(self, tokens=[], metadata=None):
         super().__init__(tokens)
-        self.tokens = self
         self.metadata = metadata
 
     def get(self, id):
@@ -126,16 +125,38 @@ class Sentence(list):
         start = id[0]-1 if isinstance(id, tuple) else id-1
         if start < 0:
             start = 0
-        for token in self.tokens[start:]:
+        for token in self[start:]:
             if token[ID] == id:
                 return token
         raise IndexError(f"token with ID {_id_to_str(id)} not found")
+
+    def tokens(self):
+        return iter(self)
+
+    def words(self):
+        for token in self:
+            if not (token.is_empty or token.is_multiword):
+                yield token
+
+    def raw_tokens(self):
+        index = 1
+        prev_end = 0
+        for token in self:
+            if token.is_empty:
+                continue
+            if token.is_multiword:
+                prev_end = token[ID][1]
+                yield token
+            else:
+                if index > prev_end:
+                    yield token
+                index += 1
 
     def as_tree(self):
         return DependencyTree(self)
 
     def copy(self):
-        return Sentence(self.tokens, self.metadata)
+        return Sentence(self, self.metadata)
 
 class Node(object):
 
@@ -182,7 +203,7 @@ class DependencyTree(object):
     @staticmethod
     def _build(sentence):
         root = None
-        tokens = sentence.tokens
+        tokens = list(sentence.tokens()) if isinstance(sentence, Instance) else sentence
         nodes = [Node() for _ in range(len(tokens))]
 
         for i, token in enumerate(tokens):
@@ -227,9 +248,9 @@ class Instance(dict):
             token[f] = self[f][index]
         return token
 
-    @property
-    def tokens(self):
-        return [self.token(i) for i in range(self._length)]
+    def tokens(self, fields=None):
+        for i in range(self._length):
+            yield self.token(i, fields)
 
     def as_tree(self):
         return DependencyTree(self)
@@ -419,7 +440,7 @@ def write_conllu(file, data, write_metadata=True):
         for sentence in data:
             if write_metadata:
                 _write_metadata(fp, sentence.metadata)
-            _write_tokens(fp, sentence.tokens)
+            _write_tokens(fp, sentence)
             print(file=fp)
 
 class _StringIO(StringIO):
@@ -599,8 +620,8 @@ def map_to_sentence(instance, index, fields=None, join=join_default):
 
 def iterate_tokens(instances, fields=None):
     for instance in instances:
-        for i in range(len(instance)):
-            yield instance.token(i, fields)
+        for token in instance.tokens(fields):
+            yield token
 
 def shuffled_stream(instances, total_size=None, batch_size=None, random=random):
     i = 0

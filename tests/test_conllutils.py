@@ -186,6 +186,21 @@ def test_empty_multiword(data1):
         for token in sentence:
             assert (not token.is_empty) and (not token.is_multiword)
 
+def test_words_tokens(data1):
+    sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False))
+
+    words0 = sentences[0].words()
+    raw_tokens0 = sentences[0].raw_tokens()
+    assert list(sentences[0].tokens()) == sentences[0]
+    assert [token[FORM] for token in words0] == ["vamos", "nos", "a", "el", "mar"]
+    assert [token[FORM] for token in raw_tokens0] == ["vámonos", "al", "mar"]
+
+    words1 = sentences[1].words()
+    raw_tokens1 = sentences[1].raw_tokens()
+    assert list(sentences[1].tokens()) == sentences[1]
+    assert [token[FORM] for token in words1] == ["Sue", "likes", "coffee", "and", "Bill", "tea"]
+    assert [token[FORM] for token in raw_tokens1] == ["Sue", "likes", "coffee", "and", "Bill", "tea"]
+
 def test_write_conllu(data1, data2, data3):
     sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, parse_deps=True, parse_feats=True, upos_feats=False, normalize=None, split=None))
     output = _StringIO()
