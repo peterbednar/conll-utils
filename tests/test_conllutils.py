@@ -138,6 +138,21 @@ def test_upos_feats(data1, data2):
         ]
 
 def test_empty_multiword(data1):
+    with pytest.raises(ValueError):
+        empty_id(-1, 1)
+
+    with pytest.raises(ValueError):
+        empty_id(0, 0)
+
+    with pytest.raises(ValueError):
+        multiword_id(-1, 1)
+
+    with pytest.raises(ValueError):
+        multiword_id(0, 1)
+
+    with pytest.raises(ValueError):
+        multiword_id(1, 1)
+
     sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False))
 
     assert [token.is_multiword for token in sentences[0]] == [True, False, False, True, False, False, False]

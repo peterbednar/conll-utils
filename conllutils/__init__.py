@@ -19,18 +19,41 @@ _BASE_FIELDS = (ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC)
 _CHARS_FIELDS_MAP = {FORM: FORM_CHARS, LEMMA: LEMMA_CHARS, FORM_NORM: FORM_NORM_CHARS, LEMMA_NORM: LEMMA_NORM_CHARS}
 _CHARS_FIELDS = set(_CHARS_FIELDS_MAP.values())
 
-def empty_id(token_id, index):
-    return (token_id, index, _EMPTY)
+def empty_id(word_id, index):
+    """Return new ID value for *empty token* indexed by `word_id` starting from 0 and `index` starting from 1.
+
+    The empty ID is encoded as a tuple with id[0] = `word_id` and id[1] = `index`. For more information about the
+    ordering of the empty tokens in the sentence, see :class:`Sentence` documentation.
+
+    Raises:
+	    ValueError: If `word_id` < 0 or `index` < 1
+    """
+    if word_id < 0 or index < 1:
+        raise ValueError("word_id must be >= 0 and index >= 1")
+    return (word_id, index, _EMPTY)
 
 def multiword_id(start, end):
+    """Return new ID value for *multiword token* spanning in the sentence across the words with ID from `start` to `end`
+    (inclusive).
+
+    The multiword ID is encoded as a tuple with id[0] = `start` and id[1] = `end`. For more information about the
+    ordering of the multiword tokens in the sentence, see :class:`Sentence` documentation.
+
+    Raises:
+	    ValueError: If `start` < 1 or `end` <= `start`.
+    """
+
+    if start < 1 or end <= start:
+        raise ValueError("start-end must be integer interval with start >= 1 and end > start")
     return (start, end, _MULTIWORD)
 
 class Token(dict):
-    """A dictionary object representing a token in the sentence.
+    """A dictionary type representing a token in the sentence.
 
     A token can represent a regular syntactic word, or can be the multiword token spanning across multiple words (e.g.
-    like in Spanish *vámonos* = *vamos nos*), or can be the empty token (inserted e.g. for analysis of ellipsis). Type
-    of the token can be tested using the :py:attr:`is_multiword` and :py:attr:`is_empty` properties.
+    like in Spanish *vámonos* = *vamos nos*), or can be the empty token (inserted in the dependency tree, e.g. for the
+    analysis of ellipsis). Type of the token can be tested using the read-only :attr:`is_multiword` and :attr:`is_empty`
+    properties.
 
     A token can contain mappings for the following standard CoNLL-U fields:
         * ID: word index (integer starting from 1); or range of the indexes for multiword tokens; or decimal notation
@@ -39,19 +62,20 @@ class Token(dict):
         * LEMMA: lemma or stem of word form.
         * UPOS: Universal part-of-speech tag.
         * XPOS: language-specific part-of-speech tag.
-        * FEATS: list of morphological features from the universal feature inventory or language-specific extension.
+        * FEATS: list of morphological features from the Universal feature inventory or language-specific extension.
         * HEAD: head of the current word in the dependency tree representation (ID or 0 for root).
         * DEPREL: Universal dependency relation to the HEAD.
         * DEPS: enhanced dependency graph in the form of head-deprel pairs.
         * MISC: any other annotation associated with the token. 
 
     CoNLLUtils package additionally defines the following extended fields:
-        * UPOS_FEATS: concatenated POS and FEATS field (with added 'POS'=value pair to the FEATS list).
+        * UPOS_FEATS: concatenated UPOS and FEATS field (with added 'POS'=tag pair into the FEATS list).
         * FORM_NORM, LEMMA_NORM: custom-normalized string form for FORM and LEMMA fields.
-        * FORM_CHAR, LEMMA_CHAR, FORM_NORM_CHAR, LEMMA_NORM_CHAR: corresponding fields split to the list of characters.
+        * FORM_CHAR, LEMMA_CHAR, FORM_NORM_CHAR, LEMMA_NORM_CHAR: corresponding fields split into the tuple of
+          characters.
 
     The ID values are parsed as the integers for regular words or tuples for multiword and empty tokens (see
-    :py:func:`multiword_id` and :py:func:`empty_id` functions for more information).
+    :func:`multiword_id` and :func:`empty_id` functions for more information).
 
     The HEAD values are parsed as the integers.
 
@@ -61,6 +85,8 @@ class Token(dict):
     values stored in the sets.
 
     The DEPS values are strings or parsed as the set of head-deprel tuples.
+
+    The FORM_CHAR, LEMMA_CHAR, FORM_NORM_CHAR, LEMMA_NORM_CHAR are tuples of characters.
 
     """
 
@@ -294,8 +320,8 @@ def _parse_token(line, parse_feats=False, parse_deps=False, upos_feats=True, nor
 
 def _parse_id(s):
     if "." in s:
-        token_id, index = s.split(".")
-        return (int(token_id), int(index), _EMPTY)
+        word_id, index = s.split(".")
+        return (int(word_id), int(index), _EMPTY)
     if "-" in s:
         start, end = s.split("-")
         return (int(start), int(end), _MULTIWORD)
