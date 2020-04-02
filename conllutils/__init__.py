@@ -114,8 +114,50 @@ class Token(dict):
         return Token(self)
 
 class Sentence(list):
+    """A list type representing the sentence, i.e. the sequence of tokens.
 
-    def __init__(self, tokens=[], metadata=None):
+    For valid CoNLL-U sentences, tokens have to be ordered according to the IDs. The syntactic words form the sequence
+    with ID=1, 2, 3, etc. Multiword tokens with the range ID 'start-end' are inserted before the first word in the range
+    (i.e. before the word with ID=start). The ranges of all multiword tokens must be non-empty and non-overlapping.
+    Empty tokens with the decimal IDs 'token_id.index' are inserted in the index order at the beginning of the sentence
+    (if token_id=0), or immediately after the word with ID=token_id.
+
+    Note that the Sentence methods are not checking the order of the tokens, and it is up to the programmer to preserve
+    the correct ordering.
+
+    The Sentence class provides :meth:`words` method to extract only the sequence of syntactic words without the empty
+    or multiword tokens, and :meth:`raw_tokens` method to extract the sequence of raw tokens (i.e. how the sentence is
+    written orthographically with the multiword tokens).
+
+    For example, for the Spanish sentence::
+    
+	    1-2     vámonos
+	    1       vamos
+	    2       nos
+	    3-4     al
+	    3       a
+	    4       el
+	    5       mar
+
+    the :meth:`words` method returns the sequence of expanded syntactic words 'vamos', 'nos', 'a', 'el', 'mar', and the
+    :meth:`raw_tokens` returns sequence for raw text 'vámonos', 'al', 'mar'.
+    
+    For the sentence with empty tokens::
+    
+	    1      Sue
+	    2      likes
+	    3      coffee
+	    4      and
+	    5      Bill
+	    5.1    likes
+	    6      tea
+
+    both :meth:`words` and :meth:`raw_tokens` methods return the sequence without the empty tokens 'Sue', 'likes',
+    'coffee', 'and', 'Bill', 'tea'.
+
+    """
+
+    def __init__(self, tokens=(), metadata=None):
         super().__init__(tokens)
         self.metadata = metadata
 
@@ -210,11 +252,12 @@ class DependencyTree(object):
         nodes = [Node() for _ in range(len(tokens))]
 
         for i, token in enumerate(tokens):
+            # token can be Token or token Instance
             id = token.get(ID)
             head = token.get(HEAD)
 
             if isinstance(id, tuple) or head is None:
-                continue # skip empty and multiword tokens and tokens without HEAD
+                continue    # skip empty and multiword tokens and tokens without HEAD
             index = id - 1 if id is not None else i
 
             nodes[index].token = token
@@ -266,9 +309,6 @@ class Instance(dict):
 
 _NUM_REGEX = re.compile("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"
-
-def normalize_lower(field, value):
-    return value.lower()
 
 def normalize_default(field, value):
     if _NUM_REGEX.match(value):
@@ -622,7 +662,7 @@ def _map_to_sentence(instance, inverse_index, fields=None, join=lambda _, value:
     
     return sentence
 
-def iterate_tokens(instances, fields=None):
+def iterate_token_instances(instances, fields=None):
     for instance in instances:
         for token in instance.tokens(fields):
             yield token

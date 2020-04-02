@@ -312,11 +312,11 @@ def test_map_to_instances(data1, data2):
 
     assert [sentence.to_instance(index).to_sentence(inverse_index) for sentence in sentences] == sentences
 
-def test_iterate_tokens(data2):
+def test_iterate_token_instances(data2):
     sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
     index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
     instances = list(map_to_instances(sentences, index))
-    tokens = list(iterate_tokens(instances))
+    tokens = list(iterate_token_instances(instances))
 
     assert len(tokens) == sum(len(sentence) for sentence in sentences)
     assert tokens[0] == {f : instances[0][f][0] for f in instances[0].keys()}
