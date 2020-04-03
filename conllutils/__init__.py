@@ -70,7 +70,7 @@ class Token(dict):
 
     CoNLLUtils package additionally defines the following extended fields:
         * UPOS_FEATS: concatenated UPOS and FEATS field (with added 'POS'=tag pair into the FEATS list).
-        * FORM_NORM, LEMMA_NORM: custom-normalized string form for FORM and LEMMA fields.
+        * FORM_NORM, LEMMA_NORM: custom-normalized string for FORM and LEMMA fields.
         * FORM_CHAR, LEMMA_CHAR, FORM_NORM_CHAR, LEMMA_NORM_CHAR: corresponding fields split into the tuple of
           characters.
 
@@ -240,18 +240,35 @@ class Sentence(list):
         return Sentence(self, self.metadata)
 
 class Node(object):
+    """A node in the dependency tree corresponding to the syntactic word in the sentence.
 
-    def __init__(self, token=None, parent=None):
-        self.token = token
-        self.parent = parent
+    Attributes:
+        index (int): The index of the word in the sentence (from 0).
+        word (:class:`Token`): The corresponding syntactic word.
+        parent (:class:`Node`): The parent (HEAD) of the node. 
+        children (list of :class:`Node`): The direct children of the node.
+
+    """
+    def __init__(self, index):
+        self.index = index
+        self.token = None
+        self.parent = None
         self.children = []
 
     @property
     def is_root(self):
+        """bool: True, if the node is the root of the tree (has no parent)."""
         return self.parent == None
 
     @property
+    def is_leaf(self):
+        """bool: True, if the node is a leaf node (has no children)."""
+        return len(self.children) == 0
+
+    @property
     def deprel(self):
+        """str or int: Universal dependency relation to the HEAD stored in the ``token[DEPREL]``, or `None` if the
+        token does not have DEPREL field."""
         return self.token.get(DEPREL)
 
     def __repr__(self):
@@ -285,7 +302,7 @@ class DependencyTree(object):
     def _build(sentence):
         root = None
         tokens = list(sentence.tokens()) if isinstance(sentence, Instance) else sentence
-        nodes = [Node() for _ in range(len(tokens))]
+        nodes = [Node(i) for i in range(len(tokens))]
 
         for i, token in enumerate(tokens):
             # token can be Token or token Instance

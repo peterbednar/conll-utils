@@ -65,13 +65,13 @@ def test_dependency_tree(data1, data2):
     assert tree0.root is not None
     assert str(tree0) == "<<2,buy,VERB>,root,[<<1,They,PRON>,nsubj,[]>, <<4,sell,VERB>,conj,[<<3,and,CONJ>,cc,[]>]>, <<5,books,NOUN>,obj,[]>, <<6,.,PUNCT>,punct,[]>]>"
 
-    nodes = tree0.nodes()
+    nodes = list(tree0.nodes())
     assert [node.is_root for node in nodes] == [True, False, False, False, False, False]
-
-    nodes = tree0.nodes()
+    assert [node.is_leaf for node in nodes] == [False, True, False, True, True, True]
+    assert [node.index for node in nodes] == [1, 0, 3, 2, 4, 5]
     assert [node.token[FORM] for node in nodes] == ["buy", "They", "sell", "and", "books", "."]
 
-    nodes = tree0.nodes(postorder=True)
+    nodes = list(tree0.nodes(postorder=True))
     assert [node.token[FORM] for node in nodes] == ["They", "and", "sell", "books", ".", "buy"]
 
     index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
