@@ -249,9 +249,9 @@ class Node(object):
         children (list of :class:`Node`): The direct children of the node.
 
     """
-    def __init__(self, index):
+    def __init__(self, index, token):
         self.index = index
-        self.token = None
+        self.token = token
         self.parent = None
         self.children = []
 
@@ -281,48 +281,51 @@ class DependencyTree(object):
         self.metadata = sentence.metadata
 
     def nodes(self, postorder=False):
-        nodes = []
-        self.visit(lambda n: nodes.append(n), postorder)
-        return nodes
-
-    def visit(self, f, postorder=False):
-        if self.root:
-            self._visit(self.root, f, postorder)
+        return self._nodes(self.root, postorder)
     
     @staticmethod
-    def _visit(node, f, postorder):
+    def _nodes(node, postorder):
+        if node is None:
+            return
         if not postorder:
-            f(node)
-        for ch in node.children:
-            DependencyTree._visit(ch, f, postorder)
+            yield node
+        for child in node.children:
+            yield from DependencyTree._nodes(child, postorder)
         if postorder:
-            f(node)
+            yield node
+
+    def __len__(self):
+        return sum(1 for _ in self.nodes())
+
+    def __iter__(self):
+        return self.nodes()
 
     @staticmethod
     def _build(sentence):
         root = None
-        tokens = list(sentence.tokens()) if isinstance(sentence, Instance) else sentence
-        nodes = [Node(i) for i in range(len(tokens))]
 
-        for i, token in enumerate(tokens):
-            # token can be Token or token Instance
-            id = token.get(ID)
+        if isinstance(sentence, Instance):
+            tokens = sentence.tokens()
+        else:
+            tokens = sentence.words()   # only the syntactic words
+        nodes = [Node(i, token) for i, token in enumerate(tokens)]
+
+        for node in nodes:
+            # token can be syntactic word or indexed token
+            token = node.token
             head = token.get(HEAD)
+            if head is None or head == -1:
+                continue    # skip tokens without HEAD
 
-            if isinstance(id, tuple) or head is None:
-                continue    # skip empty and multiword tokens and tokens without HEAD
-            index = id - 1 if id is not None else i
-
-            nodes[index].token = token
             if head == 0:
                 if root == None:
-                    root = nodes[index]
+                    root = node
                 else:
                     raise ValueError("multiple roots")
             else:
                 parent = nodes[head-1]
-                nodes[index].parent = parent
-                parent.children.append(nodes[index])
+                node.parent = parent
+                parent.children.append(node)
 
         return root
 
