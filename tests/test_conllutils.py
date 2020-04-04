@@ -77,10 +77,12 @@ def test_dependency_tree(data1, data2):
 
     root0 = tree0.root
     assert [root0[i] for i in range(len(root0))] == list(root0)
+    assert root0[:] == list(root0)
 
-    assert [node.token[FORM] for node in tree0.nodes()] == ["They", "buy", "and", "sell", "books", "."]
+    assert [node.token[FORM] for node in tree0.nodes] == ["They", "buy", "and", "sell", "books", "."]
     assert [node.token[FORM] for node in tree0.preorder()] == ["buy", "They", "sell", "and", "books", "."]
     assert [node.token[FORM] for node in tree0.postorder()] == ["They", "and", "sell", "books", ".", "buy"]
+    assert [leaf.token[FORM] for leaf in tree0.leafs()] == ["They", "and", "books", "."]
 
     index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
     instances = list(map_to_instances(sentences, index))

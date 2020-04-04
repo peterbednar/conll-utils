@@ -40,10 +40,10 @@ class _TestNode(object):
 
     def __init__(self, form):
         self.token = {FORM: form}
-        self.children = []
+        self._children = []
 
     def __iter__(self):
-        return iter(self.children)
+        return iter(self._children)
 
 def tree(s):
     return _parse(list(s), 0)[0]
@@ -55,7 +55,7 @@ def _parse(s, index):
         index += 1
         while s[index] != ")":
             ch, index = _parse(s, index)
-            node.children.append(ch)
+            node._children.append(ch)
         index += 1
     return node, index
 

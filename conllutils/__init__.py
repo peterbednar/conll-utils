@@ -26,10 +26,10 @@ def empty_id(word_id, index=1):
     ordering of the empty tokens in the sentence, see :class:`Sentence` class.
 
     Raises:
-        ValueError: If `word_id` < 0 or `index` < 1
+        ValueError: If `word_id` < 0 or `index` < 1.
     """
     if word_id < 0 or index < 1:
-        raise ValueError("word_id must be >= 0 and index >= 1")
+        raise ValueError("word_id must be >= 0 and index >= 1.")
     return (word_id, index, _EMPTY)
 
 def multiword_id(start, end):
@@ -44,7 +44,7 @@ def multiword_id(start, end):
     """
 
     if start < 1 or end <= start:
-        raise ValueError("start must be >= 1 and end > start")
+        raise ValueError("start must be >= 1 and end > start.")
     return (start, end, _MULTIWORD)
 
 class Token(dict):
@@ -96,13 +96,13 @@ class Token(dict):
 
     @property
     def is_empty(self):
-        """bool: True if the token is an *empty token*, otherwise False."""
+        """bool: True if the token is an empty token, otherwise False."""
         id = self.get(ID)
         return id[2] == _EMPTY if isinstance(id, tuple) else False
 
     @property
     def is_multiword(self):
-        """bool: True if the token is a *multiword token*, otherwise False."""
+        """bool: True if the token is a multiword token, otherwise False."""
         id = self.get(ID)
         return id[2] == _MULTIWORD if isinstance(id, tuple) else False
 
@@ -116,7 +116,7 @@ class Token(dict):
 class Sentence(list):
     """A list type representing the sentence, i.e. the sequence of tokens.
 
-    For valid CoNLL-U sentences, tokens have to be ordered according to the IDs. The syntactic words form the sequence
+    For valid CoNLL-U sentences, tokens have to be ordered according to their IDs. The syntactic words form the sequence
     with ID=1, 2, 3, etc. Multiword tokens with the range ID 'start-end' are inserted before the first word in the range
     (i.e. before the word with ID=start). The ranges of all multiword tokens must be non-empty and non-overlapping.
     Empty tokens with the decimal IDs 'token_id.index' are inserted in the index order at the beginning of the sentence
@@ -156,8 +156,8 @@ class Sentence(list):
     'coffee', 'and', 'Bill', 'tea'.
 
     Attributes:
-        metadata (any): Any optional data associated with the sentence. By default, `metadata` are parsed in the CoNLL-U
-            format as the list of strings (without the trailing '#') from the comment lines before the sentence.
+        metadata (any): Any optional data associated with the sentence. By default for the CoNLL-U format, `metadata`
+            are parsed as the list of strings (without the trailing '#') from the comment lines before the sentence.
 
     """
 
@@ -176,7 +176,7 @@ class Sentence(list):
         tokens). Note that the implementation assumes the proper ordering of the tokens according to their IDs.
 
         Raises:
-            IndexError: If token with the `id` is not in the sentence.
+            IndexError: If a token with the `id` cannot be found in the sentence.
         """
         if isinstance(id, str):
             id = _parse_id(id)
@@ -219,8 +219,13 @@ class Sentence(list):
 
     def to_tree(self):
         """Return a dependency tree representation of the sentence.
-        
-        See :class:`DependencyTree` class for more information.
+ 
+        See :class:`DependencyTree` class for more information. Note that the implementation assumes the proper ordering
+        of the tokens according to their IDs.
+
+        Raises:
+            ValueError: If the sentence contains the words without the HEAD field, or when the non-empty tree does not
+                have exactly one root.
         """
         return DependencyTree(self)
     
@@ -274,7 +279,7 @@ class Node(object):
         return self.token.get(DEPREL)
 
     def __getitem__(self, i):
-        # Returns i-th child of the node (i can be an integer or slice).
+        # Return `i`-th child of the node or sublist of children, if `i` is the slice of indices.
         return self._children[i]
 
     def __len__(self):
@@ -291,25 +296,25 @@ class Node(object):
 class DependencyTree(object):
 
     def __init__(self, sentence):
-        self.root = self._build(sentence)
+        self.root, self.nodes = self._build(sentence)
         self.metadata = sentence.metadata
 
     def __len__(self):
-        return sum(1 for _ in self)
+        return len(self.nodes)
 
     def __iter__(self):
         return self._traverse(self.root, inorder=True)
+
+    def leafs(self):
+        for node in self:
+            if node.is_leaf:
+                yield node
 
     def preorder(self):
         return self._traverse(self.root, preorder=True)
 
     def postorder(self):
         return self._traverse(self.root, postorder=True)
-
-    def nodes(self):
-        nodes = list(iter(self))
-        nodes.sort(key=lambda node: node.index)
-        return nodes
 
     def __repr__(self):
         return repr(self.root)
@@ -335,32 +340,37 @@ class DependencyTree(object):
 
     @staticmethod
     def _build(sentence):
-        root = None
-
         if isinstance(sentence, Instance):
             tokens = sentence.tokens()
         else:
             tokens = sentence.words()   # only the syntactic words
-        nodes = [Node(i, token) for i, token in enumerate(tokens)]
 
+        nodes = [Node(i, token) for i, token in enumerate(tokens)]
+        if not nodes:
+            return None, []
+
+        root = None
         for index, node in enumerate(nodes):
             # token can be syntactic word or indexed token view
             token = node.token
             head = token.get(HEAD)
             if head is None or head == -1:
-                raise ValueError(f"Token {index} is without HEAD")
+                raise ValueError(f"Token {index} is without HEAD.")
 
             if head == 0:
                 if root == None:
                     root = node
                 else:
-                    raise ValueError("Found multiple roots")
+                    raise ValueError(f"Found multiple roots at {index}.")
             else:
                 parent = nodes[head-1]
                 node.parent = parent
                 parent._children.append(node)
 
-        return root
+        if node is None:
+            raise ValueError("Found no root.")
+
+        return root, nodes
 
 class Instance(dict):
     
