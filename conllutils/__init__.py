@@ -225,7 +225,7 @@ class Sentence(list):
         return DependencyTree(self)
     
     def to_instance(self, index, fields=None):
-        """Return an instance representation of the sentence with fields indexed by the `index`.
+        """Return an instance representation of the sentence with the fields indexed by the `index`.
 
         Optional `fields` argument specifies a subset of the fields added into the instance. By default, HEAD field and
         all fields from the `index` are included. See :class:`Instance` class for more information.
@@ -242,20 +242,20 @@ class Sentence(list):
 class Node(object):
     """A node in the dependency tree corresponding to the syntactic word in the sentence.
 
-    A node is iterable, and returns the iterator over the direct children. ``len(node)`` returns the number of children.
+    A node is iterable, and returns an iterator over the direct children. ``len(node)`` returns the number of children,
+    and ``node[i]`` returns the `i`-th child (or sublist of children, if `i` is the slice of indices).
 
     Attributes:
         index (int): The index of the word in the sentence (from 0).
         token (:class:`Token` or indexed token view): The corresponding syntactic word.
         parent (:class:`Node`): The parent (HEAD) of the node (or `None` for root). 
-        children (list of :class:`Node`): The direct children of the node.
 
     """
     def __init__(self, index, token):
         self.index = index
         self.token = token
         self.parent = None
-        self.children = []
+        self._children = []
 
     @property
     def is_root(self):
@@ -265,24 +265,28 @@ class Node(object):
     @property
     def is_leaf(self):
         """bool: True, if the node is a leaf node (has no children)."""
-        return len(self.children) == 0
+        return len(self) == 0
 
     @property
     def deprel(self):
-        """str or int: Universal dependency relation to the HEAD stored in the ``token[DEPREL]``, or `None` if the
-        token does not have DEPREL field."""
+        """str or int: Universal dependency relation to the HEAD stored in the ``token[DEPREL]``, or `None` if the token
+        does not have DEPREL field."""
         return self.token.get(DEPREL)
 
+    def __getitem__(self, i):
+        # Returns i-th child of the node (i can be an integer or slice).
+        return self._children[i]
+
     def __len__(self):
-        # Return number of children.
-        return len(self.children)
+        # Return the number of children.
+        return len(self._children)
 
     def __iter__(self):
         # Return an iterator over children.
-        return iter(self.children)
+        return iter(self._children)
 
     def __repr__(self):
-        return f"<{self.token},{self.deprel},{self.children}>"
+        return f"<{self.token},{self.deprel},{self._children}>"
 
 class DependencyTree(object):
 
@@ -320,7 +324,7 @@ class DependencyTree(object):
             consumed = True  # consume preorder
             yield node
 
-        for child in node.children:
+        for child in node:
             if inorder and not consumed and node.index < child.index:
                 consumed = True  # consume inorder
                 yield node
@@ -354,7 +358,7 @@ class DependencyTree(object):
             else:
                 parent = nodes[head-1]
                 node.parent = parent
-                parent.children.append(node)
+                parent._children.append(node)
 
         return root
 

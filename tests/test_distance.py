@@ -42,6 +42,9 @@ class _TestNode(object):
         self.token = {FORM: form}
         self.children = []
 
+    def __iter__(self):
+        return iter(self.children)
+
 def tree(s):
     return _parse(list(s), 0)[0]
 

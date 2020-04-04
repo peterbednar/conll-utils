@@ -108,7 +108,7 @@ class _AnnotatedNode(object):
     @staticmethod
     def build(node, index=0):
         anode = _AnnotatedNode(node)
-        for child in node.children:
+        for child in node:
             achild = _AnnotatedNode.build(child, index)
             index = achild.index + 1
             anode.children.append(achild)
