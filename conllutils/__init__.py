@@ -1,7 +1,7 @@
 import os
 import re
 import random
-from collections import OrderedDict, Counter
+from collections import Counter
 from io import StringIO
 import numpy as np
 
@@ -16,14 +16,14 @@ FORM_NORM, LEMMA_NORM, FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHAR
 
 _BASE_FIELDS = (ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC)
 
-_CHARS_FIELDS_MAP = {FORM: FORM_CHARS, LEMMA: LEMMA_CHARS, FORM_NORM: FORM_NORM_CHARS, LEMMA_NORM: LEMMA_NORM_CHARS}
-_CHARS_FIELDS = set(_CHARS_FIELDS_MAP.values())
+_CHARS_FIELDS_MAP = ((FORM, FORM_CHARS), (LEMMA, LEMMA_CHARS), (FORM_NORM, FORM_NORM_CHARS), (LEMMA_NORM, LEMMA_NORM_CHARS))
+_CHARS_FIELDS = set(field for _, field in _CHARS_FIELDS_MAP)
 
 def empty_id(word_id, index=1):
-    """Return new ID value for *empty token* indexed by `word_id` starting from 0 and `index` starting from 1.
+    """Return new ID value for empty token indexed by `word_id` starting from 0 and `index` starting from 1.
 
     The empty token ID is encoded as a tuple with id[0] = `word_id` and id[1] = `index`. For more information about the
-    ordering of the empty tokens in the sentence, see :class:`Sentence` documentation.
+    ordering of the empty tokens in the sentence, see :class:`Sentence` class.
 
     Raises:
         ValueError: If `word_id` < 0 or `index` < 1
@@ -33,11 +33,11 @@ def empty_id(word_id, index=1):
     return (word_id, index, _EMPTY)
 
 def multiword_id(start, end):
-    """Return new ID value for *multiword token* spanning in the sentence across the words with ID from `start` to `end`
+    """Return new ID value for multiword token spanning in the sentence across the words with ID from `start` to `end`
     (inclusive).
 
     The multiword token ID is encoded as a tuple with id[0] = `start` and id[1] = `end`. For more information about the
-    ordering of the multiword tokens in the sentence, see :class:`Sentence` documentation.
+    ordering of the multiword tokens in the sentence, see :class:`Sentence` class.
 
     Raises:
         ValueError: If `start` < 1 or `end` <= `start`.
@@ -50,10 +50,10 @@ def multiword_id(start, end):
 class Token(dict):
     """A dictionary type representing a token in the sentence.
 
-    A token can represent a regular syntactic word, or can be the multiword token spanning across multiple words (e.g.
-    like in Spanish *vámonos* = *vamos nos*), or can be the empty token (inserted in the dependency tree, e.g. for the
-    analysis of ellipsis). Type of the token can be tested using the read-only :attr:`is_multiword` and :attr:`is_empty`
-    properties.
+    A token can represent a regular *syntactic word*, or can be a *multiword token* spanning across multiple words
+    (e.g. like in Spanish *vámonos* = *vamos nos*), or can be an *empty token* (inserted in the extended dependency
+    tree, e.g. for the analysis of ellipsis). Type of the token can be tested using the read-only :attr:`is_multiword`
+    and :attr:`is_empty` properties.
 
     A token can contain mappings for the following standard CoNLL-U fields:
         * ID: word index (integer starting from 1); or range of the indexes for multiword tokens; or decimal notation
@@ -69,9 +69,9 @@ class Token(dict):
         * MISC: any other annotation associated with the token. 
 
     CoNLLUtils package additionally defines the following extended fields:
-        * UPOS_FEATS: concatenated UPOS and FEATS field (with added 'POS'=tag pair into the FEATS list).
+        * UPOS_FEATS: concatenated UPOS and FEATS field.
         * FORM_NORM, LEMMA_NORM: custom-normalized string for FORM and LEMMA fields.
-        * FORM_CHAR, LEMMA_CHAR, FORM_NORM_CHAR, LEMMA_NORM_CHAR: corresponding fields split into the tuple of
+        * FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS: corresponding fields split into the tuple of
           characters.
 
     The ID values are parsed as the integers for regular words or tuples for multiword and empty tokens (see
@@ -82,11 +82,11 @@ class Token(dict):
     The FORM, LEMMA, POS, XPOS, DEPREL, MISC, FORM_NORM and LEMMA_NORM values are strings.
 
     The FEATS or UPOS_FEATS values are strings or parsed as the dictionaries with attribute-value mappings and multiple
-    values stored in the sets.
+    values stored in the sets. For UPOS_FEATS values, the 'POS'=tag pair is prepended to the FEATS list.
 
     The DEPS values are strings or parsed as the set of head-deprel tuples.
 
-    The FORM_CHAR, LEMMA_CHAR, FORM_NORM_CHAR, LEMMA_NORM_CHAR are tuples of characters.
+    The FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS are tuples of characters.
 
     """
 
@@ -156,8 +156,8 @@ class Sentence(list):
     'coffee', 'and', 'Bill', 'tea'.
 
     Attributes:
-        metadata (any): Any optional data associated with the sentence. By default, `metadata` are parsed as the list of
-            strings (without the trailing '#') from the comment lines before the sentence in the CoNLL-U format.
+        metadata (any): Any optional data associated with the sentence. By default, `metadata` are parsed in the CoNLL-U
+            format as the list of strings (without the trailing '#') from the comment lines before the sentence.
 
     """
 
@@ -172,7 +172,7 @@ class Sentence(list):
         """Return token with the specified ID.
         
         The `id` argument can be an integer from 1, tuple generated by :func:`empty_id` or :func:`multiword_id`
-        functions, or string in CoNLL-U notation (e.g. "1" for words, "2-3" for multiword token, or "0.1" for empty
+        functions, or string in CoNLL-U notation (e.g. "1" for words, "2-3" for multiword tokens, or "0.1" for empty
         tokens). Note that the implementation assumes the proper ordering of the tokens according to their IDs.
 
         Raises:
@@ -220,18 +220,18 @@ class Sentence(list):
     def to_tree(self):
         """Return a dependency tree representation of the sentence.
         
-        See :class:`DependencyTree` documentation for more information.
+        See :class:`DependencyTree` class for more information.
         """
         return DependencyTree(self)
     
     def to_instance(self, index, fields=None):
         """Return an instance representation of the sentence with fields indexed by the `index`.
 
-        Optional `fields` argument specifies a subset of fields included in the instance. By default, HEAD field and all
-        fields from the `index` are included. See :class:`Instance` documentation for more information.
+        Optional `fields` argument specifies a subset of the fields added into the instance. By default, HEAD field and
+        all fields from the `index` are included. See :class:`Instance` class for more information.
 
         Raises:
-            KeyError: If some of the included `fields` are not indexed in the `index`.
+            KeyError: If some of the `fields` are not indexed in the `index`.
         """
         return _map_to_instance(self, index, fields)
 
@@ -242,10 +242,12 @@ class Sentence(list):
 class Node(object):
     """A node in the dependency tree corresponding to the syntactic word in the sentence.
 
+    A node is iterable, and returns the iterator over the direct children. ``len(node)`` returns the number of children.
+
     Attributes:
         index (int): The index of the word in the sentence (from 0).
-        word (:class:`Token`): The corresponding syntactic word.
-        parent (:class:`Node`): The parent (HEAD) of the node. 
+        token (:class:`Token` or indexed token view): The corresponding syntactic word.
+        parent (:class:`Node`): The parent (HEAD) of the node (or `None` for root). 
         children (list of :class:`Node`): The direct children of the node.
 
     """
@@ -271,6 +273,14 @@ class Node(object):
         token does not have DEPREL field."""
         return self.token.get(DEPREL)
 
+    def __len__(self):
+        # Return number of children.
+        return len(self.children)
+
+    def __iter__(self):
+        # Return an iterator over children.
+        return iter(self.children)
+
     def __repr__(self):
         return f"<{self.token},{self.deprel},{self.children}>"
 
@@ -280,25 +290,44 @@ class DependencyTree(object):
         self.root = self._build(sentence)
         self.metadata = sentence.metadata
 
-    def nodes(self, postorder=False):
-        return self._nodes(self.root, postorder)
-    
-    @staticmethod
-    def _nodes(node, postorder):
-        if node is None:
-            return
-        if not postorder:
-            yield node
-        for child in node.children:
-            yield from DependencyTree._nodes(child, postorder)
-        if postorder:
-            yield node
-
     def __len__(self):
-        return sum(1 for _ in self.nodes())
+        return sum(1 for _ in self)
 
     def __iter__(self):
-        return self.nodes()
+        return self._traverse(self.root, inorder=True)
+
+    def preorder(self):
+        return self._traverse(self.root, preorder=True)
+
+    def postorder(self):
+        return self._traverse(self.root, postorder=True)
+
+    def nodes(self):
+        nodes = list(iter(self))
+        nodes.sort(key=lambda node: node.index)
+        return nodes
+
+    def __repr__(self):
+        return repr(self.root)
+
+    @staticmethod
+    def _traverse(node, inorder=False, preorder=False, postorder=False):
+        if node is None:
+            return
+
+        consumed = False
+        if preorder:
+            consumed = True  # consume preorder
+            yield node
+
+        for child in node.children:
+            if inorder and not consumed and node.index < child.index:
+                consumed = True  # consume inorder
+                yield node
+            yield from DependencyTree._traverse(child, inorder, preorder, postorder)
+
+        if postorder or not consumed: # for postorder or right-most inorder
+            yield node
 
     @staticmethod
     def _build(sentence):
@@ -310,27 +339,24 @@ class DependencyTree(object):
             tokens = sentence.words()   # only the syntactic words
         nodes = [Node(i, token) for i, token in enumerate(tokens)]
 
-        for node in nodes:
-            # token can be syntactic word or indexed token
+        for index, node in enumerate(nodes):
+            # token can be syntactic word or indexed token view
             token = node.token
             head = token.get(HEAD)
             if head is None or head == -1:
-                continue    # skip tokens without HEAD
+                raise ValueError(f"Token {index} is without HEAD")
 
             if head == 0:
                 if root == None:
                     root = node
                 else:
-                    raise ValueError("multiple roots")
+                    raise ValueError("Found multiple roots")
             else:
                 parent = nodes[head-1]
                 node.parent = parent
                 parent.children.append(node)
 
         return root
-
-    def __repr__(self):
-        return repr(self.root)
 
 class Instance(dict):
     
@@ -433,7 +459,7 @@ def _parse_token(line, parse_feats=False, parse_deps=False, upos_feats=True, nor
                     fields[n] = norm
 
     if split:
-        for (f, ch) in _CHARS_FIELDS_MAP.items():
+        for (f, ch) in _CHARS_FIELDS_MAP:
             if f in fields:
                 chars = split(f, fields[f])
                 if chars is not None:
@@ -444,14 +470,14 @@ def _parse_token(line, parse_feats=False, parse_deps=False, upos_feats=True, nor
 def _parse_id(s):
     if "." in s:
         word_id, index = s.split(".")
-        return (int(word_id), int(index), _EMPTY)
+        return empty_id(int(word_id), int(index))
     if "-" in s:
         start, end = s.split("-")
-        return (int(start), int(end), _MULTIWORD)
+        return multiword_id(int(start), int(end))
     return int(s)
 
 def _parse_feats(s):
-    feats = OrderedDict()
+    feats = {}
     for key, value in [feat.split("=") for feat in s.split("|")]:
         if "," in value:
             value = set(value.split(","))
@@ -707,7 +733,7 @@ def _map_to_sentence(instance, inverse_index, fields=None, join=lambda _, value:
                 token[field] = value
 
         if join:
-            for f, ch in _CHARS_FIELDS_MAP.items():
+            for f, ch in _CHARS_FIELDS_MAP:
                 if ch in token:
                     value = join(ch, token[ch])
                     f_value = token.get(f)
@@ -718,7 +744,7 @@ def _map_to_sentence(instance, inverse_index, fields=None, join=lambda _, value:
     
     return sentence
 
-def iterate_token_instances(instances, fields=None):
+def iterate_instance_tokens(instances, fields=None):
     for instance in instances:
         for token in instance.tokens(fields):
             yield token
