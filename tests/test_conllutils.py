@@ -341,7 +341,7 @@ def test_iterate_instance_tokens(data2):
     tokens[0][FORM] = -1
     assert instances[0][FORM][0] == -1
 
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(TypeError):
         del tokens[0][FORM]
 
 def test_normalize(data4):

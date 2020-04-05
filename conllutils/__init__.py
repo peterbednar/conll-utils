@@ -358,16 +358,16 @@ class DependencyTree(object):
 
         consumed = False
         if preorder:
-            consumed = True  # consume preorder
+            consumed = True # consume preorder
             yield node
 
         for child in node:
             if inorder and not consumed and node.index < child.index:
-                consumed = True  # consume inorder
+                consumed = True # consume inorder
                 yield node
             yield from DependencyTree._traverse(child, inorder, preorder, postorder)
 
-        if postorder or not consumed:  # for postorder or right-most inorder
+        if postorder or not consumed: # for postorder or right-most inorder
             yield node
 
     @staticmethod
@@ -375,7 +375,7 @@ class DependencyTree(object):
         if isinstance(sentence, Instance):
             tokens = sentence.tokens()
         else:
-            tokens = sentence.words()  # only the syntactic words
+            tokens = sentence.words() # only the syntactic words
 
         nodes = [Node(i, token) for i, token in enumerate(tokens)]
         if not nodes:
@@ -423,7 +423,7 @@ class _IndexedToken(MutableMapping):
         self._fields[key][self._index] = value
 
     def __delitem__(self, key):
-        raise NotImplementedError("Not implemented for indexed token view.")
+        raise TypeError("Not supported for token views.")
 
 class Instance(dict):
     
@@ -490,7 +490,7 @@ def _parse_token(line, parse_feats=False, parse_deps=False, upos_feats=True, nor
 
     fields[ID] = _parse_id(fields[ID])
 
-    for f in [FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC]:
+    for f in (FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC):
         if f in fields and fields[f] == "_":
             del(fields[f])
 
@@ -516,7 +516,7 @@ def _parse_token(line, parse_feats=False, parse_deps=False, upos_feats=True, nor
         fields[DEPS] = _parse_deps(fields[DEPS])
 
     if normalize:
-        for (f, n) in [(FORM, FORM_NORM), (LEMMA, LEMMA_NORM)]:
+        for (f, n) in ((FORM, FORM_NORM), (LEMMA, LEMMA_NORM)):
             if f in fields:
                 norm = normalize(f, fields[f])
                 if norm is not None:
@@ -553,11 +553,14 @@ def _parse_deps(s):
 
 def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
                 normalize=normalize_default, split=split_default):
-    lines = []
-    comments = []
+
     if isinstance(file, str):
         file = open(file, "rt", encoding="utf-8")
+
     with file:
+        lines = []
+        comments = []
+
         for line in file:
             line = line.rstrip("\r\n")
             if line.startswith("#"):
@@ -749,7 +752,10 @@ def _map_to_instance(sentence, index, fields=None):
     instance.metadata = sentence.metadata
 
     for field in fields:
-        array = np.full(length, None, dtype=np.object) if field in _CHARS_FIELDS else np.full(length, -1, dtype=np.int)
+        if field in _CHARS_FIELDS:
+            array = np.full(length, None, dtype=np.object)
+        else:
+            array = np.full(length, -1, dtype=np.int)
 
         for i, token in enumerate(sentence):
             value = token.get(field)
