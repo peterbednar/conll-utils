@@ -225,7 +225,7 @@ class Sentence(list):
 
         Raises:
             ValueError: If the sentence contains the words without the HEAD field, or when the sentence does not have
-                exactly one root word with HEAD = 0.
+                exactly one root with HEAD = 0.
         """
         return DependencyTree(self)
     
@@ -247,8 +247,8 @@ class Sentence(list):
 class Node(object):
     """A node in the dependency tree corresponding to the syntactic word in the sentence.
 
-    A node is iterable, and returns an iterator over the direct children. ``len(node)`` returns the number of children,
-    and ``node[i]`` returns the `i`-th child (or sublist of children, if `i` is the slice of indices).
+    A node object is iterable, and returns an iterator over the direct children. ``len(node)`` returns the number of
+    children, and ``node[i]`` returns the `i`-th child (or sublist of children, if `i` is the slice of indices).
 
     Attributes:
         index (int): The index of the word in the sentence (from 0).
@@ -294,15 +294,28 @@ class Node(object):
         return f"<{self.token},{self.deprel},{self._children}>"
 
 class DependencyTree(object):
-    """
+    """A dependency tree representation of the sentence.
+
+    A *basic* dependency tree is a labeled tree structure where each node of the tree corresponds to exactly one
+    syntactic word in the sentence. The relations between the node and its parent (head) are labeled with the Universal
+    dependencies and stored in the HEAD and DEPREL fields of the corresponding word.
+
+    The DependencyTree class should not be instantiated directly. Use the :meth:`Sentence.to_tree` or
+    :meth:`Instance.to_tree` methods to create a dependency representation for the sentence or indexed instance. The
+    implementation of nodes is provided by :class:`Node` class.
+
+    The dependency tree object is iterable and returns an iterator over all nodes in the order of corresponding words in
+    the sentence. ``len(tree)`` returns the number of nodes.
+
+    Note that the dependency tree is constructed only from the basic dependency relations. Enhanced dependency relations
+    stored in the DEPS field are not included in the tree.
 
     Attributes:
         root (:class:`Node`): The root of the tree. 
-        nodes (list of :class:`Node`): The list of all nodes in the order of corresponding words in the sentence.
+        nodes (list of :class:`Node`): The list of all nodes in the sentence order.
         metadata (any): Any optional data associated with the tree, by default copied from the sentence or instance.
 
     """
-
     def __init__(self, sentence):
         self.root, self.nodes = self._build(sentence)
         self.metadata = sentence.metadata
@@ -312,11 +325,11 @@ class DependencyTree(object):
         return len(self.nodes)
 
     def __iter__(self):
-        # Return an iterator over all nodes in words order.
+        # Return an iterator over all nodes in the sentence order.
         return iter(self.nodes)
 
     def leaves(self):
-        """Return an iterator over all leaves of the tree in words order."""
+        """Return an iterator over all leaves of the tree in the sentence order."""
         for node in self:
             if node.is_leaf:
                 yield node
@@ -372,7 +385,7 @@ class DependencyTree(object):
             token = node.token
             head = token.get(HEAD)
             if head is None or head == -1:
-                raise ValueError(f"Token {index} is without HEAD.")
+                raise ValueError(f"Token at {index} is without HEAD.")
 
             if head == 0:
                 if root == None:
