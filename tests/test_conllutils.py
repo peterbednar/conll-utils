@@ -57,6 +57,7 @@ def test_token():
 def test_dependency_tree(data1, data2):
     empty = Sentence().to_tree()
     assert len(empty) == 0
+    assert list(empty.inorder()) == []
 
     sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
     tree0 = sentences[0].to_tree()
@@ -313,14 +314,17 @@ def test_count_frequency(data2):
     for f in index.keys():
         assert {index[f][k]:v for k,v in dictionary[f].items()} == frequencies[f]
 
+def test_instance(data2):
+    assert Instance().length == 0
+
 def test_map_to_instances(data1, data2):
     sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
     index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
     inverse_index = create_inverse_index(index)
 
     instances = list(map_to_instances(sentences, index))
-    assert list(map_to_sentences(instances, inverse_index)) == sentences
 
+    assert list(map_to_sentences(instances, inverse_index)) == sentences
     assert [sentence.to_instance(index).to_sentence(inverse_index) for sentence in sentences] == sentences
 
 def test_iterate_instance_tokens(data2):
@@ -331,6 +335,14 @@ def test_iterate_instance_tokens(data2):
 
     assert len(tokens) == sum(len(sentence) for sentence in sentences)
     assert tokens[0] == {f : instances[0][f][0] for f in instances[0].keys()}
+
+    assert len(tokens[0]) == len(instances[0].keys())
+
+    tokens[0][FORM] = -1
+    assert instances[0][FORM][0] == -1
+
+    with pytest.raises(NotImplementedError):
+        del tokens[0][FORM]
 
 def test_normalize(data4):
     sentences = list(read_conllu(data4, skip_empty=False, skip_multiword=False))

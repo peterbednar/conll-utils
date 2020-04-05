@@ -2,6 +2,7 @@ import os
 import re
 import random
 from collections import Counter
+from collections.abc import MutableMapping
 from io import StringIO
 import numpy as np
 
@@ -90,7 +91,7 @@ class Token(dict):
 
     """
 
-    def __init__(self, fields={}):
+    def __init__(self, fields=()):
         """Create an empty token or token with the fields initialized from the provided mapping object."""
         super().__init__(fields)
 
@@ -313,7 +314,8 @@ class DependencyTree(object):
     Attributes:
         root (:class:`Node`): The root of the tree. 
         nodes (list of :class:`Node`): The list of all nodes in the sentence order.
-        metadata (any): Any optional data associated with the tree, by default copied from the sentence or instance.
+        metadata (any): Any optional data associated with the tree, by default copied from the sentence or indexed
+            instance.
 
     """
     def __init__(self, sentence):
@@ -402,27 +404,45 @@ class DependencyTree(object):
 
         return root, nodes
 
-class Instance(dict):
-    
-    def __init__(self, length=0, fields={}, metadata=None):
-        super().__init__(fields)
-        self._length = length
-        self.metadata = metadata
+class _IndexedToken(MutableMapping):
+
+    def __init__(self, index, fields):
+        self._index = index
+        self._fields = fields
 
     def __len__(self):
-        return self._length
+        return len(self._fields)
+    
+    def __iter__(self):
+        return iter(self._fields)
 
-    def token(self, index, fields=None):
-        if fields == None:
-            fields = self.keys()
-        token = Instance(metadata=self.metadata)
-        for f in fields:
-            token[f] = self[f][index]
-        return token
+    def __getitem__(self, key):
+        return self._fields[key][self._index]
 
-    def tokens(self, fields=None):
-        for i in range(self._length):
-            yield self.token(i, fields)
+    def __setitem__(self, key, value):
+        self._fields[key][self._index] = value
+
+    def __delitem__(self, key):
+        raise NotImplementedError("Not implemented for indexed token view.")
+
+class Instance(dict):
+    
+    def __init__(self, fields=(), metadata=None):
+        super().__init__(fields)
+        self.metadata = metadata
+
+    @property
+    def length(self):
+        for data in self.values():
+            return len(data)
+        return 0
+
+    def token(self, index):
+        return _IndexedToken(index, self)
+
+    def tokens(self):
+        for i in range(self.length):
+            yield self.token(i)
 
     def to_tree(self):
         return DependencyTree(self)
@@ -431,7 +451,7 @@ class Instance(dict):
         return _map_to_sentence(self, inverse_index, fields)
 
     def copy(self):
-        return Instance(self._length, self, self.metadata)
+        return Instance(self, self.metadata)
 
 _NUM_REGEX = re.compile("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"
@@ -724,12 +744,12 @@ def _map_to_instance(sentence, index, fields=None):
     if fields is None:
         fields = {HEAD} | set(index.keys())
 
-    l = len(sentence)
-    instance = Instance(l)
+    length = len(sentence)
+    instance = Instance()
     instance.metadata = sentence.metadata
 
     for field in fields:
-        array = np.full(l, None, dtype=np.object) if field in _CHARS_FIELDS else np.full(l, -1, dtype=np.int)
+        array = np.full(length, None, dtype=np.object) if field in _CHARS_FIELDS else np.full(length, -1, dtype=np.int)
 
         for i, token in enumerate(sentence):
             value = token.get(field)
@@ -759,7 +779,7 @@ def _map_to_sentence(instance, inverse_index, fields=None, join=lambda _, value:
     sentence = Sentence()
     sentence.metadata = instance.metadata
 
-    for i in range(len(instance)):
+    for i in range(instance.length):
         token = Token()
         token[ID] = i + 1
 
@@ -788,9 +808,9 @@ def _map_to_sentence(instance, inverse_index, fields=None, join=lambda _, value:
     
     return sentence
 
-def iterate_instance_tokens(instances, fields=None):
+def iterate_instance_tokens(instances):
     for instance in instances:
-        for token in instance.tokens(fields):
+        for token in instance.tokens():
             yield token
 
 def shuffled_stream(instances, total_size=None, batch_size=None, random=random):
