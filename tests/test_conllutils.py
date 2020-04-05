@@ -71,7 +71,7 @@ def test_dependency_tree(data1, data2):
     assert len(tree0) == len(sentences[0])
     assert [node.is_root for node in tree0] == [False, True, False, False, False, False]
     assert [node.is_leaf for node in tree0] == [True, False, True, False, True, True]
-    assert [node.index for node in tree0] == [0, 1, 2, 3, 4, 5]
+    assert [node.index for node in tree0] == list(range(len(tree0)))
     assert [node.token[FORM] for node in tree0] == ["They", "buy", "and", "sell", "books", "."]
     assert [len(node) for node in tree0] == [0, 4, 0, 1, 0, 0]
 
@@ -80,9 +80,10 @@ def test_dependency_tree(data1, data2):
     assert root0[:] == list(root0)
 
     assert [node.token[FORM] for node in tree0.nodes] == ["They", "buy", "and", "sell", "books", "."]
+    assert [node.token[FORM] for node in tree0.inorder()] == ["They", "buy", "and", "sell", "books", "."]
     assert [node.token[FORM] for node in tree0.preorder()] == ["buy", "They", "sell", "and", "books", "."]
     assert [node.token[FORM] for node in tree0.postorder()] == ["They", "and", "sell", "books", ".", "buy"]
-    assert [leaf.token[FORM] for leaf in tree0.leafs()] == ["They", "and", "books", "."]
+    assert [leaf.token[FORM] for leaf in tree0.leaves()] == ["They", "and", "books", "."]
 
     index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
     instances = list(map_to_instances(sentences, index))

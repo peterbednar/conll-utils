@@ -224,8 +224,8 @@ class Sentence(list):
         of the tokens according to their IDs.
 
         Raises:
-            ValueError: If the sentence contains the words without the HEAD field, or when the non-empty tree does not
-                have exactly one root.
+            ValueError: If the sentence contains the words without the HEAD field, or when the sentence does not have
+                exactly one root word with HEAD = 0.
         """
         return DependencyTree(self)
     
@@ -253,7 +253,7 @@ class Node(object):
     Attributes:
         index (int): The index of the word in the sentence (from 0).
         token (:class:`Token` or indexed token view): The corresponding syntactic word.
-        parent (:class:`Node`): The parent (HEAD) of the node (or `None` for root). 
+        parent (:class:`Node`): The parent (HEAD) of the node, or `None` for the root. 
 
     """
     def __init__(self, index, token):
@@ -287,33 +287,50 @@ class Node(object):
         return len(self._children)
 
     def __iter__(self):
-        # Return an iterator over children.
+        # Return an iterator over the children.
         return iter(self._children)
 
     def __repr__(self):
         return f"<{self.token},{self.deprel},{self._children}>"
 
 class DependencyTree(object):
+    """
+
+    Attributes:
+        root (:class:`Node`): The root of the tree. 
+        nodes (list of :class:`Node`): The list of all nodes in the order of corresponding words in the sentence.
+        metadata (any): Any optional data associated with the tree, by default copied from the sentence or instance.
+
+    """
 
     def __init__(self, sentence):
         self.root, self.nodes = self._build(sentence)
         self.metadata = sentence.metadata
 
     def __len__(self):
+        # Return the number of nodes.
         return len(self.nodes)
 
     def __iter__(self):
-        return self._traverse(self.root, inorder=True)
+        # Return an iterator over all nodes in words order.
+        return iter(self.nodes)
 
-    def leafs(self):
+    def leaves(self):
+        """Return an iterator over all leaves of the tree in words order."""
         for node in self:
             if node.is_leaf:
                 yield node
 
+    def inorder(self):
+        """Return an iterator traversing in-order over all nodes."""
+        return self._traverse(self.root, inorder=True)
+
     def preorder(self):
+        """Return an iterator traversing pre-order over all nodes."""
         return self._traverse(self.root, preorder=True)
 
     def postorder(self):
+        """Return an iterator traversing post-order over all nodes."""
         return self._traverse(self.root, postorder=True)
 
     def __repr__(self):
@@ -335,7 +352,7 @@ class DependencyTree(object):
                 yield node
             yield from DependencyTree._traverse(child, inorder, preorder, postorder)
 
-        if postorder or not consumed: # for postorder or right-most inorder
+        if postorder or not consumed:  # for postorder or right-most inorder
             yield node
 
     @staticmethod
@@ -343,7 +360,7 @@ class DependencyTree(object):
         if isinstance(sentence, Instance):
             tokens = sentence.tokens()
         else:
-            tokens = sentence.words()   # only the syntactic words
+            tokens = sentence.words()  # only the syntactic words
 
         nodes = [Node(i, token) for i, token in enumerate(tokens)]
         if not nodes:
@@ -361,14 +378,14 @@ class DependencyTree(object):
                 if root == None:
                     root = node
                 else:
-                    raise ValueError(f"Found multiple roots at {index}.")
+                    raise ValueError(f"Multiple roots found at {index}.")
             else:
                 parent = nodes[head-1]
                 node.parent = parent
                 parent._children.append(node)
 
-        if node is None:
-            raise ValueError("Found no root.")
+        if root is None:
+            raise ValueError("No root found.")
 
         return root, nodes
 
