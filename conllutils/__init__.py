@@ -405,7 +405,7 @@ class DependencyTree(object):
         return root, nodes
 
 class _IndexedToken(MutableMapping):
-    """A muttable mapping view representing `i`-th token of the indexed instance."""
+    """A mutable mapping view representing `i`-th token of the indexed instance."""
     def __init__(self, index, fields):
         self._index = index
         self._fields = fields
@@ -444,15 +444,25 @@ class Instance(dict):
 
     @property
     def length(self):
-        """int: The length of the intance (number of tokens in the indexed sentence)."""
+        """int: The length of the intance (i.e. the number of tokens in the indexed sentence)."""
         for data in self.values():
             return len(data)
         return 0
 
     def token(self, i):
+        """Return a view to the `i`-th token of the instance.
+
+        The view is a mutable mapping object, which maps fields to the scalar values stored in the instance at the
+        `i`-th position, i.e. for the values of the `i`-th token view, the following condition holds
+        ``token[field] == instance[field][i]``.
+
+        The view object supports all mapping methods and operations except the deleting of the key or setting the key
+        not indexed in the instance.
+        """
         return _IndexedToken(i, self)
 
     def tokens(self):
+        """Return an iterator over all tokens. The iterated values are token view objects."""
         for i in range(self.length):
             yield self.token(i)
 
@@ -474,7 +484,7 @@ class Instance(dict):
 
         Optional `fields` argument specifies a subset of the fields added into the sentence. By default, all instance
         fields are included. The ID values are always generated as the sequence of integers starting from 1, which
-        corresponds to the sentence of lexical words.
+        corresponds to the sequence of lexical words without the empty or multiword tokens.
 
         Raises:
             KeyError: If some of the instance values is not mapped in the `inverse_index`.
