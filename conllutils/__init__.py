@@ -187,7 +187,7 @@ class Sentence(list):
         for token in self[start:]:
             if token[ID] == id:
                 return token
-        raise IndexError(f"token with ID {_id_to_str(id)} not found")
+        raise IndexError(f"Token with ID {_id_to_str(id)} not found.")
 
     def tokens(self):
         """Return an iterator over all tokens in the sentence (alias to ``iter(self)``)."""
@@ -405,24 +405,31 @@ class DependencyTree(object):
         return root, nodes
 
 class _IndexedToken(MutableMapping):
-
+    """A muttable mapping view representing `i`-th token of the indexed instance."""
     def __init__(self, index, fields):
         self._index = index
         self._fields = fields
 
     def __len__(self):
+        # Return the number of fields.
         return len(self._fields)
     
     def __iter__(self):
+        # Return an iterator over the fields.
         return iter(self._fields)
 
-    def __getitem__(self, key):
-        return self._fields[key][self._index]
+    def __getitem__(self, field):
+        # Return the value of the field. Raises a KeyError if the field is not indexed in the instance.
+        return self._fields[field][self._index]
 
-    def __setitem__(self, key, value):
-        self._fields[key][self._index] = value
+    def __setitem__(self, field, value):
+        # Set the value of the field. Raises a KeyError if the field is not indexed in the instance.
+        if not field in self._fields:
+            raise KeyError(field)
+        self._fields[field][self._index] = value
 
     def __delitem__(self, key):
+        # Remove key operation is not supported for token view.
         raise TypeError("Not supported for token views.")
 
 class Instance(dict):
@@ -466,8 +473,7 @@ def split_default(field, value):
         return None
     return tuple(value)
 
-def _parse_sentence(lines, comments=[], skip_empty=True, skip_multiword=True,
-                    parse_feats=False, parse_deps=False, upos_feats=True, normalize=normalize_default, split=split_default):
+def _parse_sentence(lines, comments, skip_empty, skip_multiword, parse_feats, parse_deps, upos_feats, normalize, split):
     sentence = Sentence()
     sentence.metadata = _parse_metadata(comments)
 
@@ -484,7 +490,8 @@ def _parse_sentence(lines, comments=[], skip_empty=True, skip_multiword=True,
 def _parse_metadata(comments):
     return [comment[1:].lstrip() for comment in comments]
 
-def _parse_token(line, parse_feats=False, parse_deps=False, upos_feats=True, normalize=normalize_default, split=split_default):
+def _parse_token(line, parse_feats, parse_deps, upos_feats, normalize, split):
+
     fields = line.split("\t")
     fields = {FIELDS[i] : fields[i] for i in range(min(len(fields), len(FIELDS)))}
 
@@ -557,10 +564,10 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
     if isinstance(file, str):
         file = open(file, "rt", encoding="utf-8")
 
-    with file:
-        lines = []
-        comments = []
+    lines = []
+    comments = []
 
+    with file:
         for line in file:
             line = line.rstrip("\r\n")
             if line.startswith("#"):
@@ -578,6 +585,12 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
             yield _parse_sentence(lines, comments, skip_empty, skip_multiword,
                     parse_feats, parse_deps, upos_feats,
                     normalize, split)
+
+def _sentence_to_str(sentence, encode_metadata):
+    lines = [_token_to_str(token) for token in sentence]
+    if encode_metadata:
+        lines = ["# " + comment for comment in sentence.metadata] + lines
+    return "\n".join(lines)
 
 def _token_to_str(token):
     return "\t".join([_field_to_str(token, field) for field in _BASE_FIELDS])

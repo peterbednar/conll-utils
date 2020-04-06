@@ -344,6 +344,9 @@ def test_iterate_instance_tokens(data2):
     with pytest.raises(TypeError):
         del tokens[0][FORM]
 
+    with pytest.raises(KeyError):
+        tokens[0][ID] = 0
+
 def test_normalize(data4):
     sentences = list(read_conllu(data4, skip_empty=False, skip_multiword=False))
     index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
