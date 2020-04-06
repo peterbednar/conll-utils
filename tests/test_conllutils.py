@@ -305,15 +305,6 @@ def test_write_read_index(data2, tmpdir):
     write_index(tmpdir + "/", index)
     assert read_index(tmpdir + "/") == index
 
-def test_count_frequency(data2):
-    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
-    dictionary = create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD})
-    index = create_index(dictionary)
-
-    frequencies = count_frequency(sentences, index)
-    for f in index.keys():
-        assert {index[f][k]:v for k,v in dictionary[f].items()} == frequencies[f]
-
 def test_instance(data2):
     assert Instance().length == 0
 

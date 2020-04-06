@@ -231,13 +231,13 @@ class Sentence(list):
         return DependencyTree(self)
     
     def to_instance(self, index, fields=None):
-        """Return an instance representation of the sentence with the fields indexed by the `index`.
+        """Return an instance representation of the sentence with the values indexed by the `index`.
 
         Optional `fields` argument specifies a subset of the fields added into the instance. By default, HEAD field and
         all fields from the `index` are included. See :class:`Instance` class for more information.
 
         Raises:
-            KeyError: If some of the `fields` are not indexed in the `index`.
+            KeyError: If some of the `fields` are not mapped in the `index`.
         """
         return _map_to_instance(self, index, fields)
 
@@ -419,11 +419,11 @@ class _IndexedToken(MutableMapping):
         return iter(self._fields)
 
     def __getitem__(self, field):
-        # Return the value of the field. Raises a KeyError if the field is not indexed in the instance.
+        # Return the value of the `field`. Raises a KeyError if the `field` is not mapped in the instance.
         return self._fields[field][self._index]
 
     def __setitem__(self, field, value):
-        # Set the value of the field. Raises a KeyError if the field is not indexed in the instance.
+        # Set the value of the `field`. Raises a KeyError if the `field` is not mapped in the instance.
         if not field in self._fields:
             raise KeyError(field)
         self._fields[field][self._index] = value
@@ -433,31 +433,56 @@ class _IndexedToken(MutableMapping):
         raise TypeError("Not supported for token views.")
 
 class Instance(dict):
-    
+    """An indexed representation of the sentence in the compact numerical form.
+
+    Attributes:
+        metadata (any): Any optional data associated with the instance, by default copied from the sentence.
+    """
     def __init__(self, fields=(), metadata=None):
         super().__init__(fields)
         self.metadata = metadata
 
     @property
     def length(self):
+        """int: The length of the intance (number of tokens in the indexed sentence)."""
         for data in self.values():
             return len(data)
         return 0
 
-    def token(self, index):
-        return _IndexedToken(index, self)
+    def token(self, i):
+        return _IndexedToken(i, self)
 
     def tokens(self):
         for i in range(self.length):
             yield self.token(i)
 
     def to_tree(self):
+        """Return a dependency tree representation of the instance.
+ 
+        See :class:`DependencyTree` class for more information. All tokens referenced in the tree are indexed views, as
+        it is described for the :meth:`token` method. Note that the implementation assumes proper ordering of the tokens
+        and that the instance does not contain empty or multiword tokens.
+
+        Raises:
+            ValueError: If the instance contains the tokens without the HEAD field (HEAD = -1), or when the instance
+                does not have exactly one root with HEAD = 0.
+        """
         return DependencyTree(self)
     
     def to_sentence(self, inverse_index, fields=None):
+        """Return a new sentence build from the instance with the values re-indexed by the `inverse_index`.
+
+        Optional `fields` argument specifies a subset of the fields added into the sentence. By default, all instance
+        fields are included. The ID values are always generated as the sequence of integers starting from 1, which
+        corresponds to the sentence of lexical words.
+
+        Raises:
+            KeyError: If some of the instance values is not mapped in the `inverse_index`.
+        """
         return _map_to_sentence(self, inverse_index, fields)
 
     def copy(self):
+        """Return a shallow copy of the instance."""
         return Instance(self, self.metadata)
 
 _NUM_REGEX = re.compile("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+")
@@ -734,23 +759,6 @@ def read_index(dirname, fields=None):
                     index[f][token] = i
                     i += 1
     return index
-
-def count_frequency(sentences, index, fields=None):
-    if fields is None:
-        fields = index.keys()
-    count = {f: Counter() for f in fields}
-    for sentence in sentences:
-        for token in sentence:
-            for f in fields:
-                s = token.get(f)
-                if isinstance(s, (list, tuple)):
-                    for ch in s:
-                        i = index[f][ch]
-                        count[f][i] += 1
-                else:
-                    i = index[f][s]
-                    count[f][i] += 1
-    return count
 
 def map_to_instances(sentences, index, fields=None):
     for sentence in sentences:
