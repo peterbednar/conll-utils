@@ -107,6 +107,10 @@ class Token(dict):
         id = self.get(ID)
         return id[2] == _MULTIWORD if isinstance(id, tuple) else False
 
+    def to_collu(self):
+        """Return a string representation of the token in the CoNLL-U format."""
+        return _token_to_str(self)
+
     def __repr__(self):
         return f"<{_id_to_str(self.get(ID))},{self.get(FORM)},{self.get(UPOS)}>"
 
@@ -240,6 +244,22 @@ class Sentence(list):
             KeyError: If some of the `fields` are not indexed in the `index`.
         """
         return _map_to_instance(self, index, fields)
+
+    def to_conllu(self, metadata=True):
+        """Return a string representation of the sentence in the CoNLL-U format. If `metadata` is True (default),
+            metadata are included as the comments."""
+        return _sentence_to_str(self, metadata)
+
+    @staticmethod
+    def from_conllu(s, multiple=False, **kwargs):
+        itrs = read_conllu(StringIO(s), **kwargs)
+        if multiple:
+            return list(itrs)
+        else :
+            try:
+                return next(itrs)
+            except:
+                raise ValueError("No sentence found.")
 
     def copy(self):
         """Return a shallow copy of the sentence."""

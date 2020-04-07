@@ -61,6 +61,7 @@ def test_token():
     token[ID] = multiword_id(1, 2)
     token[FORM] = "vámonos"
     assert str(token) == "<1-2,vámonos,None>"
+    assert token.to_collu() == "1-2	vámonos	_	_	_	_	_	_	_	_"
 
 def test_dependency_tree(data1, data2):
     empty = Sentence().to_tree()
@@ -120,6 +121,18 @@ def test_read_conllu(data1):
             _fields(6, "tea", "tea"),
     ]]
 
+def test_to_from_conllu(data2):
+    sentences = list(read_conllu(data2))
+    assert sentences[0].to_conllu() + "\n\n" + sentences[1].to_conllu() + "\n\n" == _read_file(data2)
+
+    s = _read_file(data2)
+    assert Sentence.from_conllu(s) == sentences[0]
+    assert Sentence.from_conllu(s, multiple=True) == sentences
+    assert Sentence.from_conllu("# empty string", multiple=True) == []
+
+    with pytest.raises(ValueError):
+        Sentence.from_conllu("# empty string")
+    
 def test_parse_deps_feats(data2):
     sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, parse_deps=True, parse_feats=True, upos_feats=False, normalize=None, split=None))
     assert sentences[0][0][FEATS] == {"Case":"Nom", "Number":"Plur"}
@@ -334,6 +347,19 @@ def test_normalize(data4):
     inverse_index = create_inverse_index(index)
     assert list(map_to_sentences(instances, inverse_index)) == sentences
 
+def test_copy(data2):
+    token = Token()
+    token[ID] = multiword_id(1,2)
+    token[FORM] = "vámonos"
+    assert token.copy() == token
+
+    sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
+    assert sentences == list([sentence.copy() for sentence in sentences])
+    
+    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
+    instances = list(map_to_instances(sentences, index))
+    assert instances == list([instance.copy() for instance in instances])
+
 def test_shuffled_stream():
     random.seed(1)
     data = list(range(5))
@@ -366,16 +392,3 @@ def test_shuffled_stream():
     random.seed(1)
     for value in shuffled_stream([]):
         assert False
-
-def test_copy(data2):
-    token = Token()
-    token[ID] = multiword_id(1,2)
-    token[FORM] = "vámonos"
-    assert token.copy() == token
-
-    sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
-    assert sentences == list([sentence.copy() for sentence in sentences])
-    
-    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
-    instances = list(map_to_instances(sentences, index))
-    assert instances == list([instance.copy() for instance in instances])
