@@ -237,13 +237,145 @@ class Sentence(list):
         all fields from the `index` are included. See :class:`Instance` class for more information.
 
         Raises:
-            KeyError: If some of the `fields` are not mapped in the `index`.
+            KeyError: If some of the `fields` are not indexed in the `index`.
         """
         return _map_to_instance(self, index, fields)
 
     def copy(self):
         """Return a shallow copy of the sentence."""
         return Sentence(self, self.metadata)
+
+def _parse_sentence(lines, comments, skip_empty, skip_multiword, parse_feats, parse_deps, upos_feats, normalize, split):
+    sentence = Sentence()
+    sentence.metadata = _parse_metadata(comments)
+
+    for line in lines:
+        token = _parse_token(line, parse_feats, parse_deps, upos_feats, normalize, split)
+        if skip_empty and token.is_empty:
+            continue
+        if skip_multiword and token.is_multiword:
+            continue
+        sentence.append(token)
+
+    return sentence
+
+def _parse_metadata(comments):
+    return [comment[1:].lstrip() for comment in comments]
+
+def _parse_token(line, parse_feats, parse_deps, upos_feats, normalize, split):
+
+    fields = line.split("\t")
+    fields = {FIELDS[i] : fields[i] for i in range(min(len(fields), len(FIELDS)))}
+
+    fields[ID] = _parse_id(fields[ID])
+
+    for f in (FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC):
+        if f in fields and fields[f] == "_":
+            del(fields[f])
+
+    if upos_feats:
+        upos = fields.get(UPOS)
+        feats = fields.get(FEATS)
+        if upos:
+            tag = f"POS={upos}|{feats}" if feats else f"POS={upos}"
+        else:
+            tag = feats
+        if tag:
+            if parse_feats:
+                tag = _parse_feats(tag)
+            fields[UPOS_FEATS] = tag
+
+    if parse_feats and FEATS in fields:
+        fields[FEATS] = _parse_feats(fields[FEATS])
+
+    if HEAD in fields:
+        fields[HEAD] = int(fields[HEAD])
+
+    if parse_deps and DEPS in fields:
+        fields[DEPS] = _parse_deps(fields[DEPS])
+
+    if normalize:
+        for (f, n) in ((FORM, FORM_NORM), (LEMMA, LEMMA_NORM)):
+            if f in fields:
+                norm = normalize(f, fields[f])
+                if norm is not None:
+                    fields[n] = norm
+
+    if split:
+        for (f, ch) in _CHARS_FIELDS_MAP:
+            if f in fields:
+                chars = split(f, fields[f])
+                if chars is not None:
+                    fields[ch] = chars
+
+    return Token(fields)
+
+def _parse_id(s):
+    if "." in s:
+        word_id, index = s.split(".")
+        return empty_id(int(word_id), int(index))
+    if "-" in s:
+        start, end = s.split("-")
+        return multiword_id(int(start), int(end))
+    return int(s)
+
+def _parse_feats(s):
+    feats = {}
+    for key, value in [feat.split("=") for feat in s.split("|")]:
+        if "," in value:
+            value = set(value.split(","))
+        feats[key] = value
+    return feats
+
+def _parse_deps(s):
+    return set(map(lambda rel: (int(rel[0]), rel[1]), [rel.split(":") for rel in s.split("|")]))
+
+def _sentence_to_str(sentence, encode_metadata):
+    lines = []
+    if encode_metadata and sentence.metadata:
+        lines = [_comment_to_str(comment) for comment in sentence.metadata]
+    lines += [_token_to_str(token) for token in sentence]
+    return "\n".join(lines)
+
+def _comment_to_str(comment):
+    return "# " + comment
+
+def _token_to_str(token):
+    return "\t".join([_field_to_str(token, field) for field in _BASE_FIELDS])
+
+def _field_to_str(token, field):
+
+    if field == ID:
+        return _id_to_str(token[ID])
+
+    if field not in token or token[field] is None:
+        return "_"
+
+    if field == FEATS:
+        return _feats_to_str(token[FEATS])
+
+    if field == DEPS:
+        return _deps_to_str(token[DEPS])
+
+    return str(token[field])
+
+def _id_to_str(id):
+    if isinstance(id, tuple):
+        return f"{id[0]}.{id[1]}" if id[2] == _EMPTY else f"{id[0]}-{id[1]}"
+    else:
+        return str(id)
+
+def _feats_to_str(feats):
+    if isinstance(feats, str):
+        return feats
+    feats = [key + "=" + (",".join(sorted(value)) if isinstance(value, set) else value) for key, value in feats.items()]
+    return "|".join(feats)        
+
+def _deps_to_str(deps):
+    if isinstance(deps, str):
+        return deps
+    deps = [f"{rel[0]}:{rel[1]}" for rel in sorted(deps, key=lambda rel: rel[0])]
+    return "|".join(deps)
 
 class Node(object):
     """A node in the dependency tree corresponding to the syntactic word in the sentence.
@@ -411,11 +543,11 @@ class _IndexedToken(MutableMapping):
         self._fields = fields
 
     def __len__(self):
-        # Return the number of fields.
+        # Return the number of mapped fields.
         return len(self._fields)
     
     def __iter__(self):
-        # Return an iterator over the fields.
+        # Return an iterator over the mapped fields.
         return iter(self._fields)
 
     def __getitem__(self, field):
@@ -429,11 +561,33 @@ class _IndexedToken(MutableMapping):
         self._fields[field][self._index] = value
 
     def __delitem__(self, key):
-        # Remove key operation is not supported for token view.
+        # Remove key operation is not supported for the token view.
         raise TypeError("Not supported for token views.")
 
 class Instance(dict):
     """An indexed representation of the sentence in the compact numerical form.
+
+    An instance can be created from a sentence using the :meth:`Sentence.to_instance` method. The sentence values are 
+    mapped to the numerical indexes by the provided *index* mapping. The index for a set of sentences can be created
+    with the :func:`create_index` function.
+
+    An instance is a dictionary type where each field is mapped to the NumPy array with the integer values continuously
+    indexed for all tokens in the sentence, i.e. the field value of the `i`-th token is stored as ``instance[field][i]``.
+    The length of all mapped arrays is equal to the length of the sentence.
+
+    The ID field is not stored in the instance. Note that this also means that the type of tokens is not preserved.
+
+    The HEAD field and string-valued fields (i.e. FORM, LEMMA, UPOS, XPOS, DEPREL, MISC, FORM_NORM and LEMMA_NORM) are
+    indexed and stored in the ``numpy.int`` array. The FEATS, DEPS and UPOS_FEATS are indexed as unparsed strings, i.e.
+    the features or dependencies are not indexed separately.
+
+    The character fields (i.e. FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS and LEMMA_NORM_CHARS) are indexed and stored in
+    the ``numpy.obj`` array with the nested ``numpy.int`` arrays, i.e. the `j`-th character of the `i`-th token is
+    stored in the ``instance[field][i][j]``. Note that the length of each nested array ``instance[field][i]`` can be
+    different according to the number of characters for each token.
+
+    By default, unknown values (i.e. values not mapped in the provided index) are stored as 0. Missing values (i.e. when
+    some token does not have indexed field) are stored as -1 or as `None` for the character fields.
 
     Attributes:
         metadata (any): Any optional data associated with the instance, by default copied from the sentence.
@@ -456,8 +610,8 @@ class Instance(dict):
         `i`-th position, i.e. for the values of the `i`-th token view, the following condition holds
         ``token[field] == instance[field][i]``.
 
-        The view object supports all mapping methods and operations except the deleting of the key or setting the key
-        not indexed in the instance.
+        The view object supports all mapping methods and operations except the deleting of the field or setting the
+        value of the field not indexed in the instance.
         """
         return _IndexedToken(i, self)
 
@@ -487,7 +641,7 @@ class Instance(dict):
         corresponds to the sequence of lexical words without the empty or multiword tokens.
 
         Raises:
-            KeyError: If some of the instance values is not mapped in the `inverse_index`.
+            KeyError: If some of the instance values is not indexed in the `inverse_index`.
         """
         return _map_to_sentence(self, inverse_index, fields)
 
@@ -498,111 +652,26 @@ class Instance(dict):
 _NUM_REGEX = re.compile("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"
 
-def normalize_default(field, value):
+def _normalize_default(field, value):
     if _NUM_REGEX.match(value):
         return NUM_NORM
     return value.lower()
 
-def split_default(field, value):
+def _split_default(field, value):
     if value == NUM_NORM:
         return None
     return tuple(value)
 
-def _parse_sentence(lines, comments, skip_empty, skip_multiword, parse_feats, parse_deps, upos_feats, normalize, split):
-    sentence = Sentence()
-    sentence.metadata = _parse_metadata(comments)
-
-    for line in lines:
-        token = _parse_token(line, parse_feats, parse_deps, upos_feats, normalize, split)
-        if skip_empty and token.is_empty:
-            continue
-        if skip_multiword and token.is_multiword:
-            continue
-        sentence.append(token)
-
-    return sentence
-
-def _parse_metadata(comments):
-    return [comment[1:].lstrip() for comment in comments]
-
-def _parse_token(line, parse_feats, parse_deps, upos_feats, normalize, split):
-
-    fields = line.split("\t")
-    fields = {FIELDS[i] : fields[i] for i in range(min(len(fields), len(FIELDS)))}
-
-    fields[ID] = _parse_id(fields[ID])
-
-    for f in (FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC):
-        if f in fields and fields[f] == "_":
-            del(fields[f])
-
-    if upos_feats:
-        upos = fields.get(UPOS)
-        feats = fields.get(FEATS)
-        if upos:
-            tag = f"POS={upos}|{feats}" if feats else f"POS={upos}"
-        else:
-            tag = feats
-        if tag:
-            if parse_feats:
-                tag = _parse_feats(tag)
-            fields[UPOS_FEATS] = tag
-
-    if parse_feats and FEATS in fields:
-        fields[FEATS] = _parse_feats(fields[FEATS])
-
-    if HEAD in fields:
-        fields[HEAD] = int(fields[HEAD])
-
-    if parse_deps and DEPS in fields:
-        fields[DEPS] = _parse_deps(fields[DEPS])
-
-    if normalize:
-        for (f, n) in ((FORM, FORM_NORM), (LEMMA, LEMMA_NORM)):
-            if f in fields:
-                norm = normalize(f, fields[f])
-                if norm is not None:
-                    fields[n] = norm
-
-    if split:
-        for (f, ch) in _CHARS_FIELDS_MAP:
-            if f in fields:
-                chars = split(f, fields[f])
-                if chars is not None:
-                    fields[ch] = chars
-
-    return Token(fields)
-
-def _parse_id(s):
-    if "." in s:
-        word_id, index = s.split(".")
-        return empty_id(int(word_id), int(index))
-    if "-" in s:
-        start, end = s.split("-")
-        return multiword_id(int(start), int(end))
-    return int(s)
-
-def _parse_feats(s):
-    feats = {}
-    for key, value in [feat.split("=") for feat in s.split("|")]:
-        if "," in value:
-            value = set(value.split(","))
-        feats[key] = value
-    return feats
-
-def _parse_deps(s):
-    return set(map(lambda rel: (int(rel[0]), rel[1]), [rel.split(":") for rel in s.split("|")]))
-
 def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
-                normalize=normalize_default, split=split_default):
+                normalize=_normalize_default, split=_split_default):
 
     if isinstance(file, str):
         file = open(file, "rt", encoding="utf-8")
 
-    lines = []
-    comments = []
+    with file:        
+        lines = []
+        comments = []
 
-    with file:
         for line in file:
             line = line.rstrip("\r\n")
             if line.startswith("#"):
@@ -621,93 +690,25 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
                     parse_feats, parse_deps, upos_feats,
                     normalize, split)
 
-def _sentence_to_str(sentence, encode_metadata):
-    lines = [_token_to_str(token) for token in sentence]
-    if encode_metadata:
-        lines = ["# " + comment for comment in sentence.metadata] + lines
-    return "\n".join(lines)
-
-def _token_to_str(token):
-    return "\t".join([_field_to_str(token, field) for field in _BASE_FIELDS])
-
-def _field_to_str(token, field):
-
-    if field == ID:
-        return _id_to_str(token[ID])
-
-    if field not in token or token[field] is None:
-        return "_"
-
-    if field == FEATS:
-        return _feats_to_str(token[FEATS])
-
-    if field == DEPS:
-        return _deps_to_str(token[DEPS])
-
-    return str(token[field])
-
-def _id_to_str(id):
-    if isinstance(id, tuple):
-        return f"{id[0]}.{id[1]}" if id[2] == _EMPTY else f"{id[0]}-{id[1]}"
-    else:
-        return str(id)
-
-def _feats_to_str(feats):
-    if isinstance(feats, str):
-        return feats
-    feats = [key + "=" + (",".join(sorted(value)) if isinstance(value, set) else value) for key, value in feats.items()]
-    return "|".join(feats)        
-
-def _deps_to_str(deps):
-    if isinstance(deps, str):
-        return deps
-    deps = [f"{rel[0]}:{rel[1]}" for rel in sorted(deps, key=lambda rel: rel[0])]
-    return "|".join(deps)
-
 def write_conllu(file, data, write_metadata=True):
     if isinstance(data, Sentence):
         data = (data,)
 
-    def _write_metadata(fp, metadata):
-        if metadata:
-            for comment in metadata:
-                print("# " + comment, file=fp)
-
-    def _write_tokens(fp, tokens):
-        for token in tokens:
-            print(_token_to_str(token), file=fp)
-
     if isinstance(file, str):
         file = open(file, "wt", encoding="utf-8")
+
     with file as fp:
         for sentence in data:
-            if write_metadata:
-                _write_metadata(fp, sentence.metadata)
-            _write_tokens(fp, sentence)
+            if write_metadata and sentence.metadata:
+                for comment in sentence.metadata:
+                    print(_comment_to_str(comment), file=fp)
+            for token in sentence:
+                print(_token_to_str(token), file=fp)
             print(file=fp)
 
-class _StringIO(StringIO):
-
-    def close(self):
-        pass
-
-    def release(self):
-        super().close()
-
-def decode_conllu(s, skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
-                  normalize=normalize_default, split=split_default):
-    return read_conllu(StringIO(s), skip_empty, skip_multiword, parse_feats, parse_deps, upos_feats, normalize, split)
-
-def encode_conllu(data, encode_metadata=True):
-    f = _StringIO()
-    write_conllu(f, data, encode_metadata)
-    s = f.getvalue()
-    f.release()
-    return s
-
-def create_dictionary(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}):
+def _create_dictionary(sentences, fields):
     if ID in fields or HEAD in fields:
-        raise ValueError("indexing ID or HEAD non-string fields")
+        raise ValueError("Indexing ID or HEAD fields.")
 
     dic = {f: Counter() for f in fields}
     for sentence in sentences:
@@ -721,7 +722,9 @@ def create_dictionary(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}
                     dic[f][s] += 1
     return dic
 
-def create_index(dic, min_frequency=1):
+def create_index(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}, min_frequency=1):
+    dic = _create_dictionary(sentences, fields)
+
     index = {f: Counter() for f in dic.keys()}
     for f, c in dic.items():
         ordered = c.most_common()
@@ -729,6 +732,7 @@ def create_index(dic, min_frequency=1):
         for i, (s, fq) in enumerate(ordered):
             if fq >= min_fq:
                 index[f][s] = i + 1
+
     return index
 
 def create_inverse_index(index):

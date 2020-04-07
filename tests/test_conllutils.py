@@ -3,7 +3,15 @@ import pytest
 import random
 
 from conllutils import *
-from conllutils import _StringIO
+from conllutils import _create_dictionary
+
+class _StringIO(StringIO):
+
+    def close(self):
+        pass
+
+    def release(self):
+        super().close()
 
 def _data_filename(name):
     return os.path.join(os.path.dirname(__file__), name)
@@ -86,7 +94,7 @@ def test_dependency_tree(data1, data2):
     assert [node.token[FORM] for node in tree0.postorder()] == ["They", "and", "sell", "books", ".", "buy"]
     assert [leaf.token[FORM] for leaf in tree0.leaves()] == ["They", "and", "books", "."]
 
-    index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
+    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
     instances = list(map_to_instances(sentences, index))
 
     tree0 = instances[0].to_tree()
@@ -241,66 +249,42 @@ def test_write_conllu(data1, data2, data3):
     assert output.getvalue() == input
     output.release()
 
-def test_decode_conllu():
-    sentences = list(decode_conllu(_DATA1_CONLLU, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
-    assert sentences == [[
-            _fields(multiword_id(1, 2), "vámonos"),
-            _fields(1, "vamos", "ir", None, None, None, 0),
-            _fields(2, "nos", "nosotros", None, None, None, 1),
-            _fields(multiword_id(3, 4), "al"),
-            _fields(3, "a", "a", None, None, None, 5),
-            _fields(4, "el", "el", None, None, None, 5),
-            _fields(5, "mar", "mar", None, None, None, 1)
-        ], [
-            _fields(1, "Sue", "Sue"),
-            _fields(2, "likes", "like"),
-            _fields(3, "coffee", "coffee"),
-            _fields(4, "and", "and"),
-            _fields(5, "Bill", "Bill"),
-            _fields(empty_id(5, 1), "likes", "like"),
-            _fields(6, "tea", "tea"),
-    ]]
-
-def test_encode_conllu():
-    sentences = list(decode_conllu(_DATA1_CONLLU, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
-    assert encode_conllu(sentences) == _DATA1_CONLLU
-
 def test_create_dictionary(data2):
         sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
-        dictionary = create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD})
+        dictionary = _create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD})
 
         assert dictionary.keys() == set(FIELDS)-{ID, HEAD}
         assert dictionary[FORM] == {"They":1, "buy":1, "and":1, "sell":1, "books":1, ".":2, "I":1, "have":1, "no":1, "clue":1}
         assert dictionary[FORM_NORM_CHARS] == {"e":4, "l":3, "o":3, "h":2, "y":2, "b":2, "u":2, "a":2, "n":2, "s":2, ".":2, "t":1, "d":1, "k":1, "i":1, "v":1, "c":1}
 
         with pytest.raises(ValueError):
-            create_dictionary(sentences, fields={ID})
+            _create_dictionary(sentences, fields={ID})
 
         with pytest.raises(ValueError):
-            create_dictionary(sentences, fields={HEAD})
+            _create_dictionary(sentences, fields={HEAD})
 
 def test_create_index(data2):
     sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
-    dictionary = create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD})
-    
-    index = create_index(dictionary)
+    dictionary = _create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD})
+
+    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
     assert [list(index[f].values()) for f in index.keys()] == [list(range(1, len(index[f])+1)) for f in index.keys()]
     assert [index[f].keys() for f in index.keys()] == [dictionary[f].keys() for f in index.keys()]
 
-    index = create_index(dictionary, min_frequency=2)
+    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD}, min_frequency=2)
     assert index[FORM] == {".":1}
     assert index[FORM_NORM_CHARS] == {"e":1, "l":2, "o":3, "h":4, "y":5, "b":6, "u":7, "a":8, "n":9, "s":10, ".":11}
 
 def test_create_inverse_index(data2):
     sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
-    index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
+    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
 
     inverse_index = create_inverse_index(index)
     assert create_inverse_index(inverse_index) == index
 
 def test_write_read_index(data2, tmpdir):
     sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
-    index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
+    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
 
     write_index(tmpdir + "/", index)
     assert read_index(tmpdir + "/") == index
@@ -310,7 +294,7 @@ def test_instance(data2):
 
 def test_map_to_instances(data1, data2):
     sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
-    index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
+    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
     inverse_index = create_inverse_index(index)
 
     instances = list(map_to_instances(sentences, index))
@@ -320,7 +304,7 @@ def test_map_to_instances(data1, data2):
 
 def test_iterate_instance_tokens(data2):
     sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
-    index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
+    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
     instances = list(map_to_instances(sentences, index))
     tokens = list(iterate_instance_tokens(instances))
 
@@ -340,7 +324,7 @@ def test_iterate_instance_tokens(data2):
 
 def test_normalize(data4):
     sentences = list(read_conllu(data4, skip_empty=False, skip_multiword=False))
-    index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
+    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
     instances = list(map_to_instances(sentences, index))
 
     assert sentences[0][5][FORM_NORM] == NUM_NORM and sentences[0][5][LEMMA_NORM] == NUM_NORM
@@ -392,6 +376,6 @@ def test_copy(data2):
     sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
     assert sentences == list([sentence.copy() for sentence in sentences])
     
-    index = create_index(create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD}))
+    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
     instances = list(map_to_instances(sentences, index))
     assert instances == list([instance.copy() for instance in instances])
