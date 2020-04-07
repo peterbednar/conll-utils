@@ -233,7 +233,7 @@ class Sentence(list):
                 exactly one root with HEAD = 0.
         """
         return DependencyTree(self)
-    
+
     def to_instance(self, index, fields=None):
         """Return an instance representation of the sentence with the values indexed by the `index`.
 
@@ -246,8 +246,9 @@ class Sentence(list):
         return _map_to_instance(self, index, fields)
 
     def to_conllu(self, metadata=True):
-        """Return a string representation of the sentence in the CoNLL-U format. If `metadata` is True (default),
-            metadata are included as the comments."""
+        """Return a string representation of the sentence in the CoNLL-U format. If the `metadata` argument is True
+            (default), the metatada comments are inluded in the string.
+        """
         return _sentence_to_str(self, metadata)
 
     @staticmethod
@@ -352,13 +353,16 @@ def _parse_deps(s):
 
 def _sentence_to_str(sentence, encode_metadata):
     lines = []
-    if encode_metadata and sentence.metadata:
-        lines = [_comment_to_str(comment) for comment in sentence.metadata]
+    if encode_metadata:
+        lines = _metadata_to_str(sentence.metadata)
     lines += [_token_to_str(token) for token in sentence]
     return "\n".join(lines)
 
-def _comment_to_str(comment):
-    return "# " + comment
+def _metadata_to_str(metadata):
+    if isinstance(metadata, list):
+        return ["# " + str(comment) for comment in metadata]
+    else:
+        return []
 
 def _token_to_str(token):
     return "\t".join([_field_to_str(token, field) for field in _BASE_FIELDS])
@@ -705,6 +709,7 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
                             normalize, split)
                     lines = []
                     comments = []
+
         if len(lines) > 0:
             yield _parse_sentence(lines, comments, skip_empty, skip_multiword,
                     parse_feats, parse_deps, upos_feats,
@@ -720,8 +725,8 @@ def write_conllu(file, data, write_metadata=True):
     with file as fp:
         for sentence in data:
             if write_metadata and sentence.metadata:
-                for comment in sentence.metadata:
-                    print(_comment_to_str(comment), file=fp)
+                for comment in _metadata_to_str(sentence.metadata):
+                    print(comment, file=fp)
             for token in sentence:
                 print(_token_to_str(token), file=fp)
             print(file=fp)
