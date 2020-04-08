@@ -108,7 +108,7 @@ class Token(dict):
         return id[2] == _MULTIWORD if isinstance(id, tuple) else False
 
     def to_collu(self):
-        """Return a string representation of the token in the CoNLL-U format."""
+        """Return a string representation in the CoNLL-U format."""
         return _token_to_str(self)
 
     def __repr__(self):
@@ -246,21 +246,28 @@ class Sentence(list):
         return _map_to_instance(self, index, fields)
 
     def to_conllu(self, metadata=True):
-        """Return a string representation of the sentence in the CoNLL-U format. If the `metadata` argument is True
-            (default), the metatada comments are inluded in the string.
+        """Return a string representation in the CoNLL-U format.
+
+        If the `metadata` argument is True (default), the string also includes comments generated from the metadata.
         """
         return _sentence_to_str(self, metadata)
 
     @staticmethod
     def from_conllu(s, multiple=False, **kwargs):
+        """Parse a sentence (or list of sentences) from the string in the CoNLL-U format.
+        
+        If the argument `multiple` is True, the function returns the list of all sentences parsed from the string.
+        Otherwise (default), it returns only the first sentence. This function supports all additional keyword arguments
+        as the :func:`parse_conllu` function.
+
+        Raises:
+	        ValueError: If there is an error parsing at least one sentence from the string.
+        """
         itrs = read_conllu(StringIO(s), **kwargs)
-        if multiple:
-            return list(itrs)
-        else :
-            try:
-                return next(itrs)
-            except:
-                raise ValueError("No sentence found.")
+        result = list(itrs) if multiple else next(itrs, None)
+        if not result:
+            raise ValueError("No sentence found.")
+        return result
 
     def copy(self):
         """Return a shallow copy of the sentence."""

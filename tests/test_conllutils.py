@@ -128,10 +128,12 @@ def test_to_from_conllu(data2):
     s = _read_file(data2)
     assert Sentence.from_conllu(s) == sentences[0]
     assert Sentence.from_conllu(s, multiple=True) == sentences
-    assert Sentence.from_conllu("# empty string", multiple=True) == []
 
     with pytest.raises(ValueError):
         Sentence.from_conllu("# empty string")
+
+    with pytest.raises(ValueError):
+        Sentence.from_conllu("# empty string", multiple=True)
     
 def test_parse_deps_feats(data2):
     sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, parse_deps=True, parse_feats=True, upos_feats=False, normalize=None, split=None))
