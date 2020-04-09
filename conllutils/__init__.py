@@ -1,6 +1,5 @@
 import os
 import re
-import random
 from collections import Counter
 from collections.abc import MutableMapping
 from io import StringIO
@@ -809,8 +808,8 @@ def read_index(dirname, fields=None):
     return index
 
 def map_to_instances(sentences, index, fields=None):
-    """Transform every sentence in the `sentences` iterable with :meth:`Sentence.to_instance` method and return an
-    iterator over the indexed instances.
+    """Index every sentence in the `sentences` iterable with :meth:`Sentence.to_instance` method and return an iterator
+    over the indexed instances.
     """
     for sentence in sentences:
         yield _map_to_instance(sentence, index, fields)
@@ -847,8 +846,8 @@ def _map_to_instance(sentence, index, fields=None):
     return instance
 
 def map_to_sentences(instances, inverse_index, fields=None):
-    """Transform every indexed instance in the `instances` iterable with :meth:`Instance.to_sentence` method and return
-    an iterator over the re-indexed sentences.
+    """Transform every instance in `instances` iterable with :meth:`Instance.to_sentence` method and return an iterator
+    over the generated sentences.
 
     This operation is inverse to the indexing in :func:`map_to_instances` function.
     """
@@ -899,7 +898,25 @@ def iterate_instance_tokens(instances):
         for token in instance.tokens():
             yield token
 
-def shuffled_stream(instances, total_size=None, batch_size=None, random=random):
+def shuffled_stream(instances, total_size=None, batch_size=None, random=np.random):
+    """Return a generator iterating over the randomly shuffled individual instances or batches of instances.
+
+    Args:
+        total_size (int): The `total_size` argument bounds the maximum number of generated instances. If `total_size` is
+            `None` (default), the function generates an unbounded sequence.
+        batch_szie (int): If `batch_size` is >= 1; the function generates the sequence of batches, i.e. lists of
+            instances with the specified size. If `batch_size` is `None` (default), the function generates the sequence
+            of individual instances.
+        random: Module implementing pseudo-random generator for data shuffling. By default ``numpy.random``.
+
+    """
+
+    if total_size is not None and total_size < 0:
+        raise ValueError("total_size must be positive or None")
+
+    if batch_size is not None and batch_size < 1:
+        raise ValueError("batch_size must by >= 1 or None")
+
     i = 0
     batch = []
     instances = list(instances)
