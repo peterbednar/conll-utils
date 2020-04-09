@@ -108,7 +108,7 @@ class Token(dict):
         return id[2] == _MULTIWORD if isinstance(id, tuple) else False
 
     def to_collu(self):
-        """Return a string representation in the CoNLL-U format."""
+        """Return a string representation of the token in the CoNLL-U format."""
         return _token_to_str(self)
 
     def __repr__(self):
@@ -246,7 +246,7 @@ class Sentence(list):
         return _map_to_instance(self, index, fields)
 
     def to_conllu(self, metadata=True):
-        """Return a string representation in the CoNLL-U format.
+        """Return a string representation of the sentence in the CoNLL-U format.
 
         If the `metadata` argument is True (default), the string also includes comments generated from the metadata.
         """
@@ -258,7 +258,7 @@ class Sentence(list):
         
         If the argument `multiple` is True, the function returns the list of all sentences parsed from the string.
         Otherwise (default), it returns only the first sentence. This function supports all additional keyword arguments
-        as the :func:`parse_conllu` function.
+        as the :func:`read_conllu` function.
 
         Raises:
 	        ValueError: If there is an error parsing at least one sentence from the string.
@@ -671,6 +671,8 @@ class Instance(dict):
         fields are included. The ID values are always generated as the sequence of integers starting from 1, which
         corresponds to the sequence of lexical words without the empty or multiword tokens.
 
+        This operation is inverse to the indexing in the :meth:`Sentence.to_instance` method.
+
         Raises:
             KeyError: If some of the instance values is not indexed in the `inverse_index`.
         """
@@ -699,7 +701,7 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
     if isinstance(file, str):
         file = open(file, "rt", encoding="utf-8")
 
-    with file:        
+    with file:
         lines = []
         comments = []
 
@@ -807,6 +809,9 @@ def read_index(dirname, fields=None):
     return index
 
 def map_to_instances(sentences, index, fields=None):
+    """Transform every sentence in the `sentences` iterable with :meth:`Sentence.to_instance` method and return an
+    iterator over the indexed indexes.
+    """
     for sentence in sentences:
         yield _map_to_instance(sentence, index, fields)
 
@@ -842,6 +847,11 @@ def _map_to_instance(sentence, index, fields=None):
     return instance
 
 def map_to_sentences(instances, inverse_index, fields=None):
+    """Transform every indexed instance in the `instances` iterable with :meth:`Instance.to_sentence` method and return
+    an iterator over the re-indexed sentences.
+
+    This operation is inverse to the indexing in the :func:`map_to_instances` function.
+    """
     for instance in instances:
         yield _map_to_sentence(instance, inverse_index, fields)
 
