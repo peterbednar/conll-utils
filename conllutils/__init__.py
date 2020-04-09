@@ -621,6 +621,7 @@ class Instance(dict):
 
     Attributes:
         metadata (any): Any optional data associated with the instance, by default copied from the sentence.
+
     """
     def __init__(self, fields=(), metadata=None):
         super().__init__(fields)
@@ -740,11 +741,11 @@ def write_conllu(file, data, write_metadata=True):
             print(file=fp)
 
 def _create_dictionary(sentences, fields):
-    """Create a dictionary of string values for the indexed set of `fields` in the `sentences`.
+    """Create a dictionary of string values in the `sentences` for the indexed set of `fields`.
 
-    The dictionary is a nested mapping that maps values for each field to their frequency of occurrences in the sentences
+    A dictionary is a nested mapping that maps values for each field to their frequency of occurrences in the sentences
     (i.e. ``dictionary[field][value] == frequency``). For character fields with tuple values (i.e. FORM_CHARS,
-    LEMMA_CHARS, FORM_NORM_CHARS and LEMMA_NORM_CHARS), each character is indexed.
+    LEMMA_CHARS, FORM_NORM_CHARS and LEMMA_NORM_CHARS), each character in tuple is indexed.
     
     Raises:
         ValueError: If non-string ID and HEAD fields are included for the indexing.
@@ -779,11 +780,6 @@ def create_index(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}, min
     return index
 
 def create_inverse_index(index):
-    """Return an inverse mapping of the index, i.e. for ``index[field][v] == i`` the following inverse mapping holds
-    ``inverse_index[field][i] == v``.
-
-    See the :meth:`Instance.to_sentence` method for the usage of the inverse index.
-    """
     return {f: {v: k for k, v in c.items()} for f, c in index.items()}
 
 INDEX_FILENAME = "{0}index_{1}.txt"
@@ -823,9 +819,6 @@ def read_index(dirname, fields=None):
     return index
 
 def map_to_instances(sentences, index, fields=None):
-    """Index every sentence in the `sentences` iterable with :meth:`Sentence.to_instance` method and return an iterator
-    over the indexed instances.
-    """
     for sentence in sentences:
         yield _map_to_instance(sentence, index, fields)
 
@@ -861,9 +854,7 @@ def _map_to_instance(sentence, index, fields=None):
     return instance
 
 def map_to_sentences(instances, inverse_index, fields=None):
-    """Transform every instance in `instances` iterable with :meth:`Instance.to_sentence` method and return an iterator
-    over the generated sentences.
-
+    """
     This operation is inverse to the indexing in :func:`map_to_instances` function.
     """
     for instance in instances:
@@ -905,17 +896,8 @@ def _map_to_sentence(instance, inverse_index, fields=None, join=lambda _, value:
     
     return sentence
 
-def iterate_instance_tokens(instances):
-    """Return an iterator over all tokens of all instances in `instances` iterable.
-    
-    The iterated values are indexed token views (see :meth:`Instance.token` method).
-    """
-    for instance in instances:
-        for token in instance.tokens():
-            yield token
-
 def shuffled_stream(instances, total_size=None, batch_size=None, random=np.random):
-    """Return a generator iterating over the randomly shuffled individual instances or batches of instances.
+    """Return a generator iterating over the randomly shuffled instances.
 
     Args:
         total_size (int): The `total_size` argument bounds the maximum number of generated instances. If `total_size` is
@@ -926,7 +908,7 @@ def shuffled_stream(instances, total_size=None, batch_size=None, random=np.rando
         random: Module implementing pseudo-random generator for data shuffling. By default ``numpy.random``.
 
     """
-
+    
     if total_size is not None and total_size < 0:
         raise ValueError("total_size must be positive or None")
 
