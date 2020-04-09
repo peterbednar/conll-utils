@@ -671,7 +671,7 @@ class Instance(dict):
         fields are included. The ID values are always generated as the sequence of integers starting from 1, which
         corresponds to the sequence of lexical words without the empty or multiword tokens.
 
-        This operation is inverse to the indexing in the :meth:`Sentence.to_instance` method.
+        This operation is inverse to the indexing in :meth:`Sentence.to_instance` method.
 
         Raises:
             KeyError: If some of the instance values is not indexed in the `inverse_index`.
@@ -810,7 +810,7 @@ def read_index(dirname, fields=None):
 
 def map_to_instances(sentences, index, fields=None):
     """Transform every sentence in the `sentences` iterable with :meth:`Sentence.to_instance` method and return an
-    iterator over the indexed indexes.
+    iterator over the indexed instances.
     """
     for sentence in sentences:
         yield _map_to_instance(sentence, index, fields)
@@ -850,7 +850,7 @@ def map_to_sentences(instances, inverse_index, fields=None):
     """Transform every indexed instance in the `instances` iterable with :meth:`Instance.to_sentence` method and return
     an iterator over the re-indexed sentences.
 
-    This operation is inverse to the indexing in the :func:`map_to_instances` function.
+    This operation is inverse to the indexing in :func:`map_to_instances` function.
     """
     for instance in instances:
         yield _map_to_sentence(instance, inverse_index, fields)
@@ -892,6 +892,9 @@ def _map_to_sentence(instance, inverse_index, fields=None, join=lambda _, value:
     return sentence
 
 def iterate_instance_tokens(instances):
+    """Return an iterator over all tokens of all instances in `instances` iterable. The iterated values are indexed
+    token views (see :meth:`Instance.token` method).
+    """
     for instance in instances:
         for token in instance.tokens():
             yield token
