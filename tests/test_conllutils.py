@@ -1,6 +1,6 @@
 import os
 import pytest
-import random
+import numpy as np
 
 from conllutils import *
 from conllutils import _create_dictionary

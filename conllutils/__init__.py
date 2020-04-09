@@ -740,6 +740,16 @@ def write_conllu(file, data, write_metadata=True):
             print(file=fp)
 
 def _create_dictionary(sentences, fields):
+    """Create a dictionary of string values for the indexed set of `fields` in the `sentences`.
+
+    The dictionary is a nested mapping that maps values for each field to their frequency of occurrences in the sentences
+    (i.e. ``dictionary[field][value] == frequency``). For character fields with tuple values (i.e. FORM_CHARS,
+    LEMMA_CHARS, FORM_NORM_CHARS and LEMMA_NORM_CHARS), each character is indexed.
+    
+    Raises:
+        ValueError: If non-string ID and HEAD fields are included for the indexing.
+
+    """
     if ID in fields or HEAD in fields:
         raise ValueError("Indexing ID or HEAD fields.")
 
@@ -769,6 +779,11 @@ def create_index(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}, min
     return index
 
 def create_inverse_index(index):
+    """Return an inverse mapping of the index, i.e. for ``index[field][v] == i`` the following inverse mapping holds
+    ``inverse_index[field][i] == v``.
+
+    See the :meth:`Instance.to_sentence` method for the usage of the inverse index.
+    """
     return {f: {v: k for k, v in c.items()} for f, c in index.items()}
 
 INDEX_FILENAME = "{0}index_{1}.txt"
@@ -891,8 +906,9 @@ def _map_to_sentence(instance, inverse_index, fields=None, join=lambda _, value:
     return sentence
 
 def iterate_instance_tokens(instances):
-    """Return an iterator over all tokens of all instances in `instances` iterable. The iterated values are indexed
-    token views (see :meth:`Instance.token` method).
+    """Return an iterator over all tokens of all instances in `instances` iterable.
+    
+    The iterated values are indexed token views (see :meth:`Instance.token` method).
     """
     for instance in instances:
         for token in instance.tokens():
@@ -904,7 +920,7 @@ def shuffled_stream(instances, total_size=None, batch_size=None, random=np.rando
     Args:
         total_size (int): The `total_size` argument bounds the maximum number of generated instances. If `total_size` is
             `None` (default), the function generates an unbounded sequence.
-        batch_szie (int): If `batch_size` is >= 1; the function generates the sequence of batches, i.e. lists of
+        batch_size (int): If `batch_size` is >= 1, the function generates the sequence of batches, i.e. lists of
             instances with the specified size. If `batch_size` is `None` (default), the function generates the sequence
             of individual instances.
         random: Module implementing pseudo-random generator for data shuffling. By default ``numpy.random``.
