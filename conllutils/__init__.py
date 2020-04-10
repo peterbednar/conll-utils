@@ -757,17 +757,27 @@ def _create_dictionary(sentences, fields):
     return dic
 
 def create_index(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}, min_frequency=1):
-    """Return an index mapping the string values from the `sentences` to integer indexes.
+    """Return an index mapping the string values of the `sentences` to integer indexes.
 
-    An index is a nested dictionary with the indexes of field values stored as ``index[field][value]``. See
+    An index is a nested dictionary where the indexes for the field values are stored as ``index[field][value]``. See
     :meth:`Sentence.to_instance` method for usage of the index dictionary for sentence indexing.
 
-    The indexes are assigned to the string values starting from 1 according to their descending frequency of
-    occurrences in the sentences, i.e. for each field, the most frequent value has index 1, second one index 2, etc.
-    Index 0 represents an *unknown* value, and the index dictionary returns 0 for all unmapped values.
+    For each field, the indexes are assigned to the string values starting from 1 according to their descending
+    frequency of occurrences in the sentences, i.e. the most frequent value has index 1, second one index 2, etc.
+    Index 0 represents an *unknown* value, and the dictionary returns 0 for all unmapped values.
 
-    Use :func:`create_inverse_index` function to create an inverse mapping from the indexes to the string values.
+    For mapping of instances to the sentences, use :func:`create_inverse_index` function to create an inverse mapping
+    from the indexes to the string values.
 
+    Args:
+        sentences (iterable): The indexed sentences.
+        fields (set): The set of indexed fields included in the index.
+        min_frequency (int or dictionary): If specified, the field values with a frequency lower than `min_frequency`
+            are discarded from the index. By default, all values are preserved. The `min_frequency` can be specified as
+            an integer for all fields, or as a dictionary setting the frequency for the specific field.
+
+    Raises:
+        ValueError: If the indexed fields include ID or HEAD field.
     """
     dic = _create_dictionary(sentences, fields)
 
