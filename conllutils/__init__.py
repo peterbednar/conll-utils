@@ -613,7 +613,7 @@ class Instance(dict):
 
     The character fields (i.e. FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS and LEMMA_NORM_CHARS) are indexed and stored in
     the ``numpy.obj`` array with the nested ``numpy.int`` arrays, i.e. the `j`-th character of the `i`-th token is
-    stored in the ``instance[field][i][j]``. Note that the length of each nested array ``instance[field][i]`` can be
+    stored as ``instance[field][i][j]``. Note that the length of each nested array ``instance[field][i]`` can be
     different according to the number of characters for each token.
 
     By default, unknown values (i.e. values not mapped in the provided index) are stored as 0. Missing values (i.e. when
@@ -674,7 +674,7 @@ class Instance(dict):
         This operation is inverse to the indexing in :meth:`Sentence.to_instance` method.
 
         Raises:
-            KeyError: If some of the instance values is not indexed in the `inverse_index`.
+            KeyError: If some of the instance values is not mapped in the `inverse_index`.
         """
         return _map_to_sentence(self, inverse_index, fields)
 
@@ -741,16 +741,6 @@ def write_conllu(file, data, write_metadata=True):
             print(file=fp)
 
 def _create_dictionary(sentences, fields):
-    """Create a dictionary of string values in the `sentences` for the indexed set of `fields`.
-
-    A dictionary is a nested mapping that maps values for each field to their frequency of occurrences in the sentences
-    (i.e. ``dictionary[field][value] == frequency``). For character fields with tuple values (i.e. FORM_CHARS,
-    LEMMA_CHARS, FORM_NORM_CHARS and LEMMA_NORM_CHARS), each character in tuple is indexed.
-    
-    Raises:
-        ValueError: If non-string ID and HEAD fields are included for the indexing.
-
-    """
     if ID in fields or HEAD in fields:
         raise ValueError("Indexing ID or HEAD fields.")
 
@@ -819,6 +809,11 @@ def read_index(dirname, fields=None):
     return index
 
 def map_to_instances(sentences, index, fields=None):
+    """Transform every sentence from the `sentences` to an instance and return an iterator over indexed instances.
+
+    This function applies :meth:`Sentence.to_instance` method to each element of the `sentences` iterable and yields the
+    result.
+    """
     for sentence in sentences:
         yield _map_to_instance(sentence, index, fields)
 
@@ -854,7 +849,11 @@ def _map_to_instance(sentence, index, fields=None):
     return instance
 
 def map_to_sentences(instances, inverse_index, fields=None):
-    """
+    """Transform every instance from the `instances` to a sentence and return an iterator over generated sentences.
+
+    This function applies :meth:`Instance.to_sentence` method to each element of the `instances` iterable and yields the
+    result.
+    
     This operation is inverse to the indexing in :func:`map_to_instances` function.
     """
     for instance in instances:
@@ -906,9 +905,7 @@ def shuffled_stream(instances, total_size=None, batch_size=None, random=np.rando
             instances with the specified size. If `batch_size` is `None` (default), the function generates the sequence
             of individual instances.
         random: Module implementing pseudo-random generator for data shuffling. By default ``numpy.random``.
-
-    """
-    
+    """    
     if total_size is not None and total_size < 0:
         raise ValueError("total_size must be positive or None")
 
