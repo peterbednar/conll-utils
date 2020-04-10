@@ -38,7 +38,8 @@ def test_levenshtein_distance():
 
 class _TestNode(object):
 
-    def __init__(self, form):
+    def __init__(self, form, index):
+        self.index = index
         self.token = {FORM: form}
         self._children = []
 
@@ -49,7 +50,7 @@ def tree(s):
     return _parse(list(s), 0)[0]
 
 def _parse(s, index):
-    node = _TestNode(s[index])
+    node = _TestNode(s[index], index)
     index += 1
     if s[index] == "(":
         index += 1
@@ -78,10 +79,10 @@ def test_tree_edit_distance():
 
     assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(d))"), return_oprs=True)[1] == []
     assert tree_edit_distance(None, None, return_oprs=True)[1] == []
-    assert tree_edit_distance(tree("a(bc(d))"), None, return_oprs=True)[1] == [(DEL, 0), (DEL, 1), (DEL, 2), (DEL, 3)]
-    assert tree_edit_distance(None, tree("a(bc(d))"), return_oprs=True)[1] == [(INS, 0), (INS, 1), (INS, 2), (INS, 3)]
-    assert tree_edit_distance(tree("a(bc(d))"), tree("a(cb(d))"), return_oprs=True)[1] == [(SUB, 0, 0), (SUB, 2, 2)]
-    assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(de))"), return_oprs=True)[1] == [(INS, 2)]
+    assert tree_edit_distance(tree("a(bc(d))"), None, return_oprs=True)[1] == [(DEL, 2), (DEL, 5), (DEL, 3), (DEL, 0)]
+    assert tree_edit_distance(None, tree("a(bc(d))"), return_oprs=True)[1] == [(INS, 2), (INS, 5), (INS, 3), (INS, 0)]
+    assert tree_edit_distance(tree("a(bc(d))"), tree("a(cb(d))"), return_oprs=True)[1] == [(SUB, 2, 2), (SUB, 3, 3)]
+    assert tree_edit_distance(tree("a(bc(d))"), tree("a(bc(de))"), return_oprs=True)[1] == [(INS, 6)]
 
     nodes1, _, _ = _annotate(tree("a(bc(d))"))
     nodes2, _, _ = _annotate(tree("a(cb(d))"))

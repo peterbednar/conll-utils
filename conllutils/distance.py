@@ -12,7 +12,7 @@ TRN = "trn"
 def _normalize(dist, n, m):
     return 2*dist / (n + m + dist) if dist != 0 else 0
 
-def default_token_cost(t1, t2, opr):
+def _default_token_cost(t1, t2, opr):
     if opr == DEL:
         return 1    # insertion
     if opr == INS:
@@ -21,7 +21,7 @@ def default_token_cost(t1, t2, opr):
         return 1    # transposition
     return 0 if t1[FORM] == t2[FORM] else 1  # substitution
 
-def levenshtein_distance(s1, s2, cost=default_token_cost, damerau=False, normalize=False, return_oprs=False):
+def levenshtein_distance(s1, s2, cost=_default_token_cost, damerau=False, normalize=False, return_oprs=False):
     def _equals(t1, t2):
         return cost(t1, t2, SUB) == 0
 
@@ -135,6 +135,20 @@ def _annotate(root):
             keyroots.append(i)
     return nodes, l, keyroots
 
+def _opr(opr, i, node_1, j=0, node_2=None):
+    try:
+        if node_1 is not None:
+            i = node_1.index
+        if node_2 is not None:
+            j = node_2.index
+    except AttributeError:
+        pass
+    if opr == DEL:
+        return (DEL, i)
+    if opr == INS:
+        return (INS, i)
+    return (SUB, i, j)
+
 def _treedist(i, j, l1, l2, nodes1, nodes2, TD, TD_oprs, cost, return_oprs):
 
     def _merge(x1, y1, x2, y2, l):
@@ -152,12 +166,12 @@ def _treedist(i, j, l1, l2, nodes1, nodes2, TD, TD_oprs, cost, return_oprs):
     for x in range(1, n):
         d[x, 0] = d[x-1, 0] + cost(nodes1[x+i_off], None, DEL)      # delete
         if return_oprs:
-            _merge(x, 0, x-1, 0, [(DEL, x+i_off)])
+            _merge(x, 0, x-1, 0, [_opr(DEL, x+i_off, nodes1[x+i_off])])
 
     for y in range(1, m):
         d[0, y] = d[0, y-1] + cost(None, nodes2[y+j_off], INS)      # insert
         if return_oprs:
-            _merge(0, y, 0, y-1, [(INS, y+j_off)])
+            _merge(0, y, 0, y-1, [_opr(INS, y+j_off, nodes2[y+j_off])])
 
     for x in range(1, n):
         for y in range(1, m):
@@ -174,11 +188,11 @@ def _treedist(i, j, l1, l2, nodes1, nodes2, TD, TD_oprs, cost, return_oprs):
                 TD[xi, yj] = d[x, y]
                 if return_oprs:
                     if min_cost == costs[0]:
-                        _merge(x, y, x-1, y, [(DEL, xi)])
+                        _merge(x, y, x-1, y, [_opr(DEL, xi, nodes1[xi])])
                     elif min_cost == costs[1]:
-                        _merge(x, y, x, y-1, [(INS, yj)])
+                        _merge(x, y, x, y-1, [_opr(INS, yj, nodes2[yj])])
                     else:
-                        opr = [(SUB, xi, yj)] if d[x, y] != d[x-1, y-1] else []
+                        opr = [_opr(SUB, xi, nodes1[xi], yj, nodes2[yj])] if d[x, y] != d[x-1, y-1] else []
                         _merge(x, y, x-1, y-1, opr)
                     TD_oprs[xi, yj] = d_oprs[x, y]
             else:
@@ -193,18 +207,18 @@ def _treedist(i, j, l1, l2, nodes1, nodes2, TD, TD_oprs, cost, return_oprs):
                 d[x, y] = min_cost
                 if return_oprs:
                     if min_cost == costs[0]:
-                        _merge(x, y, x-1, y, [(DEL, xi)])
+                        _merge(x, y, x-1, y, [_opr(DEL, xi, nodes1[xi])])
                     elif min_cost == costs[1]:
-                        _merge(x, y, x, y-1, [(INS, yj)])
+                        _merge(x, y, x, y-1, [_opr(INS, yj, nodes2[yj])])
                     else:
                         _merge(x, y, x_tmp, y_tmp, TD_oprs[xi, yj])
 
-def default_node_cost(n1, n2, opr):
+def _default_node_cost(n1, n2, opr):
     t1 = None if n1 is None else n1.token
     t2 = None if n2 is None else n2.token
-    return default_token_cost(t1, t2, opr)
+    return _default_token_cost(t1, t2, opr)
 
-def tree_edit_distance(t1, t2, cost=default_node_cost, normalize=False, return_oprs=False):
+def tree_edit_distance(t1, t2, cost=_default_node_cost, normalize=False, return_oprs=False):
 
     def _get_root(t):
         if isinstance(t, DependencyTree):
@@ -226,11 +240,11 @@ def tree_edit_distance(t1, t2, cost=default_node_cost, normalize=False, return_o
     elif n != 0 and m == 0:
         dist = sum(cost(node, None, DEL) for node in nodes1)
         if return_oprs:
-            oprs = [(DEL, i) for i in range(n)]
+            oprs = [_opr(DEL, i, nodes1[i]) for i in range(n)]
     elif n == 0 and m != 0:
         dist = sum(cost(None, node, INS) for node in nodes2)
         if return_oprs:
-            oprs = [(INS, j) for j in range(m)]
+            oprs = [_opr(INS, j, nodes2[j]) for j in range(m)]
     else:
         TD = np.zeros((n, m), dtype=np.float)
         if return_oprs:
@@ -255,7 +269,7 @@ def tree_edit_distance(t1, t2, cost=default_node_cost, normalize=False, return_o
     else:
         return dist
 
-def default_value_cost(key, v1, v2, opr):
+def _default_value_cost(key, v1, v2, opr):
     if opr == DEL:
         return 1
     if opr == INS:
@@ -264,7 +278,7 @@ def default_value_cost(key, v1, v2, opr):
 
 from . import _parse_feats
 
-def dict_edit_distance(d1, d2, cost=default_value_cost, normalize=False, return_oprs=False):
+def dict_edit_distance(d1, d2, cost=_default_value_cost, normalize=False, return_oprs=False):
 
     if isinstance(d1, str):
         d1 = _parse_feats(d1)
