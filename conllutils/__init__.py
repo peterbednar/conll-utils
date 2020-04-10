@@ -697,8 +697,9 @@ def _split_default(field, value):
 
 def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
                 normalize=_normalize_default, split=_split_default):
-
-    if isinstance(file, str):
+    """Read and parse the CoNLL-U file and return an iterator over the parsed sentences.
+    """
+    if isinstance(file, (str, os.PathLike)):
         file = open(file, "rt", encoding="utf-8")
 
     with file:
@@ -725,10 +726,16 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
                     normalize, split)
 
 def write_conllu(file, data, write_metadata=True):
+    """Write a sentence or multiple sentences to the CoNLL-U file.
+
+     The `file` argument can be a path-like or file-like object. Written `data` can be one sentence or iterable object
+     of sentences. If the `write_metadata` argument is True (default), comments generated from the sentence metadata are
+     written to the file.
+    """
     if isinstance(data, Sentence):
         data = (data,)
 
-    if isinstance(file, str):
+    if isinstance(file, (str, os.PathLike)):
         file = open(file, "wt", encoding="utf-8")
 
     with file as fp:
@@ -875,7 +882,7 @@ def map_to_sentences(instances, inverse_index, fields=None):
 
     This function applies :meth:`Instance.to_sentence` method to each element of the `instances` iterable and yields the
     result.
-    
+
     This operation is inverse to the indexing in :func:`map_to_instances` function.
     """
     for instance in instances:
@@ -921,6 +928,7 @@ def shuffled_stream(instances, total_size=None, batch_size=None, random=np.rando
     """Return a generator iterating over the randomly shuffled instances.
 
     Args:
+        instances (iterable): The iterated instances.
         total_size (int): The `total_size` argument bounds the maximum number of generated instances. If `total_size` is
             `None` (default), the function generates an unbounded sequence.
         batch_size (int): If `batch_size` is >= 1, the function generates the sequence of batches, i.e. lists of
