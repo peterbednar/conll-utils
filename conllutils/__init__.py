@@ -757,12 +757,24 @@ def _create_dictionary(sentences, fields):
     return dic
 
 def create_index(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}, min_frequency=1):
+    """Return an index mapping the string values from the `sentences` to integer indexes.
+
+    An index is a nested dictionary with the indexes of field values stored as ``index[field][value]``. See
+    :meth:`Sentence.to_instance` method for usage of the index dictionary for sentence indexing.
+
+    The indexes are assigned to the string values starting from 1 according to their descending frequency of
+    occurrences in the sentences, i.e. for each field, the most frequent value has index 1, second one index 2, etc.
+    Index 0 represents an *unknown* value, and the index dictionary returns 0 for all unmapped values.
+
+    Use :func:`create_inverse_index` function to create an inverse mapping from the indexes to the string values.
+
+    """
     dic = _create_dictionary(sentences, fields)
 
     index = {f: Counter() for f in dic.keys()}
     for f, c in dic.items():
         ordered = c.most_common()
-        min_fq = min_frequency[f] if isinstance(min_frequency, dict) else min_frequency
+        min_fq = min_frequency.get(f, 1) if isinstance(min_frequency, dict) else min_frequency
         for i, (s, fq) in enumerate(ordered):
             if fq >= min_fq:
                 index[f][s] = i + 1
@@ -809,7 +821,7 @@ def read_index(dirname, fields=None):
     return index
 
 def map_to_instances(sentences, index, fields=None):
-    """Transform every sentence from the `sentences` to an instance and return an iterator over indexed instances.
+    """Transform every sentence from the `sentences` to an instance and return an iterator over the indexed instances.
 
     This function applies :meth:`Sentence.to_instance` method to each element of the `sentences` iterable and yields the
     result.
@@ -849,7 +861,7 @@ def _map_to_instance(sentence, index, fields=None):
     return instance
 
 def map_to_sentences(instances, inverse_index, fields=None):
-    """Transform every instance from the `instances` to a sentence and return an iterator over generated sentences.
+    """Transform every instance from the `instances` to a sentence and return an iterator over the generated sentences.
 
     This function applies :meth:`Instance.to_sentence` method to each element of the `instances` iterable and yields the
     result.
