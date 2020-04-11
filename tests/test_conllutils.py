@@ -54,6 +54,9 @@ def data3():
 @pytest.fixture
 def data4():
     return _data_filename("data4.conllu")
+@pytest.fixture
+def data5():
+    return _data_filename("data5.conllu")
 
 def test_token():
     token = Token()
@@ -360,6 +363,31 @@ def test_copy(data2):
     instances = list(map_to_instances(sentences, index))
     assert instances == list([instance.copy() for instance in instances])
 
+def test_is_projective(data2, data5):
+    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
+    assert [sentence.is_projective() for sentence in sentences] == [True, True]
+    assert [sentence.to_tree().is_projective() for sentence in sentences] == [True, True]
+    assert [sentence.is_projective(return_arcs=True) for sentence in sentences] == [[], []]
+
+    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
+    instances = list(map_to_instances(sentences, index))
+
+    assert [instance.is_projective() for instance in instances] == [True, True]
+    assert [instance.to_tree().is_projective() for instance in instances] == [True, True]
+    assert [instance.is_projective(return_arcs=True) for instance in instances] == [[], []]
+
+    sentences = list(read_conllu(data5, skip_empty=False, skip_multiword=False))
+    assert sentences[0].is_projective() == False
+    assert sentences[0].to_tree().is_projective() == False
+    assert sentences[0].is_projective(return_arcs=True) ==[(3, 6), (6, 7)]
+
+    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
+    instances = list(map_to_instances(sentences, index))
+
+    assert instances[0].is_projective() == False
+    assert instances[0].to_tree().is_projective() == False
+    assert instances[0].is_projective(return_arcs=True) ==[(3, 6), (6, 7)]
+
 def test_shuffled_stream():
     with pytest.raises(ValueError):
         list(shuffled_stream(list(range(5)), total_size=-1))
@@ -398,3 +426,6 @@ def test_shuffled_stream():
     np.random.seed(1)
     for value in shuffled_stream([]):
         assert False
+
+if __name__ == "__main__":
+    pass

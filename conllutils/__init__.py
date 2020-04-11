@@ -173,7 +173,7 @@ class Sentence(list):
         self.metadata = metadata
 
     def is_projective(self, return_arcs=False):
-        return _is_projective([token[HEAD] for token in self], return_arcs)
+        return _is_projective([token[HEAD] for token in self.words()], return_arcs)
 
     def get(self, id):
         """Return token with the specified ID.
@@ -693,7 +693,6 @@ class Instance(dict):
 
 def _is_projective(heads, return_arcs=False):
 
-    is_projective = True
     if return_arcs:
         arcs = []
 
@@ -705,22 +704,18 @@ def _is_projective(heads, return_arcs=False):
             if heads[j] == None or heads[j] < 0:
                 continue
 
-            arc1_0 = min(i, heads[i])
-            arc1_1 = max(i, heads[i])
-            arc2_0 = min(j, heads[j])
-            arc2_1 = max(j, heads[j])
+            arc1_0 = min(i + 1, heads[i])
+            arc1_1 = max(i + 1, heads[i])
+            arc2_0 = min(j + 1, heads[j])
+            arc2_1 = max(j + 1, heads[j])
 
-            if arc1_0 == arc2_0 and arc1_1 == arc2_1: # cycle
-                is_projective = False
-            elif arc1_0 < arc2_0 and arc2_0 < arc1_1 and arc1_1 < arc2_1: # crossing
-                is_projective = False
-            elif arc2_0 < arc1_0 and arc1_0 < arc2_1 and arc2_1 < arc1_1: # crossing
-                is_projective = False
-            
-            if return_arcs:
-                arcs.append((i, j))
-            elif not is_projective:
-                return False
+            if ((arc1_0 == arc2_0 and arc1_1 == arc2_1) or
+                (arc1_0 < arc2_0 and arc2_0 < arc1_1 and arc1_1 < arc2_1) or
+                (arc2_0 < arc1_0 and arc1_0 < arc2_1 and arc2_1 < arc1_1)):
+                if return_arcs:
+                    arcs.append((i, j))
+                else:
+                    return False
 
     if return_arcs:
         return arcs
