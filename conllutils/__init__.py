@@ -172,6 +172,9 @@ class Sentence(list):
         super().__init__(tokens)
         self.metadata = metadata
 
+    def is_projective(self, return_arcs=False):
+        return _is_projective([token[HEAD] for token in self], return_arcs)
+
     def get(self, id):
         """Return token with the specified ID.
         
@@ -492,6 +495,9 @@ class DependencyTree(object):
         # Return an iterator over all nodes in the sentence order.
         return iter(self.nodes)
 
+    def is_projective(self, return_arcs=False):
+        return _is_projective([node.token[HEAD] for node in self.nodes], return_arcs)
+
     def leaves(self):
         """Return an iterator over all leaves of the tree in the sentence order."""
         for node in self:
@@ -634,6 +640,9 @@ class Instance(dict):
             return len(data)
         return 0
 
+    def is_projective(self, return_arcs=False):
+        return _is_projective(self[HEAD], return_arcs)
+
     def token(self, i):
         """Return a view to the `i`-th token of the instance.
 
@@ -682,6 +691,42 @@ class Instance(dict):
         """Return a shallow copy of the instance."""
         return Instance(self, self.metadata)
 
+def _is_projective(heads, return_arcs=False):
+
+    is_projective = True
+    if return_arcs:
+        arcs = []
+
+    for i in range(len(heads)):
+        if heads[i] == None or heads[i] < 0:
+            continue
+
+        for j in range(i + 1, len(heads)):
+            if heads[j] == None or heads[j] < 0:
+                continue
+
+            arc1_0 = min(i, heads[i])
+            arc1_1 = max(i, heads[i])
+            arc2_0 = min(j, heads[j])
+            arc2_1 = max(j, heads[j])
+
+            if arc1_0 == arc2_0 and arc1_1 == arc2_1: # cycle
+                is_projective = False
+            elif arc1_0 < arc2_0 and arc2_0 < arc1_1 and arc1_1 < arc2_1: # crossing
+                is_projective = False
+            elif arc2_0 < arc1_0 and arc1_0 < arc2_1 and arc2_1 < arc1_1: # crossing
+                is_projective = False
+            
+            if return_arcs:
+                arcs.append((i, j))
+            elif not is_projective:
+                return False
+
+    if return_arcs:
+        return arcs
+    else:
+        return True
+
 _NUM_REGEX = re.compile("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"
 
@@ -701,9 +746,9 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
 
     The `file` argument can be a path-like or file-like object.
 
-    By default, all tokens are parsed including the empty and multiword tokens, FEATS, UPOS_FEATS and DEPS fields are
-    stored as string values, and all extended fields, i.e. UPOS_FEATS, FORM_NORM, LEMMA_NORM and all char fields are
-    generated and added to the tokens.
+    By default, all tokens including the empty and multiword tokens are parsed, FEATS, UPOS_FEATS and DEPS fields are
+    stored as string values, and all extended fields, i.e. UPOS_FEATS, FORM_NORM, LEMMA_NORM and all character fields
+    are added to the tokens.
 
     To parse only the lexical words without the empty or multiword tokens, set the `skip_empty` and `skip_multiword`
     arguments to True.

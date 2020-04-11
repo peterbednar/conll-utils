@@ -1,0 +1,11 @@
+# sent_id = 1
+# text = A hearing is scheduled on the issue today
+1	A	_	_	_	_	2	det	_	_
+2	hearing	_	_	_	_	4	nsubj:pass	_	_
+3	is	_	_	_	_	4	aux:pass	_	_
+4	scheduled	_	_	_	_	0	root	_	_
+5	on	_	_	_	_	7	case	_	_
+6	the	_	_	_	_	7	det	_	_
+7	issue	_	_	_	_	2	nmod	_	_
+8	today	_	_	_	_	4	nmod:tmod	_	_
+
