@@ -701,15 +701,15 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
 
     The `file` argument can be a path-like or file-like object.
 
-    By default, all tokens are parsed including the empty and multiword tokens, FEATS and DEPS fields are stored as
-    string values, and all extended fields, i.e. UPOS_FEATS, FORM_NORM, LEMMA_NORM and all char fields are generated and
-    added to the tokens.
+    By default, all tokens are parsed including the empty and multiword tokens, FEATS, UPOS_FEATS and DEPS fields are
+    stored as string values, and all extended fields, i.e. UPOS_FEATS, FORM_NORM, LEMMA_NORM and all char fields are
+    generated and added to the tokens.
 
     To parse only the lexical words without the empty or multiword tokens, set the `skip_empty` and `skip_multiword`
     arguments to True.
 
-    To parse values of FEATS or DEPS fields to dictionaries or sets of tuples, set the `parse_feats` or `parse_deps`
-    arguments to True.
+    To parse values of FEATS, UPOS_FEATS or DEPS fields to dictionaries or sets of tuples, set the `parse_feats` or
+    `parse_deps` arguments to True.
 
     To create tokens with only the standard CoNLL-U fields, set `upos_feats` argument to False and `normalize` and
     `split` arguments to None.
