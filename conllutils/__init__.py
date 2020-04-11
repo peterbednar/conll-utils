@@ -697,7 +697,32 @@ def _split_default(field, value):
 
 def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, parse_deps=False, upos_feats=True,
                 normalize=_normalize_default, split=_split_default):
-    """Read and parse the CoNLL-U file and return an iterator over the parsed sentences.
+    """Read the CoNLL-U file and return an iterator over the parsed sentences.
+
+    The `file` argument can be a path-like or file-like object.
+
+    By default, all tokens are parsed including the empty and multiword tokens, FEATS and DEPS fields are stored as
+    string values, and all extended fields, i.e. UPOS_FEATS, FORM_NORM, LEMMA_NORM and all char fields are generated and
+    added to the tokens.
+
+    To parse only the lexical words without the empty or multiword tokens, set the `skip_empty` and `skip_multiword`
+    arguments to True.
+
+    To parse values of FEATS or DEPS fields to dictionaries or sets of tuples, set the `parse_feats` or `parse_deps`
+    arguments to True.
+
+    To create tokens with only the standard CoNLL-U fields, set `upos_feats` argument to False and `normalize` and
+    `split` arguments to None.
+
+    The `normalize` argument specifies the user-defined function applied to normalize FORM and LEMMA fields. The
+    provided function should accept `field` and `value` arguments and return a normalized string or None. The default
+    implementation maps numbers to NUM_NORM constant and transforms all characters to lower case. Numbers are detected
+    by matching ``[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+`` regular expression.
+
+    The `split` argument specifies the user-defined function applied to generated character fields from FORM, LEMMA,
+    FORM_NORM and LEMMA_NORM values. The provided function should accept `field` and `value` arguments and return a
+    tuple of characters or None. Default implementation excludes the NUM_NORM values.
+
     """
     if isinstance(file, (str, os.PathLike)):
         file = open(file, "rt", encoding="utf-8")
@@ -726,10 +751,10 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
                     normalize, split)
 
 def write_conllu(file, data, write_metadata=True):
-    """Write a sentence or multiple sentences to the CoNLL-U file.
+    """Write the sentences to the CoNLL-U file.
 
-     The `file` argument can be a path-like or file-like object. Written `data` can be one sentence or iterable object
-     of sentences. If the `write_metadata` argument is True (default), comments generated from the sentence metadata are
+     The `file` argument can be a path-like or file-like object. Written `data` is an iterable object of sentences or
+     one sentence. If the `write_metadata` argument is True (default), sentence metadata are encoded as the comments and
      written to the file.
     """
     if isinstance(data, Sentence):
