@@ -173,6 +173,10 @@ class Sentence(list):
         self.metadata = metadata
 
     def is_projective(self, return_arcs=False):
+        """Return True if this sentence can be represented as the projective dependency tree, otherwise False.
+
+        See :meth:`DependencyTree.is_projective` method for more information.
+        """
         return _is_projective([token[HEAD] for token in self.words()], return_arcs)
 
     def get(self, id):
@@ -496,6 +500,15 @@ class DependencyTree(object):
         return iter(self.nodes)
 
     def is_projective(self, return_arcs=False):
+        """Return True if this tree is a projective tree, otherwise False.
+
+        A projective tree has only the projective arcs, i.e. for all arcs (i, j) from parent `i` to child `j` and for
+        all nodes `k` between the `i` and `j` in the sentence, there must be a path from `i` to `k`.
+
+        If the argument `return_arcs` is True, the function returns the list of conflicting non-projective arcs or an
+        empty list for the projective tree.
+
+        """
         return _is_projective([node.token[HEAD] for node in self.nodes], return_arcs)
 
     def leaves(self):
@@ -641,6 +654,10 @@ class Instance(dict):
         return 0
 
     def is_projective(self, return_arcs=False):
+        """Return True if this instance can be represented as the projective dependency tree, otherwise False.
+
+        See :meth:`DependencyTree.is_projective` method for more information.
+        """
         return _is_projective(self[HEAD], return_arcs)
 
     def token(self, i):
@@ -709,9 +726,9 @@ def _is_projective(heads, return_arcs=False):
             arc2_0 = min(j + 1, heads[j])
             arc2_1 = max(j + 1, heads[j])
 
-            if ((arc1_0 == arc2_0 and arc1_1 == arc2_1) or
-                (arc1_0 < arc2_0 and arc2_0 < arc1_1 and arc1_1 < arc2_1) or
-                (arc2_0 < arc1_0 and arc1_0 < arc2_1 and arc2_1 < arc1_1)):
+            if ((arc1_0 == arc2_0 and arc1_1 == arc2_1) or # cycle
+                (arc1_0 < arc2_0 and arc2_0 < arc1_1 and arc1_1 < arc2_1) or # crossing
+                (arc2_0 < arc1_0 and arc1_0 < arc2_1 and arc2_1 < arc1_1)):  # crossing
                 if return_arcs:
                     arcs.append((i, j))
                 else:
@@ -741,25 +758,24 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
 
     The `file` argument can be a path-like or file-like object.
 
-    By default, all tokens including the empty and multiword tokens are parsed, FEATS, UPOS_FEATS and DEPS fields are
-    stored as string values, and all extended fields, i.e. UPOS_FEATS, FORM_NORM, LEMMA_NORM and all character fields
-    are added to the tokens.
+    By default, all tokens are parsed (including the empty and multiword tokens) and all extended fields (i.e.
+    UPOS_FEATS, FORM_NORM, LEMMA_NORM and all character fields) are generated and added into the tokens. To create
+    tokens with only the standard CoNLL-U fields, set `upos_feats` argument to False and `normalize` and `split`
+    arguments to None.
 
     To parse only the lexical words without the empty or multiword tokens, set the `skip_empty` and `skip_multiword`
     arguments to True.
 
     To parse values of FEATS, UPOS_FEATS or DEPS fields to dictionaries or sets of tuples, set the `parse_feats` or
-    `parse_deps` arguments to True.
+    `parse_deps` arguments to True. By default the features and dependencies are not parsed and values are stored as
+    a string.
 
-    To create tokens with only the standard CoNLL-U fields, set `upos_feats` argument to False and `normalize` and
-    `split` arguments to None.
+    The `normalize` argument specifies the user-defined function applied to FORM and LEMMA values to generate FORM_NORM
+    and LEMMA_NORM fields. The provided function should accept `field` and `value` arguments and return a normalized
+    string or None. The default implementation maps numbers to NUM_NORM constant and transforms all characters to lower
+    case. Numbers are detected by matching ``[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+`` regular expression.
 
-    The `normalize` argument specifies the user-defined function applied to normalize FORM and LEMMA fields. The
-    provided function should accept `field` and `value` arguments and return a normalized string or None. The default
-    implementation maps numbers to NUM_NORM constant and transforms all characters to lower case. Numbers are detected
-    by matching ``[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+`` regular expression.
-
-    The `split` argument specifies the user-defined function applied to generated character fields from FORM, LEMMA,
+    The `split` argument specifies the user-defined function applied to generate character fields from FORM, LEMMA,
     FORM_NORM and LEMMA_NORM values. The provided function should accept `field` and `value` arguments and return a
     tuple of characters or None. Default implementation excludes the NUM_NORM values.
 
