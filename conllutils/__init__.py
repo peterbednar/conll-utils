@@ -500,13 +500,14 @@ class DependencyTree(object):
         return iter(self.nodes)
 
     def is_projective(self, return_arcs=False):
-        """Return True if this tree is a projective tree, otherwise False.
+        """Return True if the dependency tree is projective, otherwise False.
 
-        A projective tree has only the projective arcs, i.e. for all arcs (i, j) from parent `i` to child `j` and for
-        all nodes `k` between the `i` and `j` in the sentence, there must be a path from `i` to `k`.
+        A dependency tree is projective when all its arcs are projective, i.e. for all arcs (`i`, `j`) from parent `i`
+        to child `j` and for all nodes `k` between the `i` and `j` in the sentence, there must be a path from `i` to
+        `k`.
 
-        If the argument `return_arcs` is True, the function returns the list of conflicting non-projective arcs or an
-        empty list for the projective tree.
+        If the argument `return_arcs` is True, the function returns the list of conflicting non-projective arcs. For
+        projective trees the list is empty.
 
         """
         return _is_projective([node.token[HEAD] for node in self.nodes], return_arcs)
@@ -880,6 +881,11 @@ def create_index(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}, min
     return index
 
 def create_inverse_index(index):
+    """Return an inverse index mapping the integer indexes to string values.
+
+    For the `index` with mapping index[field][v] = i, the inverse index has mapping inverse_index[field][i] = v. See
+    :meth:`Instance.to_sentence` method for usage of the inverse index for transformation of instances to sentences.
+    """
     return {f: {v: k for k, v in c.items()} for f, c in index.items()}
 
 INDEX_FILENAME = "{0}index_{1}.txt"
