@@ -92,9 +92,10 @@ class Token(dict):
 
     """
 
-    def __init__(self, fields=()):
-        """Create an empty token or token with the fields initialized from the provided mapping object."""
-        super().__init__(fields)
+    def __init__(self, fields=(), **kwargs):
+        """Create an empty token or token with the fields initialized from the provided mapping object or keyword
+        arguments."""
+        super().__init__(fields, **kwargs)
 
     @property
     def is_empty(self):
