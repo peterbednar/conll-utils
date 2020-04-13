@@ -1031,9 +1031,9 @@ def _map_to_sentence(instance, inverse_index, fields=None, join=lambda _, value:
             if field == HEAD:
                 value = vi if vi != -1 else None
             elif field in _CHARS_FIELDS:
-                value = tuple([inverse_index[field][ch] for ch in vi])
+                value = tuple([inverse_index[field].get(ch) for ch in vi])
             else:
-                value = inverse_index[field][vi]
+                value = inverse_index[field].get(vi)
             if value is not None:
                 token[field] = value
 
