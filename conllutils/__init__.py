@@ -5,11 +5,13 @@ from collections.abc import MutableMapping
 from io import StringIO
 import numpy as np
 
-_EMPTY = "."
-_MULTIWORD = "-"
+_EMPTY = 0
+_MULTIWORD = 1
 
 FIELDS = ("id", "form", "lemma", "upos", "xpos", "feats", "head", "deprel", "deps", "misc",
           "form_norm", "lemma_norm", "form_chars", "lemma_chars", "form_norm_chars", "lemma_norm_chars", "upos_feats")
+
+_FIELD_SET = set(FIELDS)
 
 ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC, \
 FORM_NORM, LEMMA_NORM, FORM_CHARS, LEMMA_CHARS, FORM_NORM_CHARS, LEMMA_NORM_CHARS, UPOS_FEATS = FIELDS
@@ -109,6 +111,24 @@ class Token(dict):
     def to_collu(self):
         """Return a string representation of the token in the CoNLL-U format."""
         return _token_to_str(self)
+
+    def __getattr__(self, name):
+        if name in _FIELD_SET:
+            return self[name]
+        else:
+            raise AttributeError(f"Token has no attribute {name}.")
+
+    def __setattr__(self, name, value):
+        if name in _FIELD_SET:
+            self[name] = value
+        else:
+            super().__setattr__(name, value)
+
+    def __delattr__(self, name):
+        if name in _FIELD_SET:
+            del self[name]
+        else:
+            super().__delattr__(name)
 
     def __repr__(self):
         return f"<{_id_to_str(self.get(ID))},{self.get(FORM)},{self.get(UPOS)}>"
@@ -654,6 +674,24 @@ class Instance(dict):
             return len(data)
         return 0
 
+    def __getattr__(self, name):
+        if name in _FIELD_SET:
+            return self[name]
+        else:
+            raise AttributeError(f"Instance has no attribute {name}.")
+
+    def __setattr__(self, name, value):
+        if name in _FIELD_SET:
+            self[name] = value
+        else:
+            super().__setattr__(name, value)
+
+    def __delattr__(self, name):
+        if name in _FIELD_SET:
+            del self[name]
+        else:
+            super().__delattr__(name)
+
     def is_projective(self, return_arcs=False):
         """Return True if this instance can be represented as the projective dependency tree, otherwise False.
 
@@ -989,9 +1027,9 @@ def _map_to_sentence(instance, inverse_index, fields=None, join=lambda _, value:
         for field in fields:
             vi = instance[field][i]
             if vi is None:
-                continue    # for empty char fields
+                continue
             if field == HEAD:
-                value = None if vi == -1 else vi
+                value = vi if vi != -1 else None
             elif field in _CHARS_FIELDS:
                 value = tuple([inverse_index[field][ch] for ch in vi])
             else:

@@ -66,6 +66,19 @@ def test_token():
     assert str(token) == "<1-2,vámonos,None>"
     assert token.to_collu() == "1-2	vámonos	_	_	_	_	_	_	_	_"
 
+    assert token.id == multiword_id(1, 2)
+    token.id = 1
+    assert token.id == 1 and token.form == "vámonos"
+    del token.id
+    assert ID not in token
+
+    with pytest.raises(AttributeError):
+        token.unknown
+    with pytest.raises(AttributeError):
+        del token.unknown
+    token.unknown = 1
+    assert token.unknown == 1
+
 def test_dependency_tree(data1, data2):
     empty = Sentence().to_tree()
     assert len(empty) == 0
@@ -268,18 +281,18 @@ def test_write_conllu(data1, data2, data3):
     output.release()
 
 def test_create_dictionary(data2):
-        sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
-        dictionary = _create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD})
+    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
+    dictionary = _create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD})
 
-        assert dictionary.keys() == set(FIELDS)-{ID, HEAD}
-        assert dictionary[FORM] == {"They":1, "buy":1, "and":1, "sell":1, "books":1, ".":2, "I":1, "have":1, "no":1, "clue":1}
-        assert dictionary[FORM_NORM_CHARS] == {"e":4, "l":3, "o":3, "h":2, "y":2, "b":2, "u":2, "a":2, "n":2, "s":2, ".":2, "t":1, "d":1, "k":1, "i":1, "v":1, "c":1}
+    assert dictionary.keys() == set(FIELDS)-{ID, HEAD}
+    assert dictionary[FORM] == {"They":1, "buy":1, "and":1, "sell":1, "books":1, ".":2, "I":1, "have":1, "no":1, "clue":1}
+    assert dictionary[FORM_NORM_CHARS] == {"e":4, "l":3, "o":3, "h":2, "y":2, "b":2, "u":2, "a":2, "n":2, "s":2, ".":2, "t":1, "d":1, "k":1, "i":1, "v":1, "c":1}
 
-        with pytest.raises(ValueError):
-            _create_dictionary(sentences, fields={ID})
+    with pytest.raises(ValueError):
+        _create_dictionary(sentences, fields={ID})
 
-        with pytest.raises(ValueError):
-            _create_dictionary(sentences, fields={HEAD})
+    with pytest.raises(ValueError):
+        _create_dictionary(sentences, fields={HEAD})
 
 def test_create_index(data2):
     sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
@@ -309,6 +322,21 @@ def test_write_read_index(data2, tmpdir):
 
 def test_instance(data2):
     assert Instance().length == 0
+
+    instance = Instance()
+    instance[FORM] = None
+    assert instance.form == None
+    instance.lemma = None
+    assert LEMMA in instance
+    del instance.form
+    assert FORM not in instance
+
+    with pytest.raises(AttributeError):
+        instance.unknown
+    with pytest.raises(AttributeError):
+        del instance.unknown
+    instance.unknown = None
+    assert instance.unknown == None
 
 def test_map_to_instances(data1, data2):
     sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
