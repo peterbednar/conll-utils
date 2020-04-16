@@ -24,7 +24,8 @@ s = """\
 # to access Universal features directly, set parse_feats=True to parse FEATS values to dictionaries
 sentence = Sentence.from_conllu(s, parse_feats=True)
 
-# sentences and tokens are parsed as the list and dictionary types, use indexing to access words and fields
+# sentences and tokens are parsed as the list and dictionary types
+# use indexing to access words and fields
 first = sentence[0]
 print(first['form'])    # field keys are in lower-case
 print(first[FORM])      # library defines constants for field names
