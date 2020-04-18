@@ -1,6 +1,5 @@
 import os
 import pytest
-import numpy as np
 
 from conllutils import *
 from conllutils import _create_dictionary
@@ -415,45 +414,6 @@ def test_is_projective(data2, data5):
     assert instances[0].is_projective() == False
     assert instances[0].to_tree().is_projective() == False
     assert instances[0].is_projective(return_arcs=True) ==[(3, 6), (6, 7)]
-
-def test_shuffled_stream():
-    with pytest.raises(ValueError):
-        list(shuffled_stream(list(range(5)), total_size=-1))
-
-    with pytest.raises(ValueError):
-        list(shuffled_stream(list(range(5)), batch_size=0))
-
-    np.random.seed(1)
-    data = list(range(5))
-    assert list(shuffled_stream(data, total_size=10)) == [2, 1, 4, 0, 3, 2, 4, 3, 0, 1]
-
-    np.random.seed(1)
-    i = 0
-    values = []
-    for value in shuffled_stream(data):
-        values.append(value)
-        i += 1
-        if i >= 10:
-            break
-    assert values == [2, 1, 4, 0, 3, 2, 4, 3, 0, 1]
-
-    np.random.seed(1)
-    i = 0
-    values = []
-    for value in shuffled_stream(data, batch_size=3):
-        values.append(value)
-        i += 1
-        if i >= 3:
-            break
-    assert values == [[2, 1, 4], [0, 3, 2], [4, 3, 0]]
-
-    np.random.seed(1)
-    values = list(shuffled_stream(data, total_size=10, batch_size=5))
-    assert values == [[2, 1, 4, 0, 3], [2, 4, 3, 0, 1]]
-
-    np.random.seed(1)
-    for value in shuffled_stream([]):
-        assert False
 
 if __name__ == "__main__":
     pass
