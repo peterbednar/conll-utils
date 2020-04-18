@@ -304,7 +304,7 @@ def test_create_index(data2):
 
     index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD}, min_frequency=2)
     assert index[FORM] == {".":1}
-    assert index[FORM_NORM_CHARS] == {"e":1, "l":2, "o":3, "h":4, "y":5, "b":6, "u":7, "a":8, "n":9, "s":10, ".":11}
+    assert index[FORM_NORM_CHARS] == {"e":1, "o":2, "l":3, "y":4, "u":5, "s":6, "n":7, "h":8, "b":9, "a":10, ".":11}
 
 def test_create_inverse_index(data2):
     sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))

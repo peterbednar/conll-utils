@@ -2,6 +2,7 @@ import os
 import re
 from collections import Counter
 from collections.abc import MutableMapping
+from operator import itemgetter
 from io import StringIO
 import numpy as np
 
@@ -798,13 +799,12 @@ def read_conllu(file, skip_empty=True, skip_multiword=True, parse_feats=False, p
 
     The `file` argument can be a path-like or file-like object.
 
-    By default, all tokens are parsed (including the empty and multiword tokens) and all extended fields (i.e.
+    By default, only the lexical words are parsed (without the empty and multiword tokens) and all extended fields (i.e.
     UPOS_FEATS, FORM_NORM, LEMMA_NORM and all character fields) are generated and added into the tokens. To create
     tokens with only the standard CoNLL-U fields, set `upos_feats` argument to False and `normalize` and `split`
     arguments to None.
 
-    To parse only the lexical words without the empty or multiword tokens, set the `skip_empty` and `skip_multiword`
-    arguments to True.
+    To parse all tokens with the empty or multiword tokens, set the `skip_empty` and `skip_multiword` arguments to False.
 
     To parse values of FEATS, UPOS_FEATS or DEPS fields to dictionaries or sets of tuples, set the `parse_feats` or
     `parse_deps` arguments to True. By default the features and dependencies are not parsed and values are stored as
@@ -877,6 +877,8 @@ def _create_dictionary(sentences, fields):
         for token in sentence:
             for f in fields:
                 s = token.get(f)
+                if s is None:
+                    continue
                 if isinstance(s, (list, tuple)):
                     for ch in s:
                         dic[f][ch] += 1
@@ -911,11 +913,13 @@ def create_index(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}, min
 
     index = {f: Counter() for f in dic.keys()}
     for f, c in dic.items():
-        ordered = c.most_common()
+        ordered = sorted(c.items(), key=itemgetter(1,0), reverse=True)
         min_fq = min_frequency.get(f, 1) if isinstance(min_frequency, dict) else min_frequency
         for i, (s, fq) in enumerate(ordered):
             if fq >= min_fq:
                 index[f][s] = i + 1
+            else:
+                break
 
     return index
 
