@@ -1,5 +1,6 @@
 
 import re
+import numpy as np
 
 from . import Sentence, Token
 from . import read_conllu, write_conllu, create_index
@@ -56,6 +57,60 @@ class Pipeline(object):
 
     def create_index(self):
         return create_index(self)
+
+    def print(self):
+        for s in self():
+            print(s)
+
+    def stream(self, max_size=None):
+        def _stream():
+            i = 0
+            while True:
+                for data in self._pipeline:
+                    if max_size is None or i < max_size:
+                        yield data
+                    else:
+                        return
+
+        self._pipeline = Pipeline(_stream)
+        return self
+
+    def shuffle(self, buffer_size=1024, random=np.random):
+        def _shuffle():
+            buffer = []
+
+            for data in self._pipeline:
+                if len(buffer) < buffer_size:
+                    buffer.append(data)
+                else:
+                    i = random.randint(0, len(buffer))
+                    elm = buffer[i]
+                    buffer[i] = data
+                    yield elm
+
+            random.shuffle(buffer)
+            for elm in buffer:
+                yield elm
+
+        self._pipeline = Pipeline(_shuffle)
+        return self
+
+    def batch(self, batch_size=100):
+        def _batch():
+            batch = []
+
+            for data in self._pipeline:
+                if len(batch) < batch_size:
+                    batch.append(data)
+                else:
+                    yield batch
+                    batch = []
+            
+            if batch:
+                yield batch
+
+        self._pipeline = Pipeline(_batch)
+        return self
 
     def collect(self):
         return list(self)
