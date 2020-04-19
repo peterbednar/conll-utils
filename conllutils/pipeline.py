@@ -1,6 +1,7 @@
 
 import re
 
+from . import Sentence, Token
 from . import read_conllu, write_conllu, create_index
 
 class Pipeline(object):
@@ -28,16 +29,23 @@ class Pipeline(object):
         return self
 
     def pipe(self, pipeline):
-        self._pipeline = Pipeline(pipeline(self._pipeline))
+        self._pipeline = Pipeline(lambda: pipeline(self._pipeline))
         return self
 
-    def map_to_instance(self, index):
+    def to_instance(self, index):
         self.map(lambda s: s.to_instance(index))
+        return self
+
+    def to_conllu(self):
+        self.map(lambda s: s.to_conllu())
         return self
 
     def only_projective(self, projective=True):
         self.filter(lambda s: s.is_projective() == projective)
         return self
+
+    def from_conllu(self, s):
+        self._set_source(Sentence.from_conllu(s, multiple=True))
 
     def read_conllu(self, filename):
         self._set_source(lambda: read_conllu(filename))
@@ -77,6 +85,12 @@ class Pipeline(object):
             return source()
 
     def _set_source(self, source):
+        if self._pipeline.source is not None:
+            raise RuntimeError('Source already set.')
+
+        if self._pipeline.operations:
+            raise RuntimeError('Source must be the first operation.')
+
         self._pipeline.source = source
 
     def _prev_opr(self):
@@ -103,20 +117,20 @@ class TokenPipeline(object):
         return self
 
     def lowercase(self, field, to=None):
-        self.map_field(lambda s: s.lower(), field, to)
+        self.map_field(field, lambda s: s.lower(), to)
         return self
 
-    def replace(self, regex, value, field, to=None):
+    def replace(self, field, regex, value, to=None):
         if isinstance(regex, str):
             regex = re.compile(regex)
-        self.map_field(lambda s: value if regex.match(s) else s, field, to)
+        self.map_field(field, lambda s: value if regex.match(s) else s, to)
         return self
 
-    def filter_field(self, f, field):
-        self.map_field(lambda s: s if f(s) else None, field)
+    def filter_field(self, field, f):
+        self.map_field(field, lambda s: s if f(s) else None)
         return self
 
-    def map_field(self, f, field, to=None):
+    def map_field(self, field, f, to=None):
         if to is None:
             to = field
         def _map_field(t):
@@ -144,16 +158,22 @@ class TokenPipeline(object):
         self.map(_upos_feats)
         return self
 
-    def __call__(self, sentence):
-        i = 0
-        for token in sentence:
+    def __call__(self, data):
+        if isinstance(data, Token):
             for opr in self.operations:
-                token = opr(token)
-                if token is not None:
-                    sentence[i] = token
-                    i += 1
-        del sentence[i:]
-        return sentence
+                data = opr(data)
+                if data is None:
+                    return None
+        elif isinstance(data, Sentence):
+            i = 0
+            for token in data:
+                for opr in self.operations:
+                    token = opr(token)
+                    if token is not None:
+                        data[i] = token
+                        i += 1
+            del data[i:]
+        return data
 
 _NUM_REGEX = re.compile(r"[0-9]+|[0-9]+\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"
