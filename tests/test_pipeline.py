@@ -101,11 +101,22 @@ def test_read_conllu(data1):
     assert [[t.form for t in s] for s in p.collect()] == [['vámonos', 'vamos', 'nos', 'al', 'a', 'el', 'mar'],
                                                           ['Sue', 'likes', 'coffee', 'and', 'Bill', 'likes', 'tea']]
 
-def test_read_conllu(data1):
+def test_write_conllu(data1):
     s = _StringIO()
     pipe().read_conllu(data1).write_conllu(s)
     assert s.getvalue() == _DATA1_CONLLU
     s.release()
+
+def test_only_projective(data2, data5):
+    p = pipe().read_conllu(data2).only_projective()
+    assert [s.is_projective() for s in p.collect()] == [True, True]
+
+    p = pipe().read_conllu(data5).only_projective()
+    assert p.collect() == []
+
+    p = pipe().read_conllu(data5).only_projective(False)
+    assert [s.is_projective() for s in p.collect()] == [False]
+
 
 _NUM_REGEX = re.compile(r"[0-9]+|[0-9]+\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"
