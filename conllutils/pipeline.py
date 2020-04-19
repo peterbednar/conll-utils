@@ -50,6 +50,7 @@ class Pipeline(object):
 
     def from_conllu(self, s):
         self._set_source(Sentence.from_conllu(s, multiple=True))
+        return self
 
     def read_conllu(self, filename):
         self._set_source(lambda: read_conllu(filename))
