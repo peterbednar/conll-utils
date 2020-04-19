@@ -36,7 +36,8 @@ class Pipeline(object):
         return self
 
     def pipe(self, pipeline):
-        self._pipeline = Pipeline(lambda: pipeline(self._pipeline))
+        source = self._pipeline
+        self._pipeline = Pipeline(lambda: pipeline(source._iterate()))
         return self
 
     def to_instance(self, index):
@@ -69,12 +70,14 @@ class Pipeline(object):
             print(s)
 
     def stream(self, max_size=None):
+        source = self._pipeline
         def _stream():
             i = 0
             while True:
-                for data in self._pipeline:
+                for data in source._iterate():
                     if max_size is None or i < max_size:
                         yield data
+                        i += 1
                     else:
                         return
 
@@ -82,10 +85,11 @@ class Pipeline(object):
         return self
 
     def shuffle(self, buffer_size=1024, random=np.random):
+        source = self._pipeline
         def _shuffle():
             buffer = []
 
-            for data in self._pipeline:
+            for data in source._iterate():
                 if len(buffer) < buffer_size:
                     buffer.append(data)
                 else:
@@ -102,16 +106,17 @@ class Pipeline(object):
         return self
 
     def batch(self, batch_size=100):
+        source = self._pipeline
         def _batch():
             batch = []
 
-            for data in self._pipeline:
+            for data in source._iterate():
                 if len(batch) < batch_size:
                     batch.append(data)
                 else:
                     yield batch
-                    batch = []
-            
+                    batch = [data]
+
             if batch:
                 yield batch
 
@@ -121,23 +126,26 @@ class Pipeline(object):
     def collect(self):
         return list(self)
 
-    def __call__(self, source=None):
+    def _iterate(self, source=None):
         if source is None:
             source = self._iter_source()
         
-        for sentence in source:
-            for opr in self._pipeline.operations:
-                sentence = opr(sentence)
-                if sentence is None:
+        for data in source:
+            for opr in self.operations:
+                data = opr(data)
+                if data is None:
                     break
-            if sentence is not None:
-                yield sentence
+            if data is not None:
+                yield data
+
+    def __call__(self, source=None):
+        return self._pipeline._iterate(source)
 
     def __iter__(self):
-        return self()
+        return self._pipeline._iterate(None)
 
     def _iter_source(self):
-        source = self._pipeline.source
+        source = self.source
         if source == None:
             raise RuntimeError('No source defined.')
         try:
@@ -235,9 +243,3 @@ class TokenPipeline(object):
                         i += 1
             del data[i:]
         return data
-
-_NUM_REGEX = re.compile(r"[0-9]+|[0-9]+\.[0-9]+|[0-9]+[0-9,]+")
-NUM_NORM = u"__number__"
-
-if __name__ == "__main__":
-    pass
