@@ -799,7 +799,7 @@ def _create_dictionary(sentences, fields):
                     dic[f][s] += 1
     return dic
 
-def create_index(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}, min_frequency=1):
+def create_index(sentences, fields=None, min_frequency=1):
     """Return an index mapping the string values of the `sentences` to integer indexes.
 
     An index is a nested dictionary where the indexes for the field values are stored as ``index[field][value]``. See
@@ -822,9 +822,12 @@ def create_index(sentences, fields={FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}, min
     Raises:
         ValueError: If the indexed fields include ID or HEAD field.
     """
-    dic = _create_dictionary(sentences, fields)
+    if fields is None:
+        fields = {FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}
 
+    dic = _create_dictionary(sentences, fields)
     index = {f: Counter() for f in dic.keys()}
+
     for f, c in dic.items():
         ordered = sorted(c.items(), key=itemgetter(1,0), reverse=True)
         min_fq = min_frequency.get(f, 1) if isinstance(min_frequency, dict) else min_frequency
@@ -857,8 +860,7 @@ def _map_to_instance(sentence, index, fields=None):
         for i, token in enumerate(sentence):
             value = token.get(field)
             if field == HEAD:
-                if value is not None:
-                    array[i] = value
+                array[i] = value if value is not None else -1
             else:
                 array[i] = index[field][value]
 

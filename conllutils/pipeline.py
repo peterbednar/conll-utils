@@ -5,6 +5,12 @@ import numpy as np
 from . import Sentence, Token
 from . import read_conllu, write_conllu, create_index
 
+def pipe(source=None, *args):
+    pipe = Pipeline(source)
+    for p in args:
+        pipe.pipe(p)
+    return pipe
+
 class Pipeline(object):
 
     def __init__(self, source=None):
@@ -41,10 +47,6 @@ class Pipeline(object):
         self.map(lambda s: s.to_conllu())
         return self
 
-    def only_projective(self, projective=True):
-        self.filter(lambda s: s.is_projective() == projective)
-        return self
-
     def from_conllu(self, s):
         self._set_source(Sentence.from_conllu(s, multiple=True))
 
@@ -55,8 +57,12 @@ class Pipeline(object):
     def write_conllu(self, filename):
         write_conllu(filename, self)
 
-    def create_index(self):
-        return create_index(self)
+    def only_projective(self, projective=True):
+        self.filter(lambda s: s.is_projective() == projective)
+        return self
+
+    def create_index(self, fields=None, min_frequency=1):
+        return create_index(self, fields, min_frequency)
 
     def print(self):
         for s in self():
