@@ -117,6 +117,9 @@ def test_only_projective(data2, data5):
     p = pipe().read_conllu(data5).only_projective(False)
     assert [s.is_projective() for s in p.collect()] == [False]
 
+def test_text(data2):
+    p = pipe().read_conllu(data2).text()
+    assert p.collect() == ['They buy and sell books.', 'I have no clue.']
 
 _NUM_REGEX = re.compile(r"[0-9]+|[0-9]+\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"

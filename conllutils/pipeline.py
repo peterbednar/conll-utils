@@ -40,6 +40,10 @@ class Pipeline(object):
         self._pipeline = Pipeline(lambda: pipeline(source._iterate()))
         return self
 
+    def text(self):
+        self.map(lambda s: s.text)
+        return self
+
     def to_instance(self, index):
         self.map(lambda s: s.to_instance(index))
         return self

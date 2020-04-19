@@ -7,8 +7,7 @@ Utility classes and functions for parsing and indexing files in CoNLL-U format.
 ### Working with sentences and tokens
 
 ```python
-from conllutils import Sentence, Token
-from conllutils import FORM
+from conllutils import Sentence, Token, FORM
 
 s = """\
 # sent_id = 2
@@ -24,19 +23,18 @@ s = """\
 # to access Universal features directly, set parse_feats=True to parse FEATS values to dictionaries
 sentence = Sentence.from_conllu(s, parse_feats=True)
 
-# sentences and tokens are parsed as the list and dictionary types
-# use indexing to access words and fields
+# sentences and tokens are list and dictionary types, use indexing to access words and fields
 first = sentence[0]
-print(first['form'])    # field keys are in lower-case
-print(first[FORM])      # library defines constants for field names
-print(first.upos)       # fields are accessible also as the token attributes
+print(first['form'])        # field keys are in lower-case
+print(first[FORM])          # library defines constants for field names
+print(first.upos)           # fields are accessible also as the token attributes
 print(first.feats['Case'])  # FEATS parsed to dictionaries
 
 # you can modify tokens and sentences or create a new one
 dot = Token(id=5, form='.', lemma='.', upos='PUNCT', head=2, deprel='punct')
-sentence.append(dot)    # add '.' at the end of the sentence
-# print modified sentence in CoNLL-U format
-print(sentence.to_conllu())
+sentence.append(dot)        # add '.' at the end of the sentence
+print(sentence.to_conllu()) # print modified sentence in CoNLL-U format
+print(sentence.text)        # print raw text reconstructed from tokens
 
 # transform sentence to dependency tree representation
 tree = sentence.to_tree()

@@ -36,7 +36,6 @@ def multiword_id(start, end):
     Raises:
         ValueError: If `start` < 1 or `end` <= `start`.
     """
-
     if start < 1 or end <= start:
         raise ValueError("start must be >= 1 and end > start.")
     return (start, end, _MULTIWORD)
@@ -118,6 +117,11 @@ class Token(dict):
     def __repr__(self):
         return f"<{_id_to_str(self.get(ID))},{self.get(FORM)},{self.get(UPOS)}>"
 
+    def _text(self):
+        form = self[FORM]
+        space_after = False if MISC in self and 'SpaceAfter=No' in self[MISC] else True
+        return form + ' ' if space_after else form
+
     def copy(self):
         """Return a shallow copy of the token."""
         return Token(self)
@@ -177,12 +181,24 @@ class Sentence(list):
         super().__init__(tokens)
         self.metadata = metadata
 
+    @property
+    def text(self):
+        """str: Text of the sentence reconstructed from the raw tokens.
+
+        The insertion of spaces is controlled by ``SpaceAfter=No`` feature in MISC field."""
+        tokens = [token._text() for token in self.raw_tokens()]
+        if tokens:
+            tokens[-1] = tokens[-1].strip()
+            return "".join(tokens)
+        else:
+            return ""
+
     def is_projective(self, return_arcs=False):
         """Return True if this sentence can be represented as the projective dependency tree, otherwise False.
 
         See :meth:`DependencyTree.is_projective` method for more information.
         """
-        return _is_projective([token[HEAD] for token in self.words()], return_arcs)
+        return _is_projective([token.get(HEAD) for token in self.words()], return_arcs)
 
     def get(self, id):
         """Return token with the specified ID.
