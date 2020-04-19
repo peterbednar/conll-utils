@@ -83,12 +83,12 @@ def test_dependency_tree(data1, data2):
     assert len(empty) == 0
     assert list(empty.inorder()) == []
 
-    sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
+    sentences = list(read_conllu(data1))
     tree0 = sentences[0].to_tree()
     assert tree0.root is not None
     assert str(tree0) == "<<1,vamos,None>,None,[<<2,nos,None>,None,[]>, <<5,mar,None>,None,[<<3,a,None>,None,[]>, <<4,el,None>,None,[]>]>]>"
 
-    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
+    sentences = list(read_conllu(data2))
     tree0 = sentences[0].to_tree()    
     assert tree0.root is not None
     assert str(tree0) == "<<2,buy,VERB>,root,[<<1,They,PRON>,nsubj,[]>, <<4,sell,VERB>,conj,[<<3,and,CONJ>,cc,[]>]>, <<5,books,NOUN>,obj,[]>, <<6,.,PUNCT>,punct,[]>]>"
@@ -111,13 +111,13 @@ def test_dependency_tree(data1, data2):
     assert [leaf.token[FORM] for leaf in tree0.leaves()] == ["They", "and", "books", "."]
 
     index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
-    instances = list(map_to_instances(sentences, index))
+    instances = [sentence.to_instance(index) for sentence in sentences]
 
     tree0 = instances[0].to_tree()
     assert [node.token[FORM] for node in tree0] == [index[FORM][f] for f in ["They", "buy", "and", "sell", "books", "."]]
 
 def test_read_conllu(data1):
-    sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, upos_feats=False, normalize=None, split=None))
+    sentences = list(read_conllu(data1))
     assert sentences == [[
             _fields(multiword_id(1, 2), "vámonos"),
             _fields(1, "vamos", "ir", None, None, None, 0),
@@ -151,41 +151,17 @@ def test_to_from_conllu(data2):
         Sentence.from_conllu("# empty string", multiple=True)
     
 def test_parse_deps_feats(data2):
-    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, parse_deps=True, parse_feats=True, upos_feats=False, normalize=None, split=None))
+    sentences = list(read_conllu(data2, parse_deps=True, parse_feats=True))
     assert sentences[0][0][FEATS] == {"Case":"Nom", "Number":"Plur"}
     assert sentences[0][0][DEPS] == {(2, "nsubj"), (4, "nsubj")}
     assert FEATS not in sentences[0][2]
     assert DEPS not in sentences[1][0]
 
-    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, parse_deps=False, parse_feats=False, upos_feats=False, normalize=None, split=None))
+    sentences = list(read_conllu(data2, parse_deps=False, parse_feats=False))
     assert sentences[0][0][FEATS] == "Case=Nom|Number=Plur"
     assert sentences[0][0][DEPS] == "2:nsubj|4:nsubj"
     assert FEATS not in sentences[0][2]
     assert DEPS not in sentences[1][0]
-
-def test_upos_feats(data1, data2):
-    sentences = list(read_conllu(data1, parse_deps=True, parse_feats=True, upos_feats=True, normalize=None, split=None))
-    assert [UPOS_FEATS not in sentences[0][i] for i in range(len(sentences[0]))]
-
-    sentences = list(read_conllu(data2, parse_deps=True, parse_feats=False, upos_feats=True, normalize=None, split=None))
-    assert [sentences[0][i][UPOS_FEATS] for i in range(len(sentences[0]))] == [
-            "POS=PRON|Case=Nom|Number=Plur",
-            "POS=VERB|Number=Plur|Person=3|Tense=Pres",
-            "POS=CONJ",
-            "POS=VERB|Number=Plur|Person=3|Tense=Pres",
-            "POS=NOUN|Number=Plur",
-            "POS=PUNCT"
-        ]
-    
-    sentences = list(read_conllu(data2, parse_deps=True, parse_feats=True, upos_feats=True, normalize=None, split=None))
-    assert [sentences[0][i][UPOS_FEATS] for i in range(len(sentences[0]))] == [
-            {"POS":"PRON","Case":"Nom","Number":"Plur"},
-            {"POS":"VERB","Number":"Plur","Person":"3","Tense":"Pres"},
-            {"POS":"CONJ"},
-            {"POS":"VERB","Number":"Plur","Person":"3","Tense":"Pres"},
-            {"POS":"NOUN","Number":"Plur"},
-            {"POS":"PUNCT"}
-        ]
 
 def test_empty_multiword(data1):
     with pytest.raises(ValueError):
@@ -203,7 +179,7 @@ def test_empty_multiword(data1):
     with pytest.raises(ValueError):
         multiword_id(1, 1)
 
-    sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False))
+    sentences = list(read_conllu(data1))
 
     assert [token.is_multiword for token in sentences[0]] == [True, False, False, True, False, False, False]
     assert [token.is_empty for token in sentences[0]] == [False, False, False, False, False, False, False]
@@ -231,13 +207,13 @@ def test_empty_multiword(data1):
     with pytest.raises(IndexError):
         sentences[0].get(empty_id(1,2))
 
-    sentences = list(read_conllu(data1, skip_empty=True, skip_multiword=True))
-    for sentence in sentences:
-        for token in sentence:
-            assert (not token.is_empty) and (not token.is_multiword)
+    #sentences = list(read_conllu(data1, skip_empty=True, skip_multiword=True))
+    #for sentence in sentences:
+    #    for token in sentence:
+    #        assert (not token.is_empty) and (not token.is_multiword)
 
 def test_words_tokens(data1):
-    sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False))
+    sentences = list(read_conllu(data1))
 
     words0 = sentences[0].words()
     raw_tokens0 = sentences[0].raw_tokens()
@@ -252,40 +228,39 @@ def test_words_tokens(data1):
     assert [token[FORM] for token in raw_tokens1] == ["Sue", "likes", "coffee", "and", "Bill", "tea"]
 
 def test_write_conllu(data1, data2, data3):
-    sentences = list(read_conllu(data1, skip_empty=False, skip_multiword=False, parse_deps=True, parse_feats=True, upos_feats=False, normalize=None, split=None))
+    sentences = list(read_conllu(data1))
     output = _StringIO()
     write_conllu(output, sentences)
     assert output.getvalue() == _DATA1_CONLLU
     output.release()
 
     input = _read_file(data2)
-    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, parse_deps=True, parse_feats=True, upos_feats=False, normalize=None, split=None))
+    sentences = list(read_conllu(data2))
     output = _StringIO()
     write_conllu(output, sentences)
     assert output.getvalue() == input
     output.release()
 
     input = _read_file(data2)
-    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False, parse_deps=False, parse_feats=False, upos_feats=False, normalize=None, split=None))
+    sentences = list(read_conllu(data2))
     output = _StringIO()
     write_conllu(output, sentences)
     assert output.getvalue() == input
     output.release()
 
     input = _read_file(data3)
-    sentences = list(read_conllu(data3, skip_empty=False, skip_multiword=False, parse_deps=True, parse_feats=True, upos_feats=False, normalize=None, split=None))
+    sentences = list(read_conllu(data3))
     output = _StringIO()
     write_conllu(output, sentences)
     assert output.getvalue() == input
     output.release()
 
 def test_create_dictionary(data2):
-    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
+    sentences = list(read_conllu(data2))
     dictionary = _create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD})
 
     assert dictionary.keys() == set(FIELDS)-{ID, HEAD}
     assert dictionary[FORM] == {"They":1, "buy":1, "and":1, "sell":1, "books":1, ".":2, "I":1, "have":1, "no":1, "clue":1}
-    assert dictionary[FORM_NORM_CHARS] == {"e":4, "l":3, "o":3, "h":2, "y":2, "b":2, "u":2, "a":2, "n":2, "s":2, ".":2, "t":1, "d":1, "k":1, "i":1, "v":1, "c":1}
 
     with pytest.raises(ValueError):
         _create_dictionary(sentences, fields={ID})
@@ -294,7 +269,7 @@ def test_create_dictionary(data2):
         _create_dictionary(sentences, fields={HEAD})
 
 def test_create_index(data2):
-    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
+    sentences = list(read_conllu(data2))
     dictionary = _create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD})
 
     index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
@@ -303,21 +278,13 @@ def test_create_index(data2):
 
     index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD}, min_frequency=2)
     assert index[FORM] == {".":1}
-    assert index[FORM_NORM_CHARS] == {"e":1, "o":2, "l":3, "y":4, "u":5, "s":6, "n":7, "h":8, "b":9, "a":10, ".":11}
 
 def test_create_inverse_index(data2):
-    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
+    sentences = list(read_conllu(data2))
     index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
 
     inverse_index = create_inverse_index(index)
     assert create_inverse_index(inverse_index) == index
-
-def test_write_read_index(data2, tmpdir):
-    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
-    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
-
-    write_index(tmpdir + "/", index)
-    assert read_index(tmpdir + "/") == index
 
 def test_instance(data2):
     assert Instance().length == 0
@@ -338,19 +305,16 @@ def test_instance(data2):
     assert instance.unknown == None
 
 def test_map_to_instances(data1, data2):
-    sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
+    sentences = list(read_conllu(data2))
     index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
     inverse_index = create_inverse_index(index)
 
-    instances = list(map_to_instances(sentences, index))
-
-    assert list(map_to_sentences(instances, inverse_index)) == sentences
     assert [sentence.to_instance(index).to_sentence(inverse_index) for sentence in sentences] == sentences
 
 def test_tokens(data2):
-    sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
+    sentences = list(read_conllu(data2))
     index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
-    instances = list(map_to_instances(sentences, index))
+    instances = [sentence.to_instance(index) for sentence in sentences]
     tokens = list(instances[0].tokens())
 
     assert tokens[0] == {f : instances[0][f][0] for f in instances[0].keys()}
@@ -365,51 +329,39 @@ def test_tokens(data2):
     with pytest.raises(KeyError):
         tokens[0][ID] = 0
 
-def test_normalize(data4):
-    sentences = list(read_conllu(data4, skip_empty=False, skip_multiword=False))
-    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
-    instances = list(map_to_instances(sentences, index))
-
-    assert sentences[0][5][FORM_NORM] == NUM_NORM and sentences[0][5][LEMMA_NORM] == NUM_NORM
-    assert FORM_NORM_CHARS not in sentences[0][5] and LEMMA_NORM_CHARS not in sentences[0][5]
-    assert instances[0][FORM_NORM_CHARS][5] == None and instances[0][LEMMA_NORM_CHARS][5] == None    
-
-    inverse_index = create_inverse_index(index)
-    assert list(map_to_sentences(instances, inverse_index)) == sentences
-
 def test_copy(data2):
     token = Token()
     token[ID] = multiword_id(1,2)
     token[FORM] = "vámonos"
     assert token.copy() == token
 
-    sentences = list(read_conllu(data2, skip_empty=True, skip_multiword=True))
+    sentences = list(read_conllu(data2))
     assert sentences == list([sentence.copy() for sentence in sentences])
     
     index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
-    instances = list(map_to_instances(sentences, index))
+    instances = [sentence.to_instance(index) for sentence in sentences]
     assert instances == list([instance.copy() for instance in instances])
 
 def test_is_projective(data2, data5):
-    sentences = list(read_conllu(data2, skip_empty=False, skip_multiword=False))
+    sentences = list(read_conllu(data2))
     assert [sentence.is_projective() for sentence in sentences] == [True, True]
     assert [sentence.to_tree().is_projective() for sentence in sentences] == [True, True]
     assert [sentence.is_projective(return_arcs=True) for sentence in sentences] == [[], []]
 
     index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
-    instances = list(map_to_instances(sentences, index))
+    instances = [sentence.to_instance(index) for sentence in sentences]
 
     assert [instance.is_projective() for instance in instances] == [True, True]
     assert [instance.to_tree().is_projective() for instance in instances] == [True, True]
     assert [instance.is_projective(return_arcs=True) for instance in instances] == [[], []]
 
-    sentences = list(read_conllu(data5, skip_empty=False, skip_multiword=False))
+    sentences = list(read_conllu(data5))
     assert sentences[0].is_projective() == False
     assert sentences[0].to_tree().is_projective() == False
     assert sentences[0].is_projective(return_arcs=True) ==[(3, 6), (6, 7)]
 
     index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
-    instances = list(map_to_instances(sentences, index))
+    instances = [sentence.to_instance(index) for sentence in sentences]
 
     assert instances[0].is_projective() == False
     assert instances[0].to_tree().is_projective() == False
