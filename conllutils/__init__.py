@@ -619,7 +619,7 @@ class Instance(dict):
     or dependencies are not indexed separately.
 
     By default, unknown values (i.e. values not mapped in the provided index) are stored as 0. Missing values (i.e. when
-    some token does not have indexed field) are stored as -1 or as `None` for the character fields.
+    some token does not have value for the indexed field) are stored as -1.
 
     Attributes:
         metadata (any): Any optional data associated with the instance, by default copied from the sentence.
@@ -803,12 +803,7 @@ def _create_dictionary(sentences, fields):
         for token in sentence:
             for f in fields:
                 s = token.get(f)
-                if s is None:
-                    continue
-                if isinstance(s, (list, tuple)):
-                    for ch in s:
-                        dic[f][ch] += 1
-                else:
+                if s is not None:
                     dic[f][s] += 1
     return dic
 
