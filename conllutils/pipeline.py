@@ -16,6 +16,46 @@ class Pipeline(object):
     def __init__(self, source=None):
         self._pipeline = _Pipe(source)
 
+    def filter_token(self, f):
+        self.token.filter(f)
+        return self
+    
+    def only_words(self):
+        self.token.only_words()
+        return self
+
+    def map_token(self, f):
+        self.token.map(f)
+        return self
+
+    def upos_feats(self, to='upos_feats'):
+        self.token.upos_feats(to)
+        return self
+
+    def only_fields(self, fields):
+        self.token.only_fields(fields)
+        return self
+
+    def filter_field(self, field, f):
+        self.token.filter_field(field, f)
+        return self
+
+    def map_field(self, field, f, to=None):
+        self.token.map_field(field, f, to)
+        return self
+
+    def lowercase(self, field, to=None):
+        self.token.lowercase(field, to)
+        return self
+
+    def uppercase(self, field, to=None):
+        self.token.uppercase(field, to)
+        return self
+
+    def replace(self, field, regex, value, to=None):
+        self.token.replace(field, regex, value, to)
+        return self
+
     @property
     def token(self):
         opr = self._prev_opr()
@@ -210,23 +250,34 @@ class TokenPipeline(object):
     def filter(self, f):
         self.operations.append(lambda t: t if f(t) else None)
         return self
-    
-    def map(self, f):
-        self.operations.append(f)
-        return self
 
     def only_words(self):
         self.filter(lambda t: not (t.is_empty or t.is_multiword))
         return self
 
-    def lowercase(self, field, to=None):
-        self.map_field(field, lambda s: s.lower(), to)
+    def map(self, f):
+        self.operations.append(f)
         return self
 
-    def replace(self, field, regex, value, to=None):
-        if isinstance(regex, str):
-            regex = re.compile(regex)
-        self.map_field(field, lambda s: value if regex.match(s) else s, to)
+    def upos_feats(self, to='upos_feats'):
+        def _upos_feats(t):
+            upos = t.get('upos')
+            feats = t.get('feats')
+            if upos:
+                tag = f"POS={upos}|{feats}" if feats else f"POS={upos}"
+            else:
+                tag = feats
+            if tag:
+                t[to] = tag
+            return t
+        self.map(_upos_feats)
+        return self
+
+    def only_fields(self, fields):
+        def _only_fields(t):
+            [t.pop(k) for k in t.keys() - fields]
+            return t
+        self.map(_only_fields)
         return self
 
     def filter_field(self, field, f):
@@ -244,21 +295,21 @@ class TokenPipeline(object):
                 else:
                     del t[to]
             return t
-        self.operations.append(_map_field)
+        self.map(_map_field)
         return self
 
-    def upos_feats(self, to='upos_feats'):
-        def _upos_feats(t):
-            upos = t.get('upos')
-            feats = t.get('feats')
-            if upos:
-                tag = f"POS={upos}|{feats}" if feats else f"POS={upos}"
-            else:
-                tag = feats
-            if tag:
-                t[to] = tag
-            return t
-        self.map(_upos_feats)
+    def lowercase(self, field, to=None):
+        self.map_field(field, lambda s: s.lower(), to)
+        return self
+
+    def uppercase(self, field, to=None):
+        self.map_field(field, lambda s: s.upper(), to)
+        return self
+
+    def replace(self, field, regex, value, to=None):
+        if isinstance(regex, str):
+            regex = re.compile(regex)
+        self.map_field(field, lambda s: value if regex.match(s) else s, to)
         return self
 
     def __call__(self, data):
@@ -274,6 +325,9 @@ class TokenPipeline(object):
                     token = opr(token)
                     if token is not None:
                         data[i] = token
-                        i += 1
+                    else:
+                        break
+                if token is not None:
+                    i += 1
             del data[i:]
         return data

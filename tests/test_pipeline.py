@@ -146,11 +146,58 @@ def test_to_flatten():
     p = pipe(range(10)).batch(3).flatten()
     assert p.collect() == list(range(10))
 
-_NUM_REGEX = re.compile(r"[0-9]+|[0-9]+\.[0-9]+|[0-9]+[0-9,]+")
-NUM_NORM = u"__number__"
+    p = pipe(range(10)).flatten()
+    assert p.collect() == list(range(10))
+
+def test_only_words(data1):
+    p = pipe().read_conllu(data1).only_words().text()
+    assert p.collect() == ['vamos nos a el mar ', 'Sue likes coffee and Bill tea ']
+
+def test_only_fields(data2):
+    sentences = pipe().read_conllu(data2).only_fields({'id', 'form'}).collect()
+    assert [[t.keys() for t in s] for s in sentences] == [[{'id', 'form'}] * len(s) for s in sentences]
+
+def test_upos_feats(data2):
+    sentences = pipe().read_conllu(data2).upos_feats('new').collect()
+    assert [t.get('new') for t in sentences[0]] == [
+        'POS=PRON|Case=Nom|Number=Plur',
+        'POS=VERB|Number=Plur|Person=3|Tense=Pres',
+        'POS=CONJ',
+        'POS=VERB|Number=Plur|Person=3|Tense=Pres',
+        'POS=NOUN|Number=Plur',
+        'POS=PUNCT']
+
+def test_lowercase(data1):
+    p = pipe().read_conllu(data1).only_words().lowercase('form').text()
+    assert p.collect() == ['vamos nos a el mar '.lower(), 'Sue likes coffee and Bill tea '.lower()]
+
+def test_uppercase(data1):
+    p = pipe().read_conllu(data1).only_words().uppercase('form').text()
+    assert p.collect() == ['vamos nos a el mar '.upper(), 'Sue likes coffee and Bill tea '.upper()]
+
+def test_replace(data4):
+    sentences = pipe().read_conllu(data4).replace('form', r"[0-9]+|[0-9]+\.[0-9]+|[0-9]+[0-9,]+", '__number__', 'new').collect()
+    assert [t.get('new') for t in sentences[0]] == ['Posledná', 'revízia', 'vyšla', 'v', 'roku', '__number__', '.']
+
+def test_flatten_tokens(data1):
+    tokens = pipe().read_conllu(data1).flatten().only_words().lowercase('form').collect()
+    assert [t.form for t in tokens] == ['vamos', 'nos', 'a', 'el', 'mar', 'sue', 'likes', 'coffee', 'and', 'bill', 'tea']
+
+def test_map_field(data1):
+    tokens = pipe().read_conllu(data1).flatten().map_field('form', lambda s: None).collect()
+    assert [t for t in tokens if 'form' in t] == []
+
+def test_filter_field(data1):
+    tokens = pipe().read_conllu(data1).flatten().filter_field('form', lambda s: False).collect()
+    assert [t for t in tokens if 'form' in t] == []
+
+def test_map_token(data1):
+    sentences = pipe().read_conllu(data1).map_token(lambda t: None).collect()
+    assert sentences == [[], []]
+
+def test_filter_token(data1):
+    sentences = pipe().read_conllu(data1).filter_token(lambda t: False).collect()
+    assert sentences == [[], []]
 
 if __name__ == "__main__":
-    p = pipe().from_conllu(_DATA1_CONLLU).to_conllu()
-    s = _DATA1_CONLLU.split("\n\n")
-
-    print(s)
+    pass
