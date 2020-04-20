@@ -142,6 +142,10 @@ def test_to_instance(data2):
 
     assert k.collect() == sentences
 
+def test_to_flatten():
+    p = pipe(range(10)).batch(3).flatten()
+    assert p.collect() == list(range(10))
+
 _NUM_REGEX = re.compile(r"[0-9]+|[0-9]+\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"
 

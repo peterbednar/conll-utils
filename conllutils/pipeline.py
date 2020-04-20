@@ -64,9 +64,6 @@ class Pipeline(object):
     def write_conllu(self, filename):
         write_conllu(filename, self)
 
-    def create_index(self, fields=None, min_frequency=1):
-        return create_index(self, fields, min_frequency)
-
     def print(self):
         for s in self():
             print(s)
@@ -76,6 +73,9 @@ class Pipeline(object):
             return list(self)
         l.extend(self)
         return l
+
+    def create_index(self, fields=None, min_frequency=1):
+        return create_index(self, fields, min_frequency)
 
     def pipe(self, p):
         self._pipeline = _Pipe(self._pipeline, pipe=p)
@@ -91,6 +91,10 @@ class Pipeline(object):
 
     def batch(self, batch_size=100):
         self.pipe(lambda source: _batch(source, batch_size))
+        return self
+
+    def flatten(self):
+        self.pipe(_flatten)
         return self
 
     def __call__(self, source=None):
@@ -142,6 +146,14 @@ def _batch(source, batch_size):
             batch = [data]
     if batch:
         yield batch
+
+def _flatten(source):
+    for data in source:
+        if isinstance(data, (tuple, list)):
+            for elm in data:
+                yield elm
+        else:
+            yield data
 
 class _Pipe(object):
 
