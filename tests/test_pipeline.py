@@ -2,6 +2,7 @@ import os
 import pytest
 from io import StringIO
 
+from conllutils import *
 from conllutils.pipeline import *
 
 class _StringIO(StringIO):
@@ -74,6 +75,9 @@ def test_stream():
     p = pipe(range(10)).filter(lambda x: x < 5).stream(10)
     assert p.collect()  == [0, 1, 2, 3, 4, 0, 1, 2, 3, 4]
 
+    p = pipe(()).stream(10)
+    assert p.collect() == []
+
 def test_batch():
     p = pipe(range(10)).filter(lambda x: x < 5).stream(10).batch(3)
     assert p.collect() == [[0, 1, 2], [3, 4, 0], [1, 2, 3], [4]]
@@ -123,6 +127,20 @@ def test_only_projective(data2, data5):
 def test_text(data2):
     p = pipe().read_conllu(data2).text()
     assert p.collect() == ['They buy and sell books. ', 'I have no clue. ']
+
+def test_create_index(data2):
+    index = pipe().read_conllu(data2).create_index(fields=set(FIELDS)-{ID, HEAD}, min_frequency=2)
+    assert index[FORM] == {".":1}
+
+def test_to_instance(data2):
+    sentences = pipe().read_conllu(data2).collect()
+    index = pipe(sentences).create_index(fields=set(FIELDS)-{ID, HEAD})
+    inverse_index = create_inverse_index(index)
+
+    p = pipe().read_conllu(data2).to_instance(index)
+    k = pipe(p).to_sentence(inverse_index)
+
+    assert k.collect() == sentences
 
 _NUM_REGEX = re.compile(r"[0-9]+|[0-9]+\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"

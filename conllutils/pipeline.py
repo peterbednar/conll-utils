@@ -45,6 +45,10 @@ class Pipeline(object):
         self.map(lambda s: s.to_instance(index))
         return self
 
+    def to_sentence(self, inverse_index):
+        self.map(lambda s: s.to_sentence(inverse_index))
+        return self
+
     def to_conllu(self):
         self.map(lambda s: s.to_conllu())
         return self
