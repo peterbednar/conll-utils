@@ -34,7 +34,7 @@ print(first.feats['Case'])  # FEATS parsed to dictionaries
 dot = Token(id=5, form='.', lemma='.', upos='PUNCT', head=2, deprel='punct')
 sentence.append(dot)        # add '.' at the end of the sentence
 print(sentence.to_conllu()) # print modified sentence in CoNLL-U format
-print(sentence.text)        # print raw text reconstructed from tokens
+print(sentence.text)        # print raw text reconstructed from the tokens
 
 # transform sentence to dependency tree representation
 tree = sentence.to_tree()

@@ -14,30 +14,27 @@ def pipe(source=None, *args):
 class Pipeline(object):
 
     def __init__(self, source=None):
-        self.source = source
-        self.operations = []
-        self._pipeline = self
+        self._pipeline = _Pipe(source)
 
     @property
     def token(self):
         opr = self._prev_opr()
         if isinstance(opr, TokenPipeline):
             return opr
-        opr = TokenPipeline()
+        opr = TokenPipeline(self)
         self._append_opr(opr)
         return opr
 
     def filter(self, f):
         self._append_opr(lambda s: s if f(s) else None)
         return self
+
+    def only_projective(self, projective=True):
+        self.filter(lambda s: s.is_projective() == projective)
+        return self
     
     def map(self, f):
         self._append_opr(f)
-        return self
-
-    def pipe(self, pipeline):
-        source = self._pipeline
-        self._pipeline = Pipeline(lambda: pipeline(source._iterate()))
         return self
 
     def text(self):
@@ -53,19 +50,15 @@ class Pipeline(object):
         return self
 
     def from_conllu(self, s):
-        self._set_source(Sentence.from_conllu(s, multiple=True))
+        self._pipeline.set_source(Sentence.from_conllu(s, multiple=True))
         return self
 
     def read_conllu(self, filename):
-        self._set_source(lambda: read_conllu(filename))
+        self._pipeline.set_generator(lambda: read_conllu(filename))
         return self
 
     def write_conllu(self, filename):
         write_conllu(filename, self)
-
-    def only_projective(self, projective=True):
-        self.filter(lambda s: s.is_projective() == projective)
-        return self
 
     def create_index(self, fields=None, min_frequency=1):
         return create_index(self, fields, min_frequency)
@@ -74,98 +67,33 @@ class Pipeline(object):
         for s in self():
             print(s)
 
-    def stream(self, max_size=None):
-        source = self._pipeline
-        def _stream():
-            i = 0
-            while True:
-                for data in source._iterate():
-                    if max_size is None or i < max_size:
-                        yield data
-                        i += 1
-                    else:
-                        return
+    def collect(self, l=None):
+        if l is None:
+            return list(self)
+        l.extend(self)
+        return l
 
-        self._pipeline = Pipeline(_stream)
+    def pipe(self, p):
+        self._pipeline = _Pipe(self._pipeline, pipe=p)
+        return self
+
+    def stream(self, max_size=None):
+        self.pipe(lambda source: _stream(source, max_size))
         return self
 
     def shuffle(self, buffer_size=1024, random=np.random):
-        source = self._pipeline
-        def _shuffle():
-            buffer = []
-
-            for data in source._iterate():
-                if len(buffer) < buffer_size:
-                    buffer.append(data)
-                else:
-                    i = random.randint(0, len(buffer))
-                    elm = buffer[i]
-                    buffer[i] = data
-                    yield elm
-
-            random.shuffle(buffer)
-            for elm in buffer:
-                yield elm
-
-        self._pipeline = Pipeline(_shuffle)
+        self.pipe(lambda source: _shuffle(source, buffer_size, random))
         return self
 
     def batch(self, batch_size=100):
-        source = self._pipeline
-        def _batch():
-            batch = []
-
-            for data in source._iterate():
-                if len(batch) < batch_size:
-                    batch.append(data)
-                else:
-                    yield batch
-                    batch = [data]
-
-            if batch:
-                yield batch
-
-        self._pipeline = Pipeline(_batch)
+        self.pipe(lambda source: _batch(source, batch_size))
         return self
 
-    def collect(self):
-        return list(self)
-
-    def _iterate(self, source=None):
-        if source is None:
-            source = self._iter_source()
-        
-        for data in source:
-            for opr in self.operations:
-                data = opr(data)
-                if data is None:
-                    break
-            if data is not None:
-                yield data
-
     def __call__(self, source=None):
-        return self._pipeline._iterate(source)
+        return self._pipeline.iterate(source)
 
     def __iter__(self):
-        return self._pipeline._iterate(None)
-
-    def _iter_source(self):
-        source = self.source
-        if source == None:
-            raise RuntimeError('No source defined.')
-        try:
-            return iter(source)
-        except TypeError:
-            return source()
-
-    def _set_source(self, source):
-        if self._pipeline.source is not None:
-            raise RuntimeError('Source already set.')
-
-        if self._pipeline.operations:
-            raise RuntimeError('Source must be the first operation.')
-
-        self._pipeline.source = source
+        return self._pipeline.iterate(None)
 
     def _prev_opr(self):
         return self._pipeline.operations[-1] if self._pipeline.operations else None
@@ -173,10 +101,95 @@ class Pipeline(object):
     def _append_opr(self, opr):
         self._pipeline.operations.append(opr)
 
+def _stream(source, max_size):
+    i = 0
+    while True:
+        prev = i
+        for data in source:
+            if max_size is None or i < max_size:
+                yield data
+                i += 1
+            else:
+                return
+        if prev == i:
+            return
+
+def _shuffle(source, buffer_size, random):
+    buffer = []
+    for data in source:
+        if len(buffer) < buffer_size:
+            buffer.append(data)
+        else:
+            i = random.randint(0, len(buffer))
+            elm = buffer[i]
+            buffer[i] = data
+            yield elm
+    random.shuffle(buffer)
+    for elm in buffer:
+        yield elm
+
+def _batch(source, batch_size):
+    batch = []
+    for data in source:
+        if len(batch) < batch_size:
+            batch.append(data)
+        else:
+            yield batch
+            batch = [data]
+    if batch:
+        yield batch
+
+class _Pipe(object):
+
+    def __init__(self, source=None, generator=None, pipe=None):
+        self.source = source
+        self.generator = generator
+        self.pipe = pipe
+        self.operations = []
+
+    def set_source(self, source):
+        self._check_source()
+        self.source = source
+
+    def set_generator(self, generator):
+        self._check_source()
+        self.generator = generator
+
+    def _check_source(self):
+        if self.operations:
+            raise RuntimeError('Source must be the first operation.')
+
+        if self.source is not None or self.generator is not None:
+            raise RuntimeError('Source is already set.')
+
+    def source_iterator(self, source):
+        if source is None:
+            source = self.source
+
+        if source is None:
+            if self.generator is None:
+                raise RuntimeError('No source defined.')
+            return self.generator()
+
+        return self.pipe(source) if self.pipe is not None else source
+
+    def iterate(self, source=None):
+        for data in self.source_iterator(source):
+            for opr in self.operations:
+                data = opr(data)
+                if data is None:
+                    break
+            if data is not None:
+                yield data
+
+    def __iter__(self):
+        return self.iterate(self.source)
+
 class TokenPipeline(object):
 
-    def __init__(self):
+    def __init__(self, pipeline):
         self.operations = []
+        self._pipeline = pipeline
 
     def filter(self, f):
         self.operations.append(lambda t: t if f(t) else None)

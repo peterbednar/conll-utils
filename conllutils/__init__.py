@@ -117,10 +117,12 @@ class Token(dict):
     def __repr__(self):
         return f"<{_id_to_str(self.get(ID))},{self.get(FORM)},{self.get(UPOS)}>"
 
+    def _space_after(self):
+        return False if MISC in self and 'SpaceAfter=No' in self[MISC] else True
+
     def _text(self):
         form = self[FORM]
-        space_after = False if MISC in self and 'SpaceAfter=No' in self[MISC] else True
-        return form + ' ' if space_after else form
+        return form + ' ' if self._space_after() else form
 
     def copy(self):
         """Return a shallow copy of the token."""
@@ -186,12 +188,7 @@ class Sentence(list):
         """str: Text of the sentence reconstructed from the raw tokens.
 
         The insertion of spaces is controlled by ``SpaceAfter=No`` feature in MISC field."""
-        tokens = [token._text() for token in self.raw_tokens()]
-        if tokens:
-            tokens[-1] = tokens[-1].strip()
-            return "".join(tokens)
-        else:
-            return ""
+        return "".join([token._text() for token in self.raw_tokens()])
 
     def is_projective(self, return_arcs=False):
         """Return True if this sentence can be represented as the projective dependency tree, otherwise False.
@@ -212,9 +209,9 @@ class Sentence(list):
         """
         if isinstance(id, str):
             id = _parse_id(id)
-        start = id[0]-1 if isinstance(id, tuple) else id-1
-        if start < 0:
-            start = 0
+        start = id[0] if isinstance(id, tuple) else id
+        if start > 0:
+            start -= 1
         for token in self[start:]:
             if token[ID] == id:
                 return token
@@ -718,11 +715,11 @@ def _is_projective(heads, return_arcs=False):
         arcs = []
 
     for i in range(len(heads)):
-        if heads[i] == None or heads[i] < 0:
+        if heads[i] is None or heads[i] < 0:
             continue
 
         for j in range(i + 1, len(heads)):
-            if heads[j] == None or heads[j] < 0:
+            if heads[j] is None or heads[j] < 0:
                 continue
 
             arc1_0 = min(i + 1, heads[i])

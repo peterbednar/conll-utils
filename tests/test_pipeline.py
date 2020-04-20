@@ -64,6 +64,9 @@ def test_pipe():
     with pytest.raises(RuntimeError):
         pipe().collect()
 
+def test_collect():
+    assert pipe(range(5)).collect([-1]) == list(range(-1, 5))
+
 def test_print():
     pipe(range(10)).print()
 
@@ -119,7 +122,7 @@ def test_only_projective(data2, data5):
 
 def test_text(data2):
     p = pipe().read_conllu(data2).text()
-    assert p.collect() == ['They buy and sell books.', 'I have no clue.']
+    assert p.collect() == ['They buy and sell books. ', 'I have no clue. ']
 
 _NUM_REGEX = re.compile(r"[0-9]+|[0-9]+\.[0-9]+|[0-9]+[0-9,]+")
 NUM_NORM = u"__number__"

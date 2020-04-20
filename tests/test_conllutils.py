@@ -78,6 +78,17 @@ def test_token():
     token.unknown = 1
     assert token.unknown == 1
 
+    token = Token()
+    token[ID] = multiword_id(1,2)
+    token[FORM] = "vámonos"
+    assert token.copy() == token
+
+def test_sentence(data2):
+    assert Sentence().text == ""
+
+    sentences = list(read_conllu(data2))
+    assert sentences == list([sentence.copy() for sentence in sentences])
+
 def test_dependency_tree(data1, data2):
     empty = Sentence().to_tree()
     assert len(empty) == 0
@@ -304,14 +315,18 @@ def test_instance(data2):
     instance.unknown = None
     assert instance.unknown == None
 
-def test_map_to_instances(data1, data2):
+def test_map_to_instance(data1, data2):
     sentences = list(read_conllu(data2))
     index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
     inverse_index = create_inverse_index(index)
 
     assert [sentence.to_instance(index).to_sentence(inverse_index) for sentence in sentences] == sentences
 
-def test_tokens(data2):
+    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
+    instances = [sentence.to_instance(index) for sentence in sentences]
+    assert instances == list([instance.copy() for instance in instances])
+
+def test_instance_tokens(data2):
     sentences = list(read_conllu(data2))
     index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
     instances = [sentence.to_instance(index) for sentence in sentences]
@@ -327,20 +342,7 @@ def test_tokens(data2):
         del tokens[0][FORM]
 
     with pytest.raises(KeyError):
-        tokens[0][ID] = 0
-
-def test_copy(data2):
-    token = Token()
-    token[ID] = multiword_id(1,2)
-    token[FORM] = "vámonos"
-    assert token.copy() == token
-
-    sentences = list(read_conllu(data2))
-    assert sentences == list([sentence.copy() for sentence in sentences])
-    
-    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})
-    instances = [sentence.to_instance(index) for sentence in sentences]
-    assert instances == list([instance.copy() for instance in instances])
+        tokens[0][ID] = 0    
 
 def test_is_projective(data2, data5):
     sentences = list(read_conllu(data2))
