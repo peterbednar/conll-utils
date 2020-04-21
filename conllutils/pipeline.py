@@ -3,6 +3,7 @@ import numpy as np
 
 from . import Sentence, Token
 from . import read_conllu, write_conllu, create_index
+from . import _feats_to_str
 
 def pipe(source=None, *args):
     pipe = Pipeline(source)
@@ -264,12 +265,7 @@ class TokenPipeline(object):
             feats = t.get('feats')
 
             if isinstance(feats, dict):
-                tag = dict(feats)
-                if upos is not None:
-                    tag['POS'] = upos
-                t[to] = tag
-                return t
-
+                feats = _feats_to_str(feats)
             if upos:
                 tag = f'POS={upos}|{feats}' if feats else f'POS={upos}'
             else:

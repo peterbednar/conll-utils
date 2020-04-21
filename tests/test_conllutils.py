@@ -160,13 +160,18 @@ def test_to_from_conllu(data2):
 
     with pytest.raises(ValueError):
         Sentence.from_conllu("# empty string", multiple=True)
-    
+
 def test_parse_deps_feats(data2):
     sentences = list(read_conllu(data2, parse_deps=True, parse_feats=True))
     assert sentences[0][0][FEATS] == {"Case":"Nom", "Number":"Plur"}
     assert sentences[0][0][DEPS] == {(2, "nsubj"), (4, "nsubj")}
     assert FEATS not in sentences[0][2]
     assert DEPS not in sentences[1][0]
+
+    input = _read_file(data2)
+    output = _StringIO()
+    write_conllu(output, sentences)
+    assert output.getvalue() == input
 
     sentences = list(read_conllu(data2, parse_deps=False, parse_feats=False))
     assert sentences[0][0][FEATS] == "Case=Nom|Number=Plur"
@@ -217,11 +222,6 @@ def test_empty_multiword(data1):
 
     with pytest.raises(IndexError):
         sentences[0].get(empty_id(1,2))
-
-    #sentences = list(read_conllu(data1, skip_empty=True, skip_multiword=True))
-    #for sentence in sentences:
-    #    for token in sentence:
-    #        assert (not token.is_empty) and (not token.is_multiword)
 
 def test_words_tokens(data1):
     sentences = list(read_conllu(data1))
