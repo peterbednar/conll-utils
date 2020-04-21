@@ -876,6 +876,7 @@ def _map_to_instance(sentence, index, fields=None):
     instance.metadata = sentence.metadata
 
     for field in fields:
+        # initialize missing values to -1
         array = np.full(length, -1, dtype=np.int)
 
         for i, token in enumerate(sentence):
@@ -884,6 +885,7 @@ def _map_to_instance(sentence, index, fields=None):
                     array[i] = token[HEAD]
                 else:
                     key = _field_key(token, field)
+                    # index[field] Counter always returns 0 for unknown keys
                     array[i] = index[field][key]
 
         instance[field] = array
