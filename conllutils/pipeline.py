@@ -1,4 +1,3 @@
-
 import re
 import numpy as np
 
@@ -263,8 +262,16 @@ class TokenPipeline(object):
         def _upos_feats(t):
             upos = t.get('upos')
             feats = t.get('feats')
+
+            if isinstance(feats, dict):
+                tag = dict(feats)
+                if upos is not None:
+                    tag['POS'] = upos
+                t[to] = tag
+                return t
+
             if upos:
-                tag = f"POS={upos}|{feats}" if feats else f"POS={upos}"
+                tag = f'POS={upos}|{feats}' if feats else f'POS={upos}'
             else:
                 tag = feats
             if tag:

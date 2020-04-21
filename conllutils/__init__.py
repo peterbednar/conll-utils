@@ -9,7 +9,7 @@ import numpy as np
 _EMPTY = 0
 _MULTIWORD = 1
 
-FIELDS = ("id", "form", "lemma", "upos", "xpos", "feats", "head", "deprel", "deps", "misc")
+FIELDS = ('id', 'form', 'lemma', 'upos', 'xpos', 'feats', 'head', 'deprel', 'deps', 'misc')
 ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC = FIELDS
 _FIELD_SET = set(FIELDS)
 
@@ -23,7 +23,7 @@ def empty_id(word_id, index=1):
         ValueError: If `word_id` < 0 or `index` < 1.
     """
     if word_id < 0 or index < 1:
-        raise ValueError("word_id must be >= 0 and index >= 1.")
+        raise ValueError('word_id must be >= 0 and index >= 1.')
     return (word_id, index, _EMPTY)
 
 def multiword_id(start, end):
@@ -37,7 +37,7 @@ def multiword_id(start, end):
         ValueError: If `start` < 1 or `end` <= `start`.
     """
     if start < 1 or end <= start:
-        raise ValueError("start must be >= 1 and end > start.")
+        raise ValueError('start must be >= 1 and end > start.')
     return (start, end, _MULTIWORD)
 
 class Token(dict):
@@ -100,7 +100,7 @@ class Token(dict):
         if name in _FIELD_SET:
             return self[name]
         else:
-            raise AttributeError(f"Token has no attribute {name}.")
+            raise AttributeError(f'Token has no attribute {name}.')
 
     def __setattr__(self, name, value):
         if name in _FIELD_SET:
@@ -115,7 +115,7 @@ class Token(dict):
             super().__delattr__(name)
 
     def __repr__(self):
-        return f"<{_id_to_str(self.get(ID))},{self.get(FORM)},{self.get(UPOS)}>"
+        return f'<{_id_to_str(self.get(ID))},{self.get(FORM)},{self.get(UPOS)}>'
 
     def _space_after(self):
         return False if MISC in self and 'SpaceAfter=No' in self[MISC] else True
@@ -215,7 +215,7 @@ class Sentence(list):
         for token in self[start:]:
             if token[ID] == id:
                 return token
-        raise IndexError(f"Token with ID {_id_to_str(id)} not found.")
+        raise IndexError(f'Token with ID {_id_to_str(id)} not found.')
 
     def tokens(self):
         """Return an iterator over all tokens in the sentence (alias to ``iter(self)``)."""
@@ -290,7 +290,7 @@ class Sentence(list):
         itrs = read_conllu(StringIO(s), **kwargs)
         result = list(itrs) if multiple else next(itrs, None)
         if not result:
-            raise ValueError("No sentence found.")
+            raise ValueError('No sentence found.')
         return result
 
     def copy(self):
@@ -311,14 +311,14 @@ def _parse_metadata(comments):
     return [comment[1:].lstrip() for comment in comments]
 
 def _parse_token(line, parse_feats, parse_deps):
-    fields = line.split("\t")
+    fields = line.split('\t')
     fields = {FIELDS[i] : fields[i] for i in range(min(len(fields), len(FIELDS)))}
 
     fields[ID] = _parse_id(fields[ID])
 
     for f in (FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC):
-        if f in fields and fields[f] == "_":
-            del(fields[f])
+        if f in fields and fields[f] == '_':
+            del fields[f]
 
     if parse_feats and FEATS in fields:
         fields[FEATS] = _parse_feats(fields[FEATS])
@@ -332,40 +332,40 @@ def _parse_token(line, parse_feats, parse_deps):
     return Token(fields)
 
 def _parse_id(s):
-    if "." in s:
-        word_id, index = s.split(".")
+    if '.' in s:
+        word_id, index = s.split('.')
         return empty_id(int(word_id), int(index))
-    if "-" in s:
-        start, end = s.split("-")
+    if '-' in s:
+        start, end = s.split('-')
         return multiword_id(int(start), int(end))
     return int(s)
 
 def _parse_feats(s):
     feats = {}
-    for key, value in [feat.split("=") for feat in s.split("|")]:
-        if "," in value:
-            value = set(value.split(","))
+    for key, value in [feat.split('=') for feat in s.split('|')]:
+        if ',' in value:
+            value = set(value.split(','))
         feats[key] = value
     return feats
 
 def _parse_deps(s):
-    return set(map(lambda rel: (int(rel[0]), rel[1]), [rel.split(":") for rel in s.split("|")]))
+    return set(map(lambda rel: (int(rel[0]), rel[1]), [rel.split(':') for rel in s.split('|')]))
 
 def _sentence_to_str(sentence, encode_metadata):
     lines = []
     if encode_metadata:
         lines = _metadata_to_str(sentence.metadata)
     lines += [_token_to_str(token) for token in sentence]
-    return "\n".join(lines)
+    return '\n'.join(lines)
 
 def _metadata_to_str(metadata):
     if isinstance(metadata, list):
-        return ["# " + str(comment) for comment in metadata]
+        return ['# ' + str(comment) for comment in metadata]
     else:
         return []
 
 def _token_to_str(token):
-    return "\t".join([_field_to_str(token, field) for field in FIELDS])
+    return '\t'.join([_field_to_str(token, field) for field in FIELDS])
 
 def _field_to_str(token, field):
 
@@ -373,7 +373,7 @@ def _field_to_str(token, field):
         return _id_to_str(token[ID])
 
     if field not in token or token[field] is None:
-        return "_"
+        return '_'
 
     if field == FEATS:
         return _feats_to_str(token[FEATS])
@@ -385,21 +385,21 @@ def _field_to_str(token, field):
 
 def _id_to_str(id):
     if isinstance(id, tuple):
-        return f"{id[0]}.{id[1]}" if id[2] == _EMPTY else f"{id[0]}-{id[1]}"
+        return f'{id[0]}.{id[1]}' if id[2] == _EMPTY else f'{id[0]}-{id[1]}'
     else:
         return str(id)
 
 def _feats_to_str(feats):
     if isinstance(feats, str):
         return feats
-    feats = [key + "=" + (",".join(sorted(value)) if isinstance(value, set) else value) for key, value in feats.items()]
-    return "|".join(feats)        
+    feats = [key + '=' + (','.join(sorted(value)) if isinstance(value, set) else value) for key, value in feats.items()]
+    return '|'.join(feats)        
 
 def _deps_to_str(deps):
     if isinstance(deps, str):
         return deps
-    deps = [f"{rel[0]}:{rel[1]}" for rel in sorted(deps, key=lambda rel: rel[0])]
-    return "|".join(deps)
+    deps = [f'{rel[0]}:{rel[1]}' for rel in sorted(deps, key=lambda rel: rel[0])]
+    return '|'.join(deps)
 
 class Node(object):
     """A node in the dependency tree corresponding to the syntactic word in the sentence.
@@ -448,7 +448,7 @@ class Node(object):
         return iter(self._children)
 
     def __repr__(self):
-        return f"<{self.token},{self.deprel},{self._children}>"
+        return f'<{self.token},{self.deprel},{self._children}>'
 
 class DependencyTree(object):
     """A dependency tree representation of the sentence.
@@ -556,20 +556,20 @@ class DependencyTree(object):
             token = node.token
             head = token.get(HEAD)
             if head is None or head == -1:
-                raise ValueError(f"Token at {index} is without HEAD.")
+                raise ValueError(f'Token at {index} is without HEAD.')
 
             if head == 0:
                 if root == None:
                     root = node
                 else:
-                    raise ValueError(f"Multiple roots found at {index}.")
+                    raise ValueError(f'Multiple roots found at {index}.')
             else:
                 parent = nodes[head-1]
                 node.parent = parent
                 parent._children.append(node)
 
         if root is None:
-            raise ValueError("No root found.")
+            raise ValueError('No root found.')
 
         return root, nodes
 
@@ -599,7 +599,7 @@ class _IndexedToken(MutableMapping):
 
     def __delitem__(self, key):
         # Remove key operation is not supported for the token view.
-        raise TypeError("Not supported for token views.")
+        raise TypeError('Not supported for token views.')
 
 class Instance(dict):
     """An indexed representation of the sentence in the compact numerical form.
@@ -640,7 +640,7 @@ class Instance(dict):
         if name in _FIELD_SET:
             return self[name]
         else:
-            raise AttributeError(f"Instance has no attribute {name}.")
+            raise AttributeError(f'Instance has no attribute {name}.')
 
     def __setattr__(self, name, value):
         if name in _FIELD_SET:
@@ -749,28 +749,25 @@ def read_conllu(file, parse_feats=False, parse_deps=False):
     arguments to True. By default the features and dependencies are not parsed and values are stored as a string.
     """
     if isinstance(file, (str, os.PathLike)):
-        file = open(file, "rt", encoding="utf-8")
+        file = open(file, 'rt', encoding='utf-8')
 
     with file:
         lines = []
         comments = []
 
         for line in file:
-            line = line.rstrip("\r\n")
-            if line.startswith("#"):
+            line = line.rstrip('\r\n')
+            if line.startswith('#'):
                 comments.append(line)
             elif line.lstrip():
                 lines.append(line)
             else :
-                if len(lines) > 0:
-                    yield _parse_sentence(lines, comments,
-                        parse_feats, parse_deps)
+                if lines:
+                    yield _parse_sentence(lines, comments, parse_feats, parse_deps)
                     lines = []
                     comments = []
-
-        if len(lines) > 0:
-            yield _parse_sentence(lines, comments,
-                parse_feats, parse_deps)
+        if lines:
+            yield _parse_sentence(lines, comments, parse_feats, parse_deps)
 
 def write_conllu(file, data, write_metadata=True):
     """Write the sentences to the CoNLL-U file.
@@ -783,7 +780,7 @@ def write_conllu(file, data, write_metadata=True):
         data = (data,)
 
     if isinstance(file, (str, os.PathLike)):
-        file = open(file, "wt", encoding="utf-8")
+        file = open(file, 'wt', encoding='utf-8')
 
     with file as fp:
         for sentence in data:
@@ -794,17 +791,31 @@ def write_conllu(file, data, write_metadata=True):
                 print(_token_to_str(token), file=fp)
             print(file=fp)
 
+def _field_key(token, field):
+
+    if field == FEATS:
+        return _feats_to_str(token[FEATS])
+
+    if field == DEPS:
+        return _deps_to_str(token[DEPS])
+
+    s = token[field]
+    if not isinstance(s, str):
+        raise ValueError('Not a string value {s} for {field}.')
+    return s
+
 def _create_dictionary(sentences, fields):
     if ID in fields or HEAD in fields:
-        raise ValueError("Indexing ID or HEAD fields.")
+        raise ValueError('Cannot index non-string ID or HEAD fields.')
 
     dic = {f: Counter() for f in fields}
+
     for sentence in sentences:
         for token in sentence:
-            for f in fields:
-                s = token.get(f)
-                if s is not None:
-                    dic[f][s] += 1
+            for field in fields:
+                if field in token:
+                    key = _field_key(token, field)
+                    dic[field][key] += 1
     return dic
 
 def create_index(sentences, fields=None, min_frequency=1):
@@ -865,12 +876,14 @@ def _map_to_instance(sentence, index, fields=None):
 
     for field in fields:
         array = np.full(length, -1, dtype=np.int)
+
         for i, token in enumerate(sentence):
-            value = token.get(field)
-            if field == HEAD:
-                array[i] = value if value is not None else -1
-            else:
-                array[i] = index[field][value]
+            if field in token:
+                if field == HEAD:
+                    array[i] = token[HEAD]
+                else:
+                    key = _field_key(token, field)
+                    array[i] = index[field][key]
 
         instance[field] = array
     
@@ -888,13 +901,14 @@ def _map_to_sentence(instance, inverse_index, fields=None):
         token[ID] = i + 1
 
         for field in fields:
-            vi = instance[field][i]
-            if field == HEAD:
-                value = vi if vi != -1 else None
-            else:
-                value = inverse_index[field].get(vi)
-            if value is not None:
-                token[field] = value
+            index = instance[field][i]
+            if index >= 0:
+                if field == HEAD:
+                    token[HEAD] = index
+                else:
+                    value = inverse_index[field].get(index)
+                    if value is not None:
+                        token[field] = value
 
         sentence.append(token)
     
