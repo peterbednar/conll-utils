@@ -74,7 +74,6 @@ class Token(dict):
     The DEPS values are strings or parsed as the set of head-deprel tuples.
 
     """
-
     def __init__(self, fields=(), **kwargs):
         """Create an empty token or token with the fields initialized from the provided mapping object or keyword
         arguments."""
@@ -175,7 +174,6 @@ class Sentence(list):
             are parsed as the list of strings (without the trailing '#') from the comment lines before the sentence.
 
     """
-
     def __init__(self, tokens=(), metadata=None):
         """Create an empty sentence or initialize a new sentence with the `tokens` from the provided sequence and
         optional `metadata`.
@@ -757,15 +755,18 @@ def read_conllu(file, parse_feats=False, parse_deps=False):
 
         for line in file:
             line = line.rstrip('\r\n')
-            if line.startswith('#'):
-                comments.append(line)
-            elif line.lstrip():
-                lines.append(line)
-            else :
-                if lines:
-                    yield _parse_sentence(lines, comments, parse_feats, parse_deps)
-                    lines = []
-                    comments = []
+ 
+            if line.lstrip():
+                if line.startswith('#'):
+                    comments.append(line)
+                else:
+                    lines.append(line)
+            elif lines:
+                yield _parse_sentence(lines, comments, parse_feats, parse_deps)
+                lines = []
+                comments = []
+        # parse the last sentence if the file does not end with LF character
+        # note that this is not compliant with CoNLL-U V2 specification
         if lines:
             yield _parse_sentence(lines, comments, parse_feats, parse_deps)
 
