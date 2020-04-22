@@ -267,7 +267,7 @@ def test_write_conllu(data1, data2, data3):
     input = _read_file(data3)
     sentences = list(read_conllu(data3))
     output = _StringIO()
-    write_conllu(output, sentences)
+    write_conllu(output, sentences[0]) # only one sentence
     assert output.getvalue() == input
     output.release()
 
@@ -292,7 +292,7 @@ def test_create_index(data2):
     assert [list(index[f].values()) for f in index.keys()] == [list(range(1, len(index[f])+1)) for f in index.keys()]
     assert [index[f].keys() for f in index.keys()] == [dictionary[f].keys() for f in index.keys()]
 
-    index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD}, min_frequency=2)
+    index = create_index(sentences, min_frequency=2)
     assert index[FORM] == {".":1}
 
 def test_create_inverse_index(data2):
