@@ -171,7 +171,8 @@ class Sentence(list):
 
     Attributes:
         metadata (any): Any optional data associated with the sentence. By default for the CoNLL-U format, `metadata`
-            are parsed as the list of strings (without the trailing '#') from the comment lines before the sentence.
+            are parsed from the comment lines as the dictionary of `key`=`value` pairs. If the comment string has no
+            key-value format separated with `=`, it is stored as a key with `None` value. 
 
     """
     def __init__(self, tokens=(), metadata=None):
@@ -305,8 +306,18 @@ def _parse_sentence(lines, comments, underscore_form, parse_feats, parse_deps):
 
     return sentence
 
+_KEY_VALUE_COMMENT = re.compile(r'\s*([^=]+?)\s*=\s*(.+)')
+
 def _parse_metadata(comments):
-    return [comment[1:].lstrip() for comment in comments]
+    metadata = {}
+    for comment in comments:
+        comment = comment[1:].strip()
+        match = _KEY_VALUE_COMMENT.match(comment)
+        if match:
+            metadata[match.group(1)] = match.group(2)
+        else:
+            metadata[comment] = None
+    return metadata
 
 def _parse_token(line, underscore_form, parse_feats, parse_deps):
     fields = line.split('\t')
@@ -354,15 +365,13 @@ def _parse_deps(s):
     return set(map(lambda rel: (int(rel[0]), rel[1]), [rel.split(':') for rel in s.split('|')]))
 
 def _sentence_to_str(sentence, encode_metadata):
-    lines = []
-    if encode_metadata:
-        lines = _metadata_to_str(sentence.metadata)
+    lines = _metadata_to_str(sentence.metadata) if encode_metadata else []
     lines += [_token_to_str(token) for token in sentence]
     return '\n'.join(lines)
 
 def _metadata_to_str(metadata):
-    if isinstance(metadata, list):
-        return ['# ' + str(comment) for comment in metadata]
+    if metadata:
+        return [f'# {key} = {value}' if value is not None else f'# {key}' for key, value in metadata.items()]
     else:
         return []
 
@@ -497,7 +506,6 @@ class DependencyTree(object):
 
         If the argument `return_arcs` is True, the function returns the list of conflicting non-projective arcs. For
         projective trees the list is empty.
-
         """
         return _is_projective([node.token[HEAD] for node in self.nodes], return_arcs)
 
@@ -761,9 +769,8 @@ def read_conllu(file, underscore_form=True, parse_feats=False, parse_deps=False)
         comments = []
 
         for line in file:
-            line = line.rstrip('\r\n')
- 
-            if line.lstrip():
+            line = line.strip() 
+            if line:
                 if line.startswith('#'):
                     comments.append(line)
                 else:

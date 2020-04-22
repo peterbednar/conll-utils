@@ -83,11 +83,17 @@ def test_token():
     token[FORM] = "vámonos"
     assert token.copy() == token
 
-def test_sentence(data2):
+def test_sentence(data2, data4):
     assert Sentence().text == ""
 
     sentences = list(read_conllu(data2))
     assert sentences == list([sentence.copy() for sentence in sentences])
+
+    assert sentences[0].metadata['sent_id'] == '1'
+    assert sentences[0].metadata['text'] == 'They buy and sell books.'
+
+    sentences = list(read_conllu(data4))
+    assert sentences[0].metadata['orig_file_sentence 003#16'] == None
 
 def test_dependency_tree(data1, data2):
     empty = Sentence().to_tree()
