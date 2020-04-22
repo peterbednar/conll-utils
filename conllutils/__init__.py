@@ -765,6 +765,7 @@ def read_conllu(file, underscore_form=True, parse_comments=True, parse_feats=Fal
     """
     if isinstance(file, (str, os.PathLike)):
         file = open(file, 'rt', encoding='utf-8')
+
     with file:
         lines = []
         comments = []
@@ -781,6 +782,7 @@ def read_conllu(file, underscore_form=True, parse_comments=True, parse_feats=Fal
                     parse_comments, parse_feats, parse_deps)
                 lines = []
                 comments = []
+
         # parse the last sentence if the file does not end with LF character
         # note that this is not compliant with CoNLL-U V2 specification
         if lines:
@@ -823,9 +825,6 @@ def _field_key(token, field):
     return s
 
 def _create_dictionary(sentences, fields):
-    if ID in fields or HEAD in fields:
-        raise ValueError('Cannot index non-string ID or HEAD fields.')
-
     dic = {f: Counter() for f in fields}
 
     for sentence in sentences:
@@ -835,6 +834,8 @@ def _create_dictionary(sentences, fields):
                     key = _field_key(token, field)
                     dic[field][key] += 1
     return dic
+
+_DEFAULT_INDEX_FIELDS = {FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}
 
 def create_index(sentences, fields=None, min_frequency=1):
     """Return an index mapping the string values of the `sentences` to integer indexes.
@@ -858,10 +859,10 @@ def create_index(sentences, fields=None, min_frequency=1):
             an integer for all fields, or as a dictionary setting the frequency for the specific field.
 
     Raises:
-        ValueError: If the indexed fields include ID or HEAD field.
+        ValueError: If the indexed fields include non-string values.
     """
     if fields is None:
-        fields = {FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}
+        fields = _DEFAULT_INDEX_FIELDS
 
     dic = _create_dictionary(sentences, fields)
     index = {f: Counter() for f in dic.keys()}
