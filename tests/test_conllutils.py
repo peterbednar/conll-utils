@@ -155,6 +155,12 @@ def test_to_from_conllu(data2):
     assert Sentence.from_conllu(s) == sentences[0]
     assert Sentence.from_conllu(s, multiple=True) == sentences
 
+    s = s.replace("They", "_")
+    assert FORM not in Sentence.from_conllu(s)[0]
+
+    s = s.replace("they", "_")
+    assert Sentence.from_conllu(s)[0][FORM] == "_"
+
     with pytest.raises(ValueError):
         Sentence.from_conllu("# empty string")
 

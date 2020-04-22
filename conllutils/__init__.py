@@ -295,12 +295,12 @@ class Sentence(list):
         """Return a shallow copy of the sentence."""
         return Sentence(self, self.metadata)
 
-def _parse_sentence(lines, comments, parse_feats, parse_deps):
+def _parse_sentence(lines, comments, underscore_form, parse_feats, parse_deps):
     sentence = Sentence()
     sentence.metadata = _parse_metadata(comments)
 
     for line in lines:
-        token = _parse_token(line, parse_feats, parse_deps)
+        token = _parse_token(line, underscore_form, parse_feats, parse_deps)
         sentence.append(token)
 
     return sentence
@@ -308,15 +308,19 @@ def _parse_sentence(lines, comments, parse_feats, parse_deps):
 def _parse_metadata(comments):
     return [comment[1:].lstrip() for comment in comments]
 
-def _parse_token(line, parse_feats, parse_deps):
+def _parse_token(line, underscore_form, parse_feats, parse_deps):
     fields = line.split('\t')
     fields = {FIELDS[i] : fields[i] for i in range(min(len(fields), len(FIELDS)))}
 
     fields[ID] = _parse_id(fields[ID])
 
-    for f in (FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC):
+    for f in (LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC):
         if f in fields and fields[f] == '_':
             del fields[f]
+
+    if fields[FORM] == '_':
+        if not underscore_form or LEMMA in fields:
+            del fields[FORM]
 
     if parse_feats and FEATS in fields:
         fields[FEATS] = _parse_feats(fields[FEATS])
@@ -738,13 +742,16 @@ def _is_projective(heads, return_arcs=False):
     else:
         return True
 
-def read_conllu(file, parse_feats=False, parse_deps=False):
+def read_conllu(file, underscore_form=True, parse_feats=False, parse_deps=False):
     """Read the CoNLL-U file and return an iterator over the parsed sentences.
 
     The `file` argument can be a path-like or file-like object.
 
     To parse values of FEATS or DEPS fields to dictionaries or sets of tuples, set the `parse_feats` or `parse_deps`
     arguments to True. By default the features and dependencies are not parsed and values are stored as a string.
+
+    If `underscore_form` is True (default) and LEMMA field is not underscore, the underscore character in the FORM field
+    is parsed as the FORM value. Otherwise, it indicates an unspecified FORM value.
     """
     if isinstance(file, (str, os.PathLike)):
         file = open(file, 'rt', encoding='utf-8')
@@ -762,13 +769,15 @@ def read_conllu(file, parse_feats=False, parse_deps=False):
                 else:
                     lines.append(line)
             elif lines:
-                yield _parse_sentence(lines, comments, parse_feats, parse_deps)
+                yield _parse_sentence(lines, comments, underscore_form,
+                    parse_feats, parse_deps)
                 lines = []
                 comments = []
         # parse the last sentence if the file does not end with LF character
         # note that this is not compliant with CoNLL-U V2 specification
         if lines:
-            yield _parse_sentence(lines, comments, parse_feats, parse_deps)
+            yield _parse_sentence(lines, comments, underscore_form,
+                parse_feats, parse_deps)
 
 def write_conllu(file, data, write_metadata=True):
     """Write the sentences to the CoNLL-U file.
