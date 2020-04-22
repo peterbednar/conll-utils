@@ -268,12 +268,13 @@ class Sentence(list):
         """
         return _map_to_instance(self, index, fields)
 
-    def to_conllu(self, metadata=True):
+    def to_conllu(self, write_comments=True):
         """Return a string representation of the sentence in the CoNLL-U format.
 
-        If the `metadata` argument is True (default), the string also includes comments generated from the metadata.
+        If the `write_comments` argument is True (default), the string also includes comments generated from the
+        metadata.
         """
-        return _sentence_to_str(self, metadata)
+        return _sentence_to_str(self, write_comments)
 
     @staticmethod
     def from_conllu(s, multiple=False, **kwargs):
@@ -764,7 +765,6 @@ def read_conllu(file, underscore_form=True, parse_comments=True, parse_feats=Fal
     """
     if isinstance(file, (str, os.PathLike)):
         file = open(file, 'rt', encoding='utf-8')
-
     with file:
         lines = []
         comments = []
@@ -787,11 +787,11 @@ def read_conllu(file, underscore_form=True, parse_comments=True, parse_feats=Fal
             yield _parse_sentence(lines, comments, underscore_form,
                 parse_comments, parse_feats, parse_deps)
 
-def write_conllu(file, data, write_metadata=True):
+def write_conllu(file, data, write_comments=True):
     """Write the sentences to the CoNLL-U file.
 
      The `file` argument can be a path-like or file-like object. Written `data` is an iterable object of sentences or
-     one sentence. If the `write_metadata` argument is True (default), sentence metadata are encoded as the comments and
+     one sentence. If the `write_comments` argument is True (default), sentence metadata are encoded as the comments and
      written to the file.
     """
     if isinstance(data, Sentence):
@@ -802,7 +802,7 @@ def write_conllu(file, data, write_metadata=True):
 
     with file as fp:
         for sentence in data:
-            if write_metadata and sentence.metadata:
+            if write_comments and sentence.metadata:
                 for comment in _metadata_to_str(sentence.metadata):
                     print(comment, file=fp)
             for token in sentence:
