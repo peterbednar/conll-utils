@@ -296,9 +296,10 @@ class Sentence(list):
         """Return a shallow copy of the sentence."""
         return Sentence(self, self.metadata)
 
-def _parse_sentence(lines, comments, underscore_form, parse_feats, parse_deps):
+def _parse_sentence(lines, comments, underscore_form, parse_comments, parse_feats, parse_deps):
     sentence = Sentence()
-    sentence.metadata = _parse_metadata(comments)
+    if parse_comments:
+        sentence.metadata = _parse_metadata(comments)
 
     for line in lines:
         token = _parse_token(line, underscore_form, parse_feats, parse_deps)
@@ -750,7 +751,7 @@ def _is_projective(heads, return_arcs=False):
     else:
         return True
 
-def read_conllu(file, underscore_form=True, parse_feats=False, parse_deps=False):
+def read_conllu(file, underscore_form=True, parse_comments=True, parse_feats=False, parse_deps=False):
     """Read the CoNLL-U file and return an iterator over the parsed sentences.
 
     The `file` argument can be a path-like or file-like object.
@@ -777,14 +778,14 @@ def read_conllu(file, underscore_form=True, parse_feats=False, parse_deps=False)
                     lines.append(line)
             elif lines:
                 yield _parse_sentence(lines, comments, underscore_form,
-                    parse_feats, parse_deps)
+                    parse_comments, parse_feats, parse_deps)
                 lines = []
                 comments = []
         # parse the last sentence if the file does not end with LF character
         # note that this is not compliant with CoNLL-U V2 specification
         if lines:
             yield _parse_sentence(lines, comments, underscore_form,
-                parse_feats, parse_deps)
+                parse_comments, parse_feats, parse_deps)
 
 def write_conllu(file, data, write_metadata=True):
     """Write the sentences to the CoNLL-U file.
