@@ -851,7 +851,8 @@ def create_index(sentences, fields=None, min_frequency=1):
 
     Args:
         sentences (iterable): The indexed sentences.
-        fields (set): The set of indexed fields included in the index.
+        fields (set): The set of indexed fields included in the index. By default FORM, LEMMA, UPOS, XPOS, FEATS and
+            DEPREL fields are included.
         min_frequency (int or dictionary): If specified, the field values with a frequency lower than `min_frequency`
             are discarded from the index. By default, all values are preserved. The `min_frequency` can be specified as
             an integer for all fields, or as a dictionary setting the frequency for the specific field.
