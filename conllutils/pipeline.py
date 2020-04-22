@@ -52,8 +52,12 @@ class Pipeline(object):
         self.token.uppercase(field, to)
         return self
 
-    def replace(self, field, regex, value, to=None):
-        self.token.replace(field, regex, value, to)
+    def replace_missing(self, field, value, to=None):
+        self.token.replace_missing(field, value, to)
+        return self
+
+    def replace(self, field, old_value, new_value, to=None):
+        self.token.replace(field, old_value, new_value, to)
         return self
 
     @property
@@ -93,19 +97,19 @@ class Pipeline(object):
         self.map(lambda s: s.to_conllu())
         return self
 
-    def from_conllu(self, s):
-        self._pipeline.set_source(Sentence.from_conllu(s, multiple=True))
+    def from_conllu(self, s, **kwargs):
+        self._pipeline.set_source(Sentence.from_conllu(s, multiple=True, **kwargs))
         return self
 
-    def read_conllu(self, filename):
-        self._pipeline.set_generator(lambda: read_conllu(filename))
+    def read_conllu(self, filename, **kwargs):
+        self._pipeline.set_generator(lambda: read_conllu(filename, **kwargs))
         return self
 
     def write_conllu(self, filename):
         write_conllu(filename, self)
 
     def print(self):
-        for s in self():
+        for s in self:
             print(s)
 
     def collect(self, l=None):
@@ -309,10 +313,27 @@ class TokenPipeline(object):
         self.map_field(field, lambda s: s.upper(), to)
         return self
 
-    def replace(self, field, regex, value, to=None):
-        if isinstance(regex, str):
-            regex = re.compile(regex)
-        self.map_field(field, lambda s: value if regex.match(s) else s, to)
+    def replace_missing(self, field, value, to=None):
+        if to is None:
+            to = field
+        def _map_missing(t):
+            if field not in t:
+                if value is not None:
+                    t[to] = value
+                elif to != field:
+                    del t[to]
+            return t
+        self.map(_map_missing)
+        return self
+
+    def replace(self, field, old_value, new_value, to=None):
+        if old_value is None:
+            self.replace_missing(field, new_value, to)
+            return self
+
+        if isinstance(old_value, str):
+            old_value = re.compile(old_value)
+        self.map_field(field, lambda s: new_value if old_value.match(s) else s, to)
         return self
 
     def __call__(self, data):

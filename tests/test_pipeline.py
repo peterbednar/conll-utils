@@ -179,6 +179,19 @@ def test_replace(data4):
     sentences = pipe().read_conllu(data4).replace('form', r"[0-9]+|[0-9]+\.[0-9]+|[0-9]+[0-9,]+", '__number__', 'new').collect()
     assert [t.get('new') for t in sentences[0]] == ['Posledná', 'revízia', 'vyšla', 'v', 'roku', '__number__', '.']
 
+    del sentences[0][0].form
+    pipe(sentences).replace('form', None, '__missing__', 'new').collect()
+    assert [t.get('new') for t in sentences[0]] == ['__missing__', 'revízia', 'vyšla', 'v', 'roku', '__number__', '.']
+
+def test_replace_missing(data4):
+    sentences = pipe().read_conllu(data4).collect()
+    del sentences[0][0].form
+    pipe(sentences).replace_missing('form', '__missing__', 'new').collect()
+    assert [t.get('new') for t in sentences[0]] == ['__missing__', None, None, None, None, None, None]
+
+    pipe(sentences).replace_missing('form', None, 'new').collect()
+    assert [t.get('new') for t in sentences[0]] == [None, None, None, None, None, None, None]
+
 def test_flatten_tokens(data1):
     tokens = pipe().read_conllu(data1).flatten().only_words().lowercase('form').collect()
     assert [t.form for t in tokens] == ['vamos', 'nos', 'a', 'el', 'mar', 'sue', 'likes', 'coffee', 'and', 'bill', 'tea']

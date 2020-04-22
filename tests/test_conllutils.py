@@ -211,17 +211,10 @@ def test_empty_multiword(data1):
     assert sentences[0].get("1-2")[FORM] == "vámonos"
     assert sentences[1].get("5.1")[FORM] == "likes"
 
-    with pytest.raises(IndexError):
-        sentences[0].get(0)
-
-    with pytest.raises(IndexError):
-        sentences[0].get(6)
-
-    with pytest.raises(IndexError):
-        sentences[0].get(multiword_id(1,3))
-
-    with pytest.raises(IndexError):
-        sentences[0].get(empty_id(1,2))
+    assert sentences[0].get(0) == None
+    assert sentences[0].get(6) == None
+    assert sentences[0].get(multiword_id(1,3)) == None
+    assert sentences[0].get(empty_id(1,2)) == None
 
 def test_words_tokens(data1):
     sentences = list(read_conllu(data1))
