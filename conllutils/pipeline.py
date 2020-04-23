@@ -7,10 +7,9 @@ from . import read_conllu, write_conllu, create_index
 from . import _feats_to_str, _deps_to_str, _parse_deps
 
 def pipe(source=None, *args):
-    pipe = Pipeline(source)
-    for p in args:
-        pipe.pipe(p)
-    return pipe
+    p = Pipeline(source)
+    p.pipe(*args)
+    return p
 
 class Pipeline(object):
 
@@ -132,8 +131,9 @@ class Pipeline(object):
     def create_index(self, fields=None, min_frequency=1):
         return create_index(self, fields, min_frequency)
 
-    def pipe(self, p):
-        self._pipeline = _Pipe(self._pipeline, pipe=p)
+    def pipe(self, *args):
+        for p in args:
+            self._pipeline = _Pipe(self._pipeline, pipe=p)
         return self
 
     def stream(self, max_size=None):
