@@ -1,7 +1,7 @@
 from setuptools import setup
 from os import path
 
-VERSION = "1.1.1"
+VERSION = "1.1.2"
 
 with open(path.join(path.abspath(path.dirname(__file__)), 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
@@ -11,7 +11,7 @@ setup(
     packages=["conllutils"],
     version=VERSION,
     license="MIT",
-    description="CoNLL-Utils is a Python library for processing of CoNLL-U files.",
+    description="Library for processing of CoNLL-U files.",
     long_description=long_description,
     long_description_content_type='text/markdown',
     author=u"Peter Bednár",
