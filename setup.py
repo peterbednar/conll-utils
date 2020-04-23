@@ -17,5 +17,6 @@ setup(
     author=u"Peter Bednár",
     author_email="peter.bednar@tuke.sk",
     url="https://github.com/peterbednar/conllutils",
-    install_requires=["numpy"]
+    install_requires=["numpy"],
+    python_requires='>=3.6'
 )

@@ -85,8 +85,8 @@ class Pipeline(object):
         self.map(lambda s: s.text)
         return self
 
-    def to_instance(self, index):
-        self.map(lambda s: s.to_instance(index))
+    def to_instance(self, index, fields=None, dtype=np.int64):
+        self.map(lambda s: s.to_instance(index, fields, dtype))
         return self
 
     def to_sentence(self, inverse_index):

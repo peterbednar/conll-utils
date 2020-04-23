@@ -257,11 +257,14 @@ class Sentence(list):
         """
         return DependencyTree(self)
 
-    def to_instance(self, index, fields=None):
+    def to_instance(self, index, fields=None, dtype=np.int64):
         """Return an instance representation of the sentence with the values indexed by the `index`.
 
         Optional `fields` argument specifies a subset of the fields added into the instance. By default, HEAD field and
-        all fields from the `index` are included. See :class:`Instance` class for more information.
+        all fields from the `index` are included.
+
+        The numerical type of the instance data can be specified in `dtype` argument. The default type is ``np.int64``.
+        See :class:`Instance` class for more information.
 
         Raises:
             KeyError: If some of the `fields` are not indexed in the `index`.
@@ -297,9 +300,9 @@ class Sentence(list):
         """Return a shallow copy of the sentence."""
         return Sentence(self, self.metadata)
 
-def _parse_sentence(lines, comments, underscore_form, parse_comments, parse_feats, parse_deps):
+def _parse_sentence(lines, comments, underscore_form, parse_feats, parse_deps):
     sentence = Sentence()
-    if parse_comments:
+    if comments is not None:
         sentence.metadata = _parse_metadata(comments)
 
     for line in lines:
@@ -568,7 +571,7 @@ class DependencyTree(object):
             token = node.token
             head = token.get(HEAD)
             if head is None or head == -1:
-                raise ValueError(f'Token at {index} is without HEAD.')
+                raise ValueError(f'Token at {index} has no HEAD.')
 
             if head == 0:
                 if root == None:
@@ -622,16 +625,14 @@ class Instance(dict):
 
     An instance is a dictionary type where each field is mapped to the NumPy array with the integer values continuously
     indexed for all tokens in the sentence, i.e. the field value of the `i`-th token is stored as ``instance[field][i]``.
-    The length of all mapped arrays is equal to the length of the sentence.
+    The length of all mapped arrays is equal to the length of the sentence. The default numerical type of the arrays is
+    ``np.int64`.
 
-    The ID field is not stored in the instance. Note that this also means that the type of tokens is not preserved.
-
-    The HEAD field and string-valued fields (i.e. FORM, LEMMA, UPOS, XPOS, DEPREL, MISC, FORM_NORM and LEMMA_NORM) are
-    indexed and stored in the ``numpy.int`` array. The FEATS and DEPS are indexed as unparsed strings, i.e. the features
-    or dependencies are not indexed separately.
+    The ID field is not stored in the instance. Note that this also means that the type of tokens is not preserved. The
+    FEATS and DEPS fields are indexed as unparsed strings, i.e. the features or dependencies are not indexed separately.
 
     By default, unknown values (i.e. values not mapped in the provided index) are stored as 0. Missing values (i.e. when
-    some token does not have value for the indexed field) are stored as -1.
+    a token does not have value for the indexed field) are stored as -1.
 
     Attributes:
         metadata (any): Any optional data associated with the instance, by default copied from the sentence.
@@ -760,26 +761,30 @@ def read_conllu(file, underscore_form=True, parse_comments=True, parse_feats=Fal
     To parse values of FEATS or DEPS fields to dictionaries or sets of tuples, set the `parse_feats` or `parse_deps`
     arguments to True. By default the features and dependencies are not parsed and values are stored as a string.
 
-    If `underscore_form` is True (default) and LEMMA field is not underscore, the underscore character in the FORM field
-    is parsed as the FORM value. Otherwise, it indicates an unspecified FORM value.
+    If `underscore_form` is True (default) and LEMMA field is underscore, the underscore character in the FORM field is
+    parsed as the FORM value. Otherwise, it indicates an unspecified FORM value.
+
+    By default, comments are parsed as the metadata dictionary. To skip comments parsing, set `parse_comments` argument
+    to False.
     """
     if isinstance(file, (str, os.PathLike)):
         file = open(file, 'rt', encoding='utf-8')
 
     with file:
         lines = []
-        comments = []
+        comments = [] if parse_comments else None
 
         for line in file:
             line = line.strip() 
             if line:
                 if line.startswith('#'):
-                    comments.append(line)
+                    if parse_comments:
+                        comments.append(line)
                 else:
                     lines.append(line)
             elif lines:
                 yield _parse_sentence(lines, comments, underscore_form,
-                    parse_comments, parse_feats, parse_deps)
+                        parse_feats, parse_deps)
                 lines = []
                 comments = []
 
@@ -787,7 +792,7 @@ def read_conllu(file, underscore_form=True, parse_comments=True, parse_feats=Fal
         # note that this is not compliant with CoNLL-U V2 specification
         if lines:
             yield _parse_sentence(lines, comments, underscore_form,
-                parse_comments, parse_feats, parse_deps)
+                    parse_feats, parse_deps)
 
 def write_conllu(file, data, write_comments=True):
     """Write the sentences to the CoNLL-U file.
@@ -859,7 +864,7 @@ def create_index(sentences, fields=None, min_frequency=1):
             an integer for all fields, or as a dictionary setting the frequency for the specific field.
 
     Raises:
-        ValueError: If the indexed fields include non-string values.
+        ValueError: If the non-string value is indexed for some of the `fields`.
     """
     if fields is None:
         fields = _DEFAULT_INDEX_FIELDS
@@ -886,7 +891,7 @@ def create_inverse_index(index):
     """
     return {f: {v: k for k, v in c.items()} for f, c in index.items()}
 
-def _map_to_instance(sentence, index, fields=None):
+def _map_to_instance(sentence, index, fields=None, dtype=np.int64):
     if fields is None:
         fields = {HEAD} | set(index.keys())
 
@@ -896,7 +901,7 @@ def _map_to_instance(sentence, index, fields=None):
 
     for field in fields:
         # initialize missing values to -1
-        array = np.full(length, -1, dtype=np.int)
+        array = np.full(length, -1, dtype=dtype)
 
         for i, token in enumerate(sentence):
             if field in token:
