@@ -65,11 +65,24 @@ def test_pipe():
     with pytest.raises(RuntimeError):
         pipe().collect()
 
-def test_collect():
-    assert pipe(range(5)).collect([-1]) == list(range(-1, 5))
+def test_count():
+    assert pipe(range(5)).count() == 5
+    assert pipe([]).count() == 0
 
-def test_print():
-    pipe(range(10)).print()
+def test_first():
+    assert pipe(range(5)).first() == 0
+    assert pipe([]).first() == None
+    assert pipe([]).first(0) == 0
+
+def test_collect():
+    assert pipe(range(5)).collect(l=[-1]) == list(range(-1, 5))
+    assert pipe(range(5)).collect(3, [-1]) == list(range(-1, 3))
+
+def test_print(capsys):
+    pipe(range(5)).print()
+    pipe(range(5)).print(1)
+    captured = capsys.readouterr()
+    assert captured.out == '0\n1\n2\n3\n4\n0\n'
 
 def test_stream():
     p = pipe(range(10)).filter(lambda x: x < 5).stream(10)

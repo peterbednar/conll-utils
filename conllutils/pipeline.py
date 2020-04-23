@@ -1,4 +1,5 @@
 import re
+import itertools
 import numpy as np
 
 from . import Sentence, Token
@@ -112,14 +113,20 @@ class Pipeline(object):
     def write_conllu(self, filename):
         write_conllu(filename, self)
 
-    def print(self):
-        for s in self:
-            print(s)
+    def print(self, n=None, end='\n'):
+        for s in itertools.islice(self, 0, n):
+            print(str(s), end=end)
 
-    def collect(self, l=None):
+    def count(self):
+        return sum(1 for _ in self)
+
+    def first(self, default=None):
+        return next(iter(self), default)
+
+    def collect(self, n=None, l=None):
         if l is None:
-            return list(self)
-        l.extend(self)
+            l = []
+        l.extend(itertools.islice(self, 0, n))
         return l
 
     def create_index(self, fields=None, min_frequency=1):
