@@ -1,10 +1,10 @@
 # conllutils
 
-Utility classes and functions for parsing and indexing files in CoNLL-U format.
+Utility classes and functions for processing CoNLL-U files.
 
-## Code samples
+### Code samples
 
-### Working with sentences and tokens
+#### Working with sentences and tokens
 
 ```python
 from conllutils import Sentence, Token, FORM
