@@ -1,6 +1,6 @@
 # conllutils
 
-CoNLL-Utils is a Python library for processing of CoNLL-U files.
+CoNLL-Utils is a Python library for processing of CoNLL-U treebanks.
 
 ### Installation
 
@@ -40,7 +40,7 @@ print(first.upos)           # fields are accessible also as the token attributes
 print(first.feats['Case'])  # FEATS parsed to dictionaries
 
 # by default, comments are parsed as the dictionary stored in the metadata attribute
-print(sentence.metadata['send_id'])
+print(sentence.metadata['sent_id'])
 
 # you can modify tokens and sentences or create a new one
 dot = Token(id=5, form='.', lemma='.', upos='PUNCT', head=2, deprel='punct')

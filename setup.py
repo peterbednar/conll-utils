@@ -11,7 +11,7 @@ setup(
     packages=["conllutils"],
     version=VERSION,
     license="MIT",
-    description="Library for processing of CoNLL-U files.",
+    description="Library for processing of CoNLL-U treebanks.",
     long_description=long_description,
     long_description_content_type='text/markdown',
     author=u"Peter Bednár",
