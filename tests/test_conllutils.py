@@ -59,10 +59,13 @@ def data5():
 
 def test_token():
     token = Token()
-    assert str(token) == "<None,None,None>"
+    assert str(token) == "_"
+    assert repr(token) == "<None,None,None>"
+
     token[ID] = multiword_id(1, 2)
     token[FORM] = "vámonos"
-    assert str(token) == "<1-2,vámonos,None>"
+    assert str(token) == "vámonos"
+    assert repr(token) == "<1-2,vámonos,None>"
     assert token.to_collu() == "1-2	vámonos	_	_	_	_	_	_	_	_"
 
     assert token.id == multiword_id(1, 2)
@@ -84,7 +87,8 @@ def test_token():
     assert token.copy() == token
 
 def test_sentence(data2, data4):
-    assert Sentence().text == ""
+    assert Sentence().text() == ""
+    assert str(Sentence()) == ""
 
     sentences = list(read_conllu(data2))
     assert sentences == list([sentence.copy() for sentence in sentences])

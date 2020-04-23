@@ -85,8 +85,8 @@ class Pipeline(object):
         self._append_opr(f)
         return self
 
-    def text(self):
-        self.map(lambda s: s.text)
+    def text(self, default_form='_'):
+        self.map(lambda s: s.text(default_form))
         return self
 
     def to_instance(self, index, fields=None, dtype=np.int64):

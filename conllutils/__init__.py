@@ -113,15 +113,18 @@ class Token(dict):
         else:
             super().__delattr__(name)
 
-    def __repr__(self):
-        return f'<{_id_to_str(self.get(ID))},{self.get(FORM)},{self.get(UPOS)}>'
-
     def _space_after(self):
         return False if MISC in self and 'SpaceAfter=No' in self[MISC] else True
 
-    def _text(self):
-        form = self[FORM]
-        return form + ' ' if self._space_after() else form
+    def _text(self, default_form='_', space_after=False):
+        form = self.get(FORM, default_form)
+        return form + ' ' if space_after and self._space_after() else form
+
+    def __str__(self):
+        return self._text()
+
+    def __repr__(self):
+        return f'<{_id_to_str(self.get(ID))},{self.get(FORM)},{self.get(UPOS)}>'
 
     def copy(self):
         """Return a shallow copy of the token."""
@@ -182,12 +185,15 @@ class Sentence(list):
         super().__init__(tokens)
         self.metadata = metadata
 
-    @property
-    def text(self):
-        """str: Text of the sentence reconstructed from the raw tokens.
+    def text(self, default_form='_'):
+        """Return text of the sentence reconstructed from the raw tokens.
 
-        The insertion of spaces is controlled by ``SpaceAfter=No`` feature in MISC field."""
-        return ''.join([token._text() for token in self.raw_tokens()])
+        The insertion of spaces is controlled by ``SpaceAfter=No`` feature in the MISC field. Unspecified forms are
+        replaced with the value of `default_form` argument, which defaults to underscore '_'.
+
+        Note that space is also appended after the last word unless the last token has specified ``SpaceAfter=No``.
+        """
+        return ''.join([token._text(default_form, True) for token in self.raw_tokens()])
 
     def is_projective(self, return_arcs=False):
         """Return True if this sentence can be represented as the projective dependency tree, otherwise False.
@@ -299,6 +305,9 @@ class Sentence(list):
     def copy(self):
         """Return a shallow copy of the sentence."""
         return Sentence(self, self.metadata)
+    
+    def __str__(self):
+        return self.text()
 
 def _parse_sentence(lines, comments, underscore_form, parse_feats, parse_deps):
     sentence = Sentence()
@@ -464,7 +473,7 @@ class Node(object):
         return iter(self._children)
 
     def __repr__(self):
-        return f'<{self.token},{self.deprel},{self._children}>'
+        return f'<{self.token!r},{self.deprel},{self._children}>'
 
 class DependencyTree(object):
     """A dependency tree representation of the sentence.
