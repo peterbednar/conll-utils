@@ -1,10 +1,10 @@
 # conllutils
 
-Utility classes and functions for processing CoNLL-U files.
+CoNLL-Utils is a Python library for processing of CoNLL-U files.
 
 ### Installation
 
-Simply use `pip` for installation from PyPi.
+The library is available on [PyPi](https://pypi.python.org/pypi) and can be installed via `pip` as follows.
 ```
 pip install conllutils
 ```

@@ -11,7 +11,7 @@ setup(
     packages=["conllutils"],
     version=VERSION,
     license="MIT",
-    description="Utility classes and functions for processing CoNLL-U files.",
+    description="CoNLL-Utils is a Python library for processing of CoNLL-U files.",
     long_description=long_description,
     long_description_content_type='text/markdown',
     author=u"Peter Bednár",
