@@ -2,6 +2,13 @@
 
 Utility classes and functions for processing CoNLL-U files.
 
+### Installation
+
+Simply use `pip` for installation from PyPi.
+```
+pip install conllutils
+```
+
 ### Code samples
 
 #### Working with sentences and tokens
@@ -20,15 +27,20 @@ s = """\
 """
 # parse Sentence object from a string
 # by default, the values of FEATS field are stored as the strings
-# to access Universal features directly, set parse_feats=True to parse FEATS values to dictionaries
+# to access Universal features directly, set parse_feats=True to parse FEATS values
+# to dictionaries
 sentence = Sentence.from_conllu(s, parse_feats=True)
 
-# sentences and tokens are list and dictionary types, use indexing to access words and fields
+# sentences and tokens are list and dictionary types, use indexing to access words
+# and fields
 first = sentence[0]
 print(first['form'])        # field keys are in lower-case
 print(first[FORM])          # library defines constants for field names
 print(first.upos)           # fields are accessible also as the token attributes
 print(first.feats['Case'])  # FEATS parsed to dictionaries
+
+# by default, comments are parsed as the dictionary stored in the metadata attribute
+print(sentence.metadata['send_id'])
 
 # you can modify tokens and sentences or create a new one
 dot = Token(id=5, form='.', lemma='.', upos='PUNCT', head=2, deprel='punct')
