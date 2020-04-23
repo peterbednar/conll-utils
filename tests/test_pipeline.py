@@ -212,5 +212,23 @@ def test_filter_token(data1):
     sentences = pipe().read_conllu(data1).filter_token(lambda t: False).collect()
     assert sentences == [[], []]
 
+def test_only_universal_deprel(data4):
+    sentences = pipe().read_conllu(data4).collect()
+    sentences[0][0].deprel = 'test:test'
+    sentences[0][0].deps = '1:test1:test:test|2:test2'
+    sentences = pipe(sentences).only_universal_deprel().collect()
+
+    assert sentences[0][0].deprel == 'test'
+    assert sentences[0][0].deps == '1:test1|2:test2'
+    assert sentences[0][-1].deps == '3:punct'
+
+    sentences = pipe().read_conllu(data4, parse_deps=True).collect()
+    sentences[0][0].deps = {(1, 'test1:test'), (2, 'test2')}
+    sentences = pipe(sentences).only_universal_deprel().collect()
+
+    assert sentences[0][0].deprel == 'amod'
+    assert sentences[0][0].deps == {(1, 'test1'), (2, 'test2')}
+    assert sentences[0][-1].deps == {(3, 'punct')}
+
 if __name__ == "__main__":
     pass

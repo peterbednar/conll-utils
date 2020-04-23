@@ -3,7 +3,7 @@ import numpy as np
 
 from . import Sentence, Token
 from . import read_conllu, write_conllu, create_index
-from . import _feats_to_str
+from . import _feats_to_str, _deps_to_str, _parse_deps
 
 def pipe(source=None, *args):
     pipe = Pipeline(source)
@@ -30,6 +30,10 @@ class Pipeline(object):
 
     def upos_feats(self, to='upos_feats'):
         self.token.upos_feats(to)
+        return self
+
+    def only_universal_deprel(self):
+        self.token.only_universal_deprel()
         return self
 
     def only_fields(self, fields):
@@ -63,9 +67,9 @@ class Pipeline(object):
     @property
     def token(self):
         opr = self._prev_opr()
-        if isinstance(opr, TokenPipeline):
+        if isinstance(opr, _TokenPipeline):
             return opr
-        opr = TokenPipeline(self)
+        opr = _TokenPipeline(self)
         self._append_opr(opr)
         return opr
 
@@ -245,7 +249,7 @@ class _Pipe(object):
     def __iter__(self):
         return self.iterate(self.source)
 
-class TokenPipeline(object):
+class _TokenPipeline(object):
 
     def __init__(self, pipeline):
         self.operations = []
@@ -278,6 +282,24 @@ class TokenPipeline(object):
                 t[to] = tag
             return t
         self.map(_upos_feats)
+        return self
+
+    def only_universal_deprel(self):
+        def _only_universal_deprel(t):
+            if 'deprel' in t:
+                t.deprel = t.deprel.split(':')[0]
+
+            if 'deps' in t:
+                deps = t.deps
+                if isinstance(deps, str):
+                    deps = _parse_deps(deps)
+                deps = set([(rel[0], rel[1].split(':')[0]) for rel in deps])
+                if isinstance(t.deps, str):
+                    deps = _deps_to_str(deps)
+                t.deps = deps
+
+            return t
+        self.map(_only_universal_deprel)
         return self
 
     def only_fields(self, fields):
