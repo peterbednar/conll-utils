@@ -367,7 +367,7 @@ def _parse_feats(s):
     return feats
 
 def _parse_deps(s):
-    return set(map(lambda rel: (int(rel[0]), rel[1]), [rel.split(':') for rel in s.split('|')]))
+    return set(map(lambda rel: (int(rel[0]), rel[1]), [rel.split(':', 1) for rel in s.split('|')]))
 
 def _sentence_to_str(sentence, encode_metadata):
     lines = _metadata_to_str(sentence.metadata) if encode_metadata else []
