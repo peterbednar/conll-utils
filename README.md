@@ -35,7 +35,7 @@ To upgrade the previous installation to the newest release, use:
 pip install conllutils -U
 ```
 
-#### from source
+#### From source
 
 Alternatively, you can also install library from this git repository, which will give you more flexibility and allows
 you to start contributing to the CoNLL-Utils code. For this option, run:
@@ -43,6 +43,45 @@ you to start contributing to the CoNLL-Utils code. For this option, run:
 git clone https://github.com/peterbednar/conllutils.git
 cd conllutils
 pip install -e .
+```
+
+### Getting started with CoNLL-Utils
+
+#### Preparing pipeline for sentence pre-preprocessing
+
+```python
+from conllutils.pipeline import pipe
+
+NUM_REGEX = r'[0-9]+|[0-9]+\.[0-9]+|[0-9]+[0-9,]+'
+NUM_FORM = '__number__'
+
+p = pipe()
+p.only_words()
+p.only_universal_deprel()
+p.upos_feats()
+p.lowercase('form')
+p.replace('form', NUM_REGEX, NUM_FORM)
+```
+
+#### Indexing sentences for machine learning
+
+```python
+train_file = 'en_ewt-ud-train.conllu'
+indexed_fields = {'form', 'upos_feats', 'deprel'}
+
+index = pipe().read_conllu(train_file).pipe(p).create_index(fields=indexed_fields)
+train_data = pipe().read_conllu(train_file).pipe(p).to_instance(index).collect()
+```
+
+#### Iterating over batches of training instances
+
+```python
+total_size = 10000
+batch_size = 100
+
+for batch in pipe(train_data).stream(total_size).shuffle().batch(batch_size):
+    # update your model for the next batch of instances
+    pass
 ```
 
 ### License

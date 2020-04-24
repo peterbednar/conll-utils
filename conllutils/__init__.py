@@ -376,7 +376,7 @@ def _parse_feats(s):
     return feats
 
 def _parse_deps(s):
-    return set(map(lambda rel: (int(rel[0]), rel[1]), [rel.split(':', 1) for rel in s.split('|')]))
+    return set(map(lambda rel: (_parse_id(rel[0]), rel[1]), [rel.split(':', 1) for rel in s.split('|')]))
 
 def _sentence_to_str(sentence, encode_metadata):
     lines = _metadata_to_str(sentence.metadata) if encode_metadata else []
@@ -423,7 +423,8 @@ def _feats_to_str(feats):
 def _deps_to_str(deps):
     if isinstance(deps, str):
         return deps
-    deps = [f'{rel[0]}:{rel[1]}' for rel in sorted(deps, key=itemgetter(0))]
+    deps = [f'{_id_to_str(rel[0])}:{rel[1]}' for rel in sorted(deps, key=
+            lambda rel: rel[0][0] if isinstance(rel[0], tuple) else rel[0])]
     return '|'.join(deps)
 
 class Node(object):
