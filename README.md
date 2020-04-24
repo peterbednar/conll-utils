@@ -1,59 +1,30 @@
 # conllutils
 
-CoNLL-Utils is a Python library for processing of CoNLL-U treebanks.
+**CoNLL-Utils** is a Python library for processing of [CoNLL-U](https://universaldependencies.org) treebanks. It
+provides mutable Python types for the representation of tokens, sentences and dependency trees. Additionally, the 
+sentences can be indexed into the compact numerical representation with data stored in the [NumPy](https://numpy.org)
+arrays, that can be directly used as the instances for the _machine learning_ algorithms.
+
+The library also provides a flexible _pipeline_ API for the treebank pre-processing, which allows you to:
+* parse and write data from/to CoNLL-U files,
+* filter or transform sentences, tokens or token's fields using the arbitrary Python function,
+* filter only the lexical words (i.e. without empty or multiword tokens),
+* filter only sentences which can be represented as the (non)projective dependency trees,
+* extract only [Universal dependency](https://universaldependencies.org/u/dep/index.html) relations without 
+  the language-specific extensions for DEPREL and DEPS fields,
+* generate concatenated UPOS and FEATS field,
+* extract the text of the sentences reconstructed from the tokens,
+* replace the field's values matched by the regular expressions, or replace the missing values,
+* create unlimited data stream, randomly shuffle data and form batches of instances
+* ...
+and more.
 
 ### Installation
 
-The library is available on [PyPi](https://pypi.python.org/pypi) and can be installed via `pip` as follows.
+The CoNLL-Utils is available on [PyPi](https://pypi.python.org/pypi) and can be installed via `pip`. To install simply
+run:
 ```
 pip install conllutils
 ```
+The library supports Python 3.6 and later.
 
-### Code samples
-
-#### Working with sentences and tokens
-
-```python
-from conllutils import Sentence, Token, FORM
-
-s = """\
-# sent_id = 2
-# text = I have no clue.
-1	I	I	PRON	PRP	Case=Nom|Number=Sing|Person=1	2	nsubj	_	_
-2	have	have	VERB	VBP	Number=Sing|Person=1|Tense=Pres	0	root	_	_
-3	no	no	DET	DT	PronType=Neg	4	det	_	_
-4	clue	clue	NOUN	NN	Number=Sing	2	obj	_	SpaceAfter=No
-
-"""
-# parse Sentence object from a string
-# by default, the values of FEATS field are stored as the strings
-# to access Universal features directly, set parse_feats=True to parse FEATS values
-# to dictionaries
-sentence = Sentence.from_conllu(s, parse_feats=True)
-
-# sentences and tokens are list and dictionary types, use indexing to access words
-# and fields
-first = sentence[0]
-print(first['form'])        # field keys are in lower-case
-print(first[FORM])          # library defines constants for field names
-print(first.upos)           # fields are accessible also as the token attributes
-print(first.feats['Case'])  # FEATS parsed to dictionaries
-
-# by default, comments are parsed as the dictionary stored in the metadata attribute
-print(sentence.metadata['sent_id'])
-
-# you can modify tokens and sentences or create a new one
-dot = Token(id=5, form='.', lemma='.', upos='PUNCT', head=2, deprel='punct')
-sentence.append(dot)        # add '.' at the end of the sentence
-print(sentence.to_conllu()) # print modified sentence in CoNLL-U format
-print(sentence.text())      # print raw text reconstructed from the tokens
-
-# transform sentence to dependency tree representation
-tree = sentence.to_tree()
-print(tree.root.token.form) # print root FORM
-print(tree.is_projective()) # is tree projective?
-for child in tree.root:
-    print(child.token.form) # iterate over root's direct children
-for leaf in tree.leaves():
-    print(leaf.token.form)  # iterate over all leaves
-```
