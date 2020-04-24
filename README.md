@@ -10,21 +10,42 @@ The library also provides a flexible _pipeline_ API for the treebank pre-process
 * filter or transform sentences, tokens or token's fields using the arbitrary Python function,
 * filter only the lexical words (i.e. without empty or multiword tokens),
 * filter only sentences which can be represented as the (non)projective dependency trees,
-* extract only [Universal dependency](https://universaldependencies.org/u/dep/index.html) relations without 
+* extract only [Universal dependency relations](https://universaldependencies.org/u/dep/index.html) without 
   the language-specific extensions for DEPREL and DEPS fields,
 * generate concatenated UPOS and FEATS field,
 * extract the text of the sentences reconstructed from the tokens,
 * replace the field's values matched by the regular expressions, or replace the missing values,
 * create unlimited data stream, randomly shuffle data and form batches of instances
-* ...
-and more.
+* ... and more.
 
 ### Installation
+
+The library supports Python 3.6 and later.
+
+#### pip
 
 The CoNLL-Utils is available on [PyPi](https://pypi.python.org/pypi) and can be installed via `pip`. To install simply
 run:
 ```
 pip install conllutils
 ```
-The library supports Python 3.6 and later.
 
+To upgrade the previous installation to the newest release, use:
+```
+pip install conllutils -U
+```
+
+#### from source
+
+Alternatively, you can also install library from this git repository, which will give you more flexibility and allows
+you to start contributing to the CoNLL-Utils code. For this option, run:
+```
+git clone https://github.com/peterbednar/conllutils.git
+cd conllutils
+pip install -e .
+```
+
+### License
+
+CoNLL-Utils is released under the MIT License. See the [LICENSE](https://github.com/peterbednar/conllutils/blob/master/LICENSE)
+file for more details.
