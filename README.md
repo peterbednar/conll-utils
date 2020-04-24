@@ -97,7 +97,8 @@ for batch in pipe(train_data).stream(total_size).shuffle().batch(batch_size):
     # update your model for the next batch of instances
     pass
 ```
-Alternatively, you can stream data directly from the file.
+Alternatively, whole data doesn't have to be loaded into the memory, and you can stream instances directly from the
+file.
 
 ### LICENSE
 
