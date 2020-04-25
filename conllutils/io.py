@@ -53,8 +53,8 @@ class _HDF5Driver(object):
                 group.attrs[atr] = val if val is not None else self.EMPTY_COMMENT_VALUE
 
     def _write_data(self, group, instance):
-        for field, array in enumerate(instance):
-            group.create_dataset(field, array)
+        for field, array in instance.items():
+            group.create_dataset(field, data=array)
 
     def read(self, file, read_comments=True):
         with h5py.File(file, 'r') as f:
@@ -71,7 +71,7 @@ class _HDF5Driver(object):
 
     def _read_data(self, group, instance):
         for field, array in group.items():
-            instance[field] = array
+            instance[field] = array.value
 
 _DRIVERS = {'conllu': _CoNLLUDriver(), 'txt': _TextDriver(), 'hdf5' : _HDF5Driver()}
 
