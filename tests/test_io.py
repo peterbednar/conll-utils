@@ -51,9 +51,11 @@ if __name__ == "__main__":
     #pipe(instances1).write_file(filename, 'hdf5')
 
     f = h5py.File('data.hdf5', 'w')
-    group = f.create_group('0')
+    group = f.create_group('0', track_order=True)
     for atr, val in instances1[0].metadata.items():
         group.attrs[atr] = val if val is not None else 0
+
+    print(list(group.attrs))
 
     #f.attrs['text_fr'] = 'Voilà ce qui nous est parvenu par la tradition orale.'
     #f.attrs['text_en'] = 'This is what is heard.'

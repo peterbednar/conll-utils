@@ -42,7 +42,7 @@ class _HDF5Driver(object):
     def write(self, file, data, write_comments=True):
         with h5py.File(file, 'w', track_order=True) as f:
             for i, instance in enumerate(data):
-                group = f.create_group(str(i), track_order=True)
+                group = f.create_group(str(i))
                 if write_comments:
                     self._write_metadata(group, instance)
                 self._write_data(group, instance)
