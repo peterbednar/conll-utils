@@ -49,11 +49,11 @@ pip install -e .
 
 #### Preparing pipeline for sentence pre-processing
 
-At first, we will create a _pipeline_ for pre-processing of sentences which will:
+At first, we will create a _pipeline_ for pre-processing of sentences, which will:
 1. Filter only syntactic words (i.e. skip the empty and multiword tokens).
 2. Extract only Universal dependency relations without the language-specific extensions.
-3. Generate a concatenated UPOS and FEATS field.
-4. Transform FORM letters to lowercase.
+3. Generate a concatenated UPOS & FEATS field.
+4. Transform FORM values to lowercase.
 5. Replace numbers expressions in FORM field with the constant value.
 
 ```python
@@ -73,8 +73,8 @@ p.replace('form', NUM_REGEX, NUM_FORM)
 #### Indexing sentences for machine learning
 
 Next, we will transform sentences into the training instances. This operation requires two iterations over the training
-data. In the first pass, we will create an index mapping the string values to the integers for FORM, concatenated UPOS &
-FEATS and DEPREL fields. In the second pass, we will pre-process and index training data and collect them in the list.
+data. In the first pass, we will create an index mapping the string values to the integers for FORM, UPOS & FEATS and
+DEPREL fields. In the second pass, we will pre-process and index training data and collect them in the list.
 
 ```python
 train_file = 'en_ewt-ud-train.conllu'
@@ -97,6 +97,7 @@ for batch in pipe(train_data).stream(total_size).shuffle().batch(batch_size):
     # update your model for the next batch of instances
     pass
 ```
+
 Alternatively, whole data doesn't have to be loaded into the memory, and you can stream instances directly from the
 file.
 
