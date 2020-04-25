@@ -73,7 +73,7 @@ class _HDF5Driver(object):
         for field, array in group.items():
             instance[field] = array
 
-_DRIVERS = {'conllu': _CoNLLUDriver, 'txt': _TextDriver(), 'hdf5' : _HDF5Driver()}
+_DRIVERS = {'conllu': _CoNLLUDriver(), 'txt': _TextDriver(), 'hdf5' : _HDF5Driver()}
 
 def _get_driver(format):
     driver = _DRIVERS.get(format)
