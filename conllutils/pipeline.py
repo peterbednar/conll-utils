@@ -5,6 +5,7 @@ import numpy as np
 from . import Sentence, Token
 from . import read_conllu, write_conllu, create_index
 from . import _feats_to_str, _deps_to_str, _parse_deps
+from .io import read_file, write_file
 
 def pipe(source=None, *args):
     p = Pipeline(source)
@@ -111,6 +112,13 @@ class Pipeline(object):
 
     def write_conllu(self, filename):
         write_conllu(filename, self)
+
+    def read_file(self, filename, format, **kwargs):
+        self._pipeline.set_generator(lambda: read_file(filename, format, **kwargs))
+        return self
+
+    def write_file(self, filename, format, **kwargs):
+        write_file(filename, self, format, **kwargs)
 
     def print(self, n=None, end='\n'):
         for s in itertools.islice(self, 0, n):

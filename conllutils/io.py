@@ -3,11 +3,11 @@ import h5py
 
 from . import Instance, write_conllu, read_conllu
 
-def write(file, data, format, **kwargs):
+def write_file(file, data, format, **kwargs):
     driver = _get_driver(format)
     driver.write(file, data, **kwargs)
 
-def read(file, format, **kwargs):
+def read_file(file, format, **kwargs):
     driver = _get_driver(format)
     return driver.read(file, **kwargs)
 
