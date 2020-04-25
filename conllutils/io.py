@@ -1,7 +1,7 @@
 import os
 import h5py
 
-from . import Instance
+from . import Instance, write_conllu, read_conllu
 
 def write(file, data, format, **kwargs):
     driver = _get_driver(format)
@@ -10,6 +10,14 @@ def write(file, data, format, **kwargs):
 def read(file, format, **kwargs):
     driver = _get_driver(format)
     return driver.read(file, **kwargs)
+
+class _CoNLLUDriver(object):
+
+    def write(self, file, data, **kwargs):
+        write_conllu(file, data, **kwargs)
+    
+    def read(self, file, **kwargs):
+        return read_conllu(file, **kwargs)
 
 class _TextDriver(object):
 
@@ -65,7 +73,7 @@ class _HDF5Driver(object):
         for field, array in group.items():
             instance[field] = array
 
-_DRIVERS = {'txt': _TextDriver(), 'hdf5' : _HDF5Driver()}
+_DRIVERS = {'conllu': _CoNLLUDriver, 'txt': _TextDriver(), 'hdf5' : _HDF5Driver()}
 
 def _get_driver(format):
     driver = _DRIVERS.get(format)
