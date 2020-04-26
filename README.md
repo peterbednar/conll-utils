@@ -2,14 +2,14 @@
 
 **CoNLL-Utils** is a Python library for processing of [CoNLL-U](https://universaldependencies.org) treebanks. It
 provides mutable Python types for the representation of tokens, sentences and dependency trees. Additionally, the 
-sentences can be indexed into the compact numerical representation with data stored in the [NumPy](https://numpy.org)
-arrays, that can be directly processed by the _machine learning_ algorithms.
+sentences can be indexed into the compact numerical form with the data stored in the [NumPy](https://numpy.org)
+arrays, which can be directly processed by the _machine learning_ algorithms.
 
 The library also provides a flexible _pipeline_ API for the treebank pre-processing, which allows you to:
 * parse and write data from/to CoNLL-U files,
 * filter or transform sentences, tokens or token's fields using the arbitrary Python function,
 * filter only the syntactic words (i.e. without empty or multiword tokens),
-* filter only sentences which can be represented as the (non)projective dependency trees,
+* filter only sentences, which can be represented as the (non)projective dependency trees,
 * extract only [Universal dependency relations](https://universaldependencies.org/u/dep/index.html) without 
   the language-specific extensions for DEPREL and DEPS fields,
 * generate concatenated UPOS and FEATS field,
