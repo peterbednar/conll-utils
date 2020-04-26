@@ -798,8 +798,8 @@ def read_conllu(file, underscore_form=True, parse_comments=True, parse_feats=Fal
                 lines = []
                 comments = []
 
-        # parse the last sentence if the file does not end with LF character
-        # note that this is not compliant with CoNLL-U V2 specification
+        # Parse the last sentence if the file does not end with the LF character.
+        # Note that this is not compliant with the CoNLL-U V2 specification.
         if lines:
             yield _parse_sentence(lines, comments, underscore_form,
                     parse_feats, parse_deps)
@@ -910,7 +910,7 @@ def _map_to_instance(sentence, index, fields=None, dtype=np.int64):
     instance.metadata = sentence.metadata
 
     for field in fields:
-        # initialize missing values to -1
+        # Initialize missing values to -1.
         array = np.full(length, -1, dtype=dtype)
 
         for i, token in enumerate(sentence):
@@ -919,7 +919,7 @@ def _map_to_instance(sentence, index, fields=None, dtype=np.int64):
                     array[i] = token[HEAD]
                 else:
                     key = _field_key(token, field)
-                    # index[field] Counter always returns 0 for unknown keys
+                    # index[field] Counter always returns 0 for unknown keys.
                     array[i] = index[field][key]
 
         instance[field] = array

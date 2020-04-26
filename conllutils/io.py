@@ -1,5 +1,4 @@
 import os
-import h5py
 
 from . import Instance, write_conllu, read_conllu
 
@@ -26,7 +25,7 @@ class _TextDriver(object):
             file = open(file, 'wt', encoding='utf-8')
         with file:
             for line in data:
-                print(file, line, end=end)
+                print(line, file=file, end=end)
     
     def read(self, file):
         if isinstance(file, (str, os.PathLike)):
@@ -35,48 +34,59 @@ class _TextDriver(object):
             for line in file:
                 yield line
 
-class _HDF5Driver(object):
-
-    EMPTY_COMMENT_VALUE = 0
-
-    def write(self, file, data, write_comments=True):
-        with h5py.File(file, 'w', track_order=True) as f:
-            for i, instance in enumerate(data):
-                group = f.create_group(str(i))
-                if write_comments:
-                    self._write_metadata(group, instance)
-                self._write_data(group, instance)
-    
-    def _write_metadata(self, group, instance):
-        if isinstance(instance.metadata, dict):
-            for atr, val in instance.metadata.items():
-                group.attrs[atr] = val if val is not None else self.EMPTY_COMMENT_VALUE
-
-    def _write_data(self, group, instance):
-        for field, array in instance.items():
-            group.create_dataset(field, data=array)
-
-    def read(self, file, read_comments=True):
-        with h5py.File(file, 'r') as f:
-            for key in f.keys():
-                group = f[key]
-                instance = Instance()
-                if read_comments:
-                    self._read_metadata(group, instance)
-                self._read_data(group, instance)
-                yield instance
-
-    def _read_metadata(self, group, instance):
-        instance.metadata = {attr : val if val != self.EMPTY_COMMENT_VALUE else None for attr, val in group.attrs.items()}
-
-    def _read_data(self, group, instance):
-        for field, array in group.items():
-            instance[field] = array.value
-
-_DRIVERS = {'conllu': _CoNLLUDriver(), 'txt': _TextDriver(), 'hdf5' : _HDF5Driver()}
+_DRIVERS = {'txt': _TextDriver(), 'conllu': _CoNLLUDriver()}
 
 def _get_driver(format):
     driver = _DRIVERS.get(format)
     if driver is None:
         raise ValueError(f'Unsupported file format {format}.')
     return driver
+
+try:
+    import h5py
+except ImportError:
+    # h5py is not installed (HDF5 format is not supported)
+    pass
+else:
+
+    from . import _metadata_to_str, _parse_metadata
+
+    class _HDF5Driver(object):
+
+        METADATA_ATTR = 'comments'
+
+        def write(self, file, data, write_comments=True):
+            with h5py.File(file, 'w', track_order=True) as f:
+                for i, instance in enumerate(data):
+                    group = f.create_group(str(i))
+                    if write_comments:
+                        self._write_metadata(group, instance)
+                    self._write_data(group, instance)
+    
+        def _write_metadata(self, group, instance):
+            if isinstance(instance.metadata, dict):
+                group.addrs[self.METADATA_ATTR] = '\n'.join(_metadata_to_str(instance.metadata))
+
+        def _write_data(self, group, instance):
+            for field, array in instance.items():
+                group.create_dataset(field, data=array)
+
+        def read(self, file, read_comments=True):
+            with h5py.File(file, 'r') as f:
+                for key in f.keys():
+                    group = f[key]
+                    instance = Instance()
+                    if read_comments:
+                        self._read_metadata(group, instance)
+                    self._read_data(group, instance)
+                    yield instance
+
+        def _read_metadata(self, group, instance):
+            if self.METADATA_ATTR in group.attrs:
+                instance.metadata = _parse_metadata(group.attrs[self.METADATA_ATTR].splitlines())
+
+        def _read_data(self, group, instance):
+            for field, array in group.items():
+                instance[field] = array.value
+
+    _DRIVERS['hdf5'] = _HDF5Driver()
