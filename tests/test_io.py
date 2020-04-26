@@ -23,16 +23,16 @@ def data4():
 def data5():
     return _data_filename("data5.conllu")
 
-#def test_hdf5(data3, tmp_path):
-#    index = pipe().read_conllu(data3).create_index()
-#    instances1 = pipe().read_conllu(data3).to_instance(index).collect()
+def test_hdf5(data3, tmp_path):
+    index = pipe().read_conllu(data3).create_index()
+    instances1 = pipe().read_conllu(data3).to_instance(index).collect()
 
-#    filename = tmp_path / 'data.hdf5'
-#    pipe(instances1).write_file(filename, 'hdf5')
-#    instances2 = pipe().read_file(filename, 'hdf5').collect()
+    filename = tmp_path / 'data.hdf5'
+    pipe(instances1).write_file(filename, 'hdf5')
+    instances2 = pipe().read_file(filename, 'hdf5').collect()
 
-#    for ins1, ins2 in zip(instances1, instances2):
-#        equal_instance(ins1, ins2)
+    for ins1, ins2 in zip(instances1, instances2):
+        equal_instance(ins1, ins2)
 
 def equal_instance(ins1, ins2):
     assert ins1.metadata == ins2.metadata
@@ -41,22 +41,5 @@ def equal_instance(ins1, ins2):
     for field in ins1.keys():
         assert np.array_equal(ins1[field], ins2[field])
 
-import h5py
-
 if __name__ == "__main__":
-    index = pipe().read_conllu('data3.conllu').create_index()
-    instances1 = pipe().read_conllu('data3.conllu').to_instance(index).collect()
-
-    #filename = 'data.hdf5'
-    #pipe(instances1).write_file(filename, 'hdf5')
-
-    f = h5py.File('data.hdf5', 'w')
-    group = f.create_group('0', track_order=True)
-    for atr, val in instances1[0].metadata.items():
-        group.attrs[atr] = val if val is not None else 0
-
-    print(list(group.attrs))
-
-    #f.attrs['text_fr'] = 'Voilà ce qui nous est parvenu par la tradition orale.'
-    #f.attrs['text_en'] = 'This is what is heard.'
-    #f.attrs['rider'] = 0
+    pass

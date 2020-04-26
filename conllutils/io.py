@@ -65,7 +65,7 @@ else:
     
         def _write_metadata(self, group, instance):
             if isinstance(instance.metadata, dict):
-                group.addrs[self.METADATA_ATTR] = '\n'.join(_metadata_to_str(instance.metadata))
+                group.attrs[self.METADATA_ATTR] = '\n'.join(_metadata_to_str(instance.metadata))
 
         def _write_data(self, group, instance):
             for field, array in instance.items():
@@ -87,6 +87,6 @@ else:
 
         def _read_data(self, group, instance):
             for field, array in group.items():
-                instance[field] = array.value
+                instance[field] = array[()]
 
     _DRIVERS['hdf5'] = _HDF5Driver()
