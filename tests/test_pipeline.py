@@ -170,6 +170,9 @@ def test_only_fields(data2):
     sentences = pipe().read_conllu(data2).only_fields({'id', 'form'}).collect()
     assert [[t.keys() for t in s] for s in sentences] == [[{'id', 'form'}] * len(s) for s in sentences]
 
+    sentences = pipe().read_conllu(data2).only_fields('id', 'form').collect()
+    assert [[t.keys() for t in s] for s in sentences] == [[{'id', 'form'}] * len(s) for s in sentences]
+
 def test_upos_feats(data2):
     sentences = pipe().read_conllu(data2).upos_feats('new').collect()
     assert [t.get('new') for t in sentences[0]] == [

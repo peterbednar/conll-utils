@@ -37,8 +37,8 @@ class Pipeline(object):
         self.token.only_universal_deprel()
         return self
 
-    def only_fields(self, fields):
-        self.token.only_fields(fields)
+    def only_fields(self, fields, *args):
+        self.token.only_fields(fields, *args)
         return self
 
     def filter_field(self, field, f):
@@ -317,7 +317,10 @@ class _TokenPipeline(object):
         self.map(_only_universal_deprel)
         return self
 
-    def only_fields(self, fields):
+    def only_fields(self, fields, *args):
+        if isinstance(fields, str):
+            fields = {fields}
+        fields.update(args)
         def _only_fields(t):
             [t.pop(k) for k in t.keys() - fields]
             return t
