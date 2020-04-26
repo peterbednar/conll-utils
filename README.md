@@ -94,7 +94,10 @@ total_size = 10000
 batch_size = 100
 
 for batch in pipe(train_data).stream(total_size).shuffle().batch(batch_size):
-    # update your model for the next batch of instances
+    # Update your model for the next batch of instances.
+    instance = batch[0]
+    # Instance values are indexed and stored in the NumPy arrays.
+    length = instance['form'].shape[0]
     pass
 ```
 

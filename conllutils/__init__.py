@@ -552,16 +552,16 @@ class DependencyTree(object):
 
         consumed = False
         if preorder:
-            consumed = True # consume preorder
+            consumed = True # Consume preorder.
             yield node
 
         for child in node:
             if inorder and not consumed and node.index < child.index:
-                consumed = True # consume inorder
+                consumed = True # Consume inorder.
                 yield node
             yield from DependencyTree._traverse(child, inorder, preorder, postorder)
 
-        if postorder or not consumed: # for postorder or right-most inorder
+        if postorder or not consumed: # For postorder or right-most inorder.
             yield node
 
     @staticmethod
@@ -569,7 +569,7 @@ class DependencyTree(object):
         if isinstance(sentence, Instance):
             tokens = sentence.tokens()
         else:
-            tokens = sentence.words() # only the syntactic words
+            tokens = sentence.words() # Only the syntactic words.
 
         nodes = [Node(i, token) for i, token in enumerate(tokens)]
         if not nodes:
@@ -577,7 +577,7 @@ class DependencyTree(object):
 
         root = None
         for index, node in enumerate(nodes):
-            # token can be syntactic word or indexed token view
+            # The token can be a syntactic word or indexed token view.
             token = node.token
             head = token.get(HEAD)
             if head is None or head == -1:
@@ -750,9 +750,9 @@ def _is_projective(heads, return_arcs=False):
             arc2_0 = min(j + 1, heads[j])
             arc2_1 = max(j + 1, heads[j])
 
-            if ((arc1_0 == arc2_0 and arc1_1 == arc2_1) or # cycle
-                (arc1_0 < arc2_0 and arc2_0 < arc1_1 and arc1_1 < arc2_1) or # crossing
-                (arc2_0 < arc1_0 and arc1_0 < arc2_1 and arc2_1 < arc1_1)):  # crossing
+            if ((arc1_0 == arc2_0 and arc1_1 == arc2_1) or # Cycle
+                (arc1_0 < arc2_0 and arc2_0 < arc1_1 and arc1_1 < arc2_1) or # Crossing
+                (arc2_0 < arc1_0 and arc1_0 < arc2_1 and arc2_1 < arc1_1)):  # Crossing
                 if return_arcs:
                     arcs.append((i, j))
                 else:

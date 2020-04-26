@@ -45,7 +45,7 @@ def _get_driver(format):
 try:
     import h5py
 except ImportError:
-    # h5py is not installed (HDF5 format is not supported)
+    # h5py is not installed (HDF5 format is not supported).
     pass
 else:
 
