@@ -7,11 +7,6 @@ from . import read_conllu, write_conllu, create_index
 from . import _feats_to_str, _deps_to_str, _parse_deps
 from .io import read_file, write_file
 
-def pipe(source=None, *args):
-    p = Pipeline(source)
-    p.pipe(*args)
-    return p
-
 class Pipeline(object):
 
     def __init__(self, source=None):

@@ -2,8 +2,10 @@ import os
 import pytest
 from io import StringIO
 
-from conllutils import *
-from conllutils.pipeline import *
+import numpy as np
+
+from conllutils import FORM, FIELDS, ID, HEAD
+from conllutils import pipe, create_inverse_index
 
 class _StringIO(StringIO):
 

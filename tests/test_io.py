@@ -2,7 +2,7 @@ import os
 import pytest
 import numpy as np
 
-from conllutils.pipeline import pipe
+from conllutils import pipe
 
 def _data_filename(name):
     return os.path.join(os.path.dirname(__file__), name)

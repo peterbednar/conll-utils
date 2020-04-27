@@ -950,3 +950,10 @@ def _map_to_sentence(instance, inverse_index, fields=None):
         sentence.append(token)
     
     return sentence
+
+from .pipeline import Pipeline
+
+def pipe(source=None, *args):
+    p = Pipeline(source)
+    p.pipe(*args)
+    return p
