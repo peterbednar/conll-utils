@@ -17,7 +17,7 @@ def empty_id(word_id, index=1):
     """Return new ID value for empty token indexed by `word_id` starting from 0 and `index` starting from 1.
 
     The empty token ID is encoded as a tuple with id[0] = `word_id` and id[1] = `index`. For more information about the
-    ordering of the empty tokens in the sentence, see :class:`Sentence` class.
+    ordering of the empty tokens in the sentence, see `Sentence` class.
 
     Raises:
         ValueError: If `word_id` < 0 or `index` < 1.
@@ -31,7 +31,7 @@ def multiword_id(start, end):
     (inclusive).
 
     The multiword token ID is encoded as a tuple with id[0] = `start` and id[1] = `end`. For more information about the
-    ordering of the multiword tokens in the sentence, see :class:`Sentence` class.
+    ordering of the multiword tokens in the sentence, see `Sentence` class.
 
     Raises:
         ValueError: If `start` < 1 or `end` <= `start`.
@@ -45,24 +45,25 @@ class Token(dict):
 
     A token can represent a regular *syntactic word*, or can be a *multiword token* spanning across multiple words
     (e.g. like in Spanish *vámonos* = *vamos nos*), or can be an *empty token* (inserted in the extended dependency
-    tree, e.g. for the analysis of ellipsis). Type of the token can be tested using the read-only :attr:`is_multiword`
-    and :attr:`is_empty` properties.
+    tree, e.g. for the analysis of ellipsis). Type of the token can be tested using the read-only `is_multiword` and
+    `is_empty` properties.
 
     A token can contain mappings for the following standard CoNLL-U fields:
-        * ID: word index (integer starting from 1); or range of the indexes for multiword tokens; or decimal notation
-          for empty tokens.
-        * FORM: word form or punctuation symbol.
-        * LEMMA: lemma or stem of word form.
-        * UPOS: Universal part-of-speech tag.
-        * XPOS: language-specific part-of-speech tag.
-        * FEATS: list of morphological features from the Universal feature inventory or language-specific extension.
-        * HEAD: head of the current word in the dependency tree representation (ID or 0 for root).
-        * DEPREL: Universal dependency relation to the HEAD.
-        * DEPS: enhanced dependency graph in the form of head-deprel pairs.
-        * MISC: any other annotation associated with the token. 
+
+    * ID: word index (integer starting from 1); or range of the indexes for multiword tokens; or decimal notation
+      for empty tokens.
+    * FORM: word form or punctuation symbol.
+    * LEMMA: lemma or stem of word form.
+    * UPOS: Universal part-of-speech tag.
+    * XPOS: language-specific part-of-speech tag.
+    * FEATS: list of morphological features from the Universal feature inventory or language-specific extension.
+    * HEAD: head of the current word in the dependency tree representation (ID or 0 for root).
+    * DEPREL: Universal dependency relation to the HEAD.
+    * DEPS: enhanced dependency graph in the form of head-deprel pairs.
+    * MISC: any other annotation associated with the token. 
 
     The ID values are parsed as the integers for regular words or tuples for multiword and empty tokens (see
-    :func:`multiword_id` and :func:`empty_id` functions for more information).
+    `multiword_id` and `empty_id` functions for more information).
 
     The HEAD values are parsed as the integers.
 
@@ -142,12 +143,12 @@ class Sentence(list):
     Note that the Sentence methods are not checking the order of the tokens, and it is up to the programmer to preserve
     the correct ordering.
 
-    The Sentence class provides :meth:`words` method to extract only the sequence of syntactic words without the empty
-    or multiword tokens, and :meth:`raw_tokens` method to extract the sequence of raw tokens (i.e. how the sentence is
-    written orthographically with the multiword tokens).
+    The Sentence class provides `Sentence.words` method to extract only the sequence of syntactic words without the
+    empty or multiword tokens, and `Sentence.raw_tokens` method to extract the sequence of raw tokens (i.e. how the
+    sentence is written orthographically with the multiword tokens).
 
-    For example, for the Spanish sentence::
-    
+    For example, for the Spanish sentence:
+    ```text
         1-2     vámonos
         1       vamos
         2       nos
@@ -155,12 +156,12 @@ class Sentence(list):
         3       a
         4       el
         5       mar
-
-    the :meth:`words` method returns the sequence of expanded syntactic words 'vamos', 'nos', 'a', 'el', 'mar', and the
-    :meth:`raw_tokens` returns sequence for raw text 'vámonos', 'al', 'mar'.
+    ```
+    the `words` method returns the sequence of expanded syntactic words 'vamos', 'nos', 'a', 'el', 'mar', and the
+    `raw_tokens` returns sequence for raw text 'vámonos', 'al', 'mar'.
     
-    For the sentence with empty tokens::
-    
+    For the sentence with empty tokens:
+    ```text
         1      Sue
         2      likes
         3      coffee
@@ -168,14 +169,14 @@ class Sentence(list):
         5      Bill
         5.1    likes
         6      tea
-
-    both :meth:`words` and :meth:`raw_tokens` methods return the sequence without the empty tokens 'Sue', 'likes',
-    'coffee', 'and', 'Bill', 'tea'.
+    ```
+    both `words` and `raw_tokens` methods return the sequence without the empty tokens 'Sue', 'likes', 'coffee', 'and',
+    'Bill', 'tea'.
 
     Attributes:
         metadata (any): Any optional data associated with the sentence. By default for the CoNLL-U format, `metadata`
-            are parsed from the comment lines as the dictionary of `key`=`value` pairs. If the comment string has no
-            key-value format separated with `=`, it is stored as a key with `None` value. 
+            are parsed from the comment lines as the dictionary of key = value pairs. If the comment string has no
+            key-value format separated with `=`, it is stored as a key with None value. 
 
     """
     def __init__(self, tokens=(), metadata=None):
@@ -198,18 +199,18 @@ class Sentence(list):
     def is_projective(self, return_arcs=False):
         """Return True if this sentence can be represented as the projective dependency tree, otherwise False.
 
-        See :meth:`DependencyTree.is_projective` method for more information.
+        See `DependencyTree.is_projective` method for more information.
         """
         return _is_projective([token.get(HEAD) for token in self.words()], return_arcs)
 
     def get(self, id, default=None):
         """Return token with the specified ID.
         
-        The `id` argument can be an integer from 1, tuple generated by :func:`empty_id` or :func:`multiword_id`
-        functions, or string in CoNLL-U notation (e.g. "1" for words, "2-3" for multiword tokens, or "0.1" for empty
-        tokens). Note that the implementation assumes the proper ordering of the tokens according to their IDs.
+        The `id` argument can be an integer from 1, tuple generated by `empty_id` or `multiword_id` functions, or
+        string in CoNLL-U notation (e.g. "1" for words, "2-3" for multiword tokens, or "0.1" for empty tokens). Note
+        that the implementation assumes the proper ordering of the tokens according to their IDs.
 
-        If a token with the `id` cannot be found, the method returns provided `default` value or `None` if `default`
+        If a token with the `id` cannot be found, the method returns provided `default` value or None if `default`
         is not given.
         """
         if isinstance(id, str):
@@ -254,8 +255,8 @@ class Sentence(list):
     def to_tree(self):
         """Return a dependency tree representation of the sentence.
  
-        See :class:`DependencyTree` class for more information. Note that the implementation assumes the proper ordering
-        of the tokens according to their IDs.
+        See `DependencyTree` class for more information. Note that the implementation assumes the proper ordering of
+        the tokens according to their IDs.
 
         Raises:
             ValueError: If the sentence contains the words without the HEAD field, or when the sentence does not have
@@ -270,7 +271,7 @@ class Sentence(list):
         all fields from the `index` are included.
 
         The numerical type of the instance data can be specified in `dtype` argument. The default type is ``np.int64``.
-        See :class:`Instance` class for more information.
+        See `Instance` class for more information.
 
         Raises:
             KeyError: If some of the `fields` are not indexed in the `index`.
@@ -291,7 +292,7 @@ class Sentence(list):
         
         If the argument `multiple` is True, the function returns the list of all sentences parsed from the string.
         Otherwise (default), it returns only the first sentence. This function supports all additional keyword arguments
-        as the :func:`read_conllu` function.
+        as the `read_conllu` function.
 
         Raises:
             ValueError: If there is an error parsing at least one sentence from the string.
@@ -435,8 +436,8 @@ class Node(object):
 
     Attributes:
         index (int): The index of the word in the sentence (from 0).
-        token (:class:`Token` or indexed token view): The corresponding syntactic word.
-        parent (:class:`Node`): The parent (HEAD) of the node, or `None` for the root. 
+        token (Token or indexed token view): The corresponding syntactic word.
+        parent (Node): The parent (HEAD) of the node, or None for the root. 
 
     """
     def __init__(self, index, token):
@@ -457,7 +458,7 @@ class Node(object):
 
     @property
     def deprel(self):
-        """str or int: Universal dependency relation to the HEAD stored in the ``token[DEPREL]``, or `None` if the token
+        """str or int: Universal dependency relation to the HEAD stored in the ``token[DEPREL]``, or None if the token
         does not have DEPREL field."""
         return self.token.get(DEPREL)
 
@@ -483,9 +484,9 @@ class DependencyTree(object):
     syntactic word in the sentence. The relations between the node and its parent (head) are labeled with the Universal
     dependencies and stored in the HEAD and DEPREL fields of the corresponding word.
 
-    The DependencyTree class should not be instantiated directly. Use the :meth:`Sentence.to_tree` or
-    :meth:`Instance.to_tree` methods to create a dependency representation for the sentence or indexed instance. The
-    implementation of nodes is provided by :class:`Node` class.
+    The DependencyTree class should not be instantiated directly. Use the `Sentence.to_tree` or `Instance.to_tree`
+    methods to create a dependency representation for the sentence or indexed instance. The implementation of nodes is
+    provided by `Node` class.
 
     The dependency tree object is iterable and returns an iterator over all nodes in the order of corresponding words in
     the sentence. ``len(tree)`` returns the number of nodes.
@@ -494,8 +495,8 @@ class DependencyTree(object):
     stored in the DEPS field are not included in the tree.
 
     Attributes:
-        root (:class:`Node`): The root of the tree. 
-        nodes (list of :class:`Node`): The list of all nodes in the sentence order.
+        root (Node): The root of the tree. 
+        nodes (list of Node): The list of all nodes in the sentence order.
         metadata (any): Any optional data associated with the tree, by default copied from the sentence or indexed
             instance.
 
@@ -515,9 +516,8 @@ class DependencyTree(object):
     def is_projective(self, return_arcs=False):
         """Return True if the dependency tree is projective, otherwise False.
 
-        A dependency tree is projective when all its arcs are projective, i.e. for all arcs (`i`, `j`) from parent `i`
-        to child `j` and for all nodes `k` between the `i` and `j` in the sentence, there must be a path from `i` to
-        `k`.
+        A dependency tree is projective when all its arcs are projective, i.e. for all arcs (*i*, *j*) from parent *i*
+        to child *j* and for all nodes *k* between the *i* and *j* in the sentence, there must be a path from *i* to *k*.
 
         If the argument `return_arcs` is True, the function returns the list of conflicting non-projective arcs. For
         projective trees the list is empty.
@@ -629,14 +629,14 @@ class _IndexedToken(MutableMapping):
 class Instance(dict):
     """An indexed representation of the sentence in the compact numerical form.
 
-    An instance can be created from a sentence using the :meth:`Sentence.to_instance` method. The sentence values are 
-    mapped to the numerical indexes by the provided *index* mapping. The index for a set of sentences can be created
-    with the :func:`create_index` function.
+    An instance can be created from a sentence using the `Sentence.to_instance` method. The sentence values are mapped
+    to the numerical indexes by the provided *index* mapping. The index for a set of sentences can be created
+    with the `create_index` function.
 
     An instance is a dictionary type where each field is mapped to the NumPy array with the integer values continuously
     indexed for all tokens in the sentence, i.e. the field value of the `i`-th token is stored as ``instance[field][i]``.
     The length of all mapped arrays is equal to the length of the sentence. The default numerical type of the arrays is
-    ``np.int64`.
+    `np.int64`.
 
     The ID field is not stored in the instance. Note that this also means that the type of tokens is not preserved. The
     FEATS and DEPS fields are indexed as unparsed strings, i.e. the features or dependencies are not indexed separately.
@@ -680,7 +680,7 @@ class Instance(dict):
     def is_projective(self, return_arcs=False):
         """Return True if this instance can be represented as the projective dependency tree, otherwise False.
 
-        See :meth:`DependencyTree.is_projective` method for more information.
+        See `DependencyTree.is_projective` method for more information.
         """
         return _is_projective(self[HEAD], return_arcs)
 
@@ -704,8 +704,8 @@ class Instance(dict):
     def to_tree(self):
         """Return a dependency tree representation of the instance.
  
-        See :class:`DependencyTree` class for more information. All tokens referenced in the tree are indexed views, as
-        it is described for the :meth:`token` method. Note that the implementation assumes proper ordering of the tokens
+        See `DependencyTree` class for more information. All tokens referenced in the tree are indexed views, as it is
+        described for the `Instance.token` method. Note that the implementation assumes proper ordering of the tokens
         and that the instance does not contain empty or multiword tokens.
 
         Raises:
@@ -721,7 +721,7 @@ class Instance(dict):
         fields are included. The ID values are always generated as the sequence of integers starting from 1, which
         corresponds to the sequence of lexical words without the empty or multiword tokens.
 
-        This operation is inverse to the indexing in :meth:`Sentence.to_instance` method.
+        This operation is inverse to the indexing in `Sentence.to_instance` method.
 
         Raises:
             KeyError: If some of the instance values is not mapped in the `inverse_index`.
@@ -856,13 +856,13 @@ def create_index(sentences, fields=None, min_frequency=1):
     """Return an index mapping the string values of the `sentences` to integer indexes.
 
     An index is a nested dictionary where the indexes for the field values are stored as ``index[field][value]``. See
-    :meth:`Sentence.to_instance` method for usage of the index dictionary for sentence indexing.
+    `Sentence.to_instance` method for usage of the index dictionary for sentence indexing.
 
     For each field, the indexes are assigned to the string values starting from 1 according to their descending
     frequency of occurrences in the sentences, i.e. the most frequent value has index 1, second one index 2, etc.
     Index 0 represents an *unknown* value, and the dictionary returns 0 for all unmapped values.
 
-    For mapping of instances to the sentences, use :func:`create_inverse_index` function to create an inverse mapping
+    For mapping of instances to the sentences, use `create_inverse_index` function to create an inverse mapping
     from the indexes to the string values.
 
     Args:
@@ -896,8 +896,8 @@ def create_index(sentences, fields=None, min_frequency=1):
 def create_inverse_index(index):
     """Return an inverse index mapping the integer indexes to string values.
 
-    For the `index` with mapping index[field][v] = i, the inverse index has mapping inverse_index[field][i] = v. See
-    :meth:`Instance.to_sentence` method for usage of the inverse index for transformation of instances to sentences.
+    For the `index` with mapping ``index[field][v] = i``, the inverse index has mapping ``inverse_index[field][i] = v``.
+    See `Instance.to_sentence` method for usage of the inverse index for transformation of instances to sentences.
     """
     return {f: {v: k for k, v in c.items()} for f, c in index.items()}
 
