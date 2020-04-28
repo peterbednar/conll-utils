@@ -986,6 +986,12 @@ def pipe(source=None, *args):
     values, instances etc. For an overview and more information about the operations, see the description of
     `pipeline.Pipeline` class.
 
+    Args:
+        source (iterable): The configured data source of the pipeline.
+        *args (pipelines): The list of the pipelines chained after the data source, i.e.
+            ```pipe(data, p1, p2, ... ,pn)``` is equivalent to ```pipe(data).pipe(p1, p2, ..., pn)```. See
+            `pipeline.Pipeline.pipe` method for more information.
+
     """
     p = Pipeline(source)
     p.pipe(*args)
