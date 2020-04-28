@@ -148,7 +148,7 @@ class Sentence(list):
     sentence is written orthographically with the multiword tokens).
 
     For example, for the Spanish sentence:
-    ```text
+    ```plaintext
         1-2     vámonos
         1       vamos
         2       nos
@@ -161,7 +161,7 @@ class Sentence(list):
     `raw_tokens` returns sequence for raw text 'vámonos', 'al', 'mar'.
     
     For the sentence with empty tokens:
-    ```text
+    ```plaintext
         1      Sue
         2      likes
         3      coffee
