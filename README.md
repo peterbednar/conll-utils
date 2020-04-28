@@ -57,7 +57,7 @@ At first, we will create a _pipeline_ for pre-processing of sentences, which wil
 5. Replace numbers expressions in FORM field with the constant value.
 
 ```python
-from conllutils.pipeline import pipe
+from conllutils import pipe
 
 NUM_REGEX = r'[0-9]+|[0-9]+\.[0-9]+|[0-9]+[0-9,]+'
 NUM_FORM = '__number__'

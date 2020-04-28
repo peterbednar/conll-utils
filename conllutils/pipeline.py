@@ -143,7 +143,9 @@ class Pipeline(object):
         self.pipe(lambda source: _stream(source, max_size))
         return self
 
-    def shuffle(self, buffer_size=1024, random=np.random):
+    def shuffle(self, buffer_size=1024, random=None):
+        if random is None:
+            random = np.random
         self.pipe(lambda source: _shuffle(source, buffer_size, random))
         return self
 

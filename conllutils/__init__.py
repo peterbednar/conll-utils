@@ -954,6 +954,39 @@ def _map_to_sentence(instance, inverse_index, fields=None):
 from .pipeline import Pipeline
 
 def pipe(source=None, *args):
+    """Build a data processing *pipeline*.
+
+    A *pipeline* specifies the chaining of operations performed over the processed data. The operations can be divided
+    into three types:
+
+    * data sources,
+    * filters or transformations,
+    * and actions.
+
+    The data sources generate the processed data, e.g. read the data from the ConNLL-U file. Filters and transformations
+    filter data for the subsequence processing, transform data values or map one data type to another one (e.g. index
+    sentences to instances or extract the texts of the sentences). Actions invoke the whole pipeline chain and perform
+    the final operation with the processed data (e.g. collect the processed data in the Python list or write data to
+    the CoNLL-U file.
+
+    The pipeline can optionally specify only one data source, and if specified, the data source has to be configured as
+    the first operation of the pipeline. Alternatively, the data source can be provided as an iterable object specified
+    in the `source` argument.
+
+    The pipeline objects are iterable and callable. The iterator invokes the configured data source and processes the
+    data with all filters and transformations of the pipeline. Calling of `p(data)` applies the filters and
+    transformations of `p` on the provided `data` and returns an iterator over the processed data. The `data` argument
+    can be any iterable object (including another pipeline).
+
+    The pipelines can be arbitrarily chained using the `pipeline.Pipeline.pipe` method, i.e. the data can be loaded and
+    partially processed by some operations of the first pipeline, then processed by the second pipeline and then finally
+    processed by the remaining operations of the first one.
+
+    The operations can be further divided according to the data type to the operations for sentences, tokens, fields'
+    values, instances etc. For an overview and more information about the operations, see the description of
+    `pipeline.Pipeline` class.
+
+    """
     p = Pipeline(source)
     p.pipe(*args)
     return p
