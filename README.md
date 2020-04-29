@@ -104,6 +104,10 @@ for batch in pipe(train_data).stream(total_size).shuffle().batch(batch_size):
 Alternatively, whole data doesn't have to be loaded into the memory, and you can stream instances directly from the
 file.
 
+### Documentation
+
+The reference documentation is available on [this site](https://peterbednar.github.io/conllutils/html/conllutils/index.html).
+
 ### LICENSE
 
 CoNLL-Utils is released under the MIT License. See the [LICENSE](https://github.com/peterbednar/conllutils/blob/master/LICENSE)
