@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>conllutils API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.1/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:2em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Package <code>conllutils</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
+<dt><code class="name"><a title="conllutils.io" href="io.html">conllutils.io</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="conllutils.pipeline" href="pipeline.html">conllutils.pipeline</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="conllutils.create_index"><code class="name flex">
+<span>def <span class="ident">create_index</span></span>(<span>sentences, fields=None, min_frequency=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return an index mapping the string values of the <code>sentences</code> to integer indexes.</p>
+<p>An index is a nested dictionary where the indexes for the field values are stored as <code>index[field][value]</code>. See
+<code><a title="conllutils.Sentence.to_instance" href="#conllutils.Sentence.to_instance">Sentence.to_instance()</a></code> method for usage of the index dictionary for sentence indexing.</p>
+<p>For each field, the indexes are assigned to the string values starting from 1 according to their descending
+frequency of occurrences in the sentences, i.e. the most frequent value has index 1, second one index 2, etc.
+Index 0 represents an <em>unknown</em> value, and the dictionary returns 0 for all unmapped values.</p>
+<p>For mapping of instances to the sentences, use <code><a title="conllutils.create_inverse_index" href="#conllutils.create_inverse_index">create_inverse_index()</a></code> function to create an inverse mapping
+from the indexes to the string values.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>sentences</code></strong> :&ensp;<code>iterable</code></dt>
+<dd>The indexed sentences.</dd>
+<dt><strong><code>fields</code></strong> :&ensp;<code>set</code></dt>
+<dd>The set of indexed fields included in the index. By default FORM, LEMMA, UPOS, XPOS, FEATS and
+DEPREL fields are included.</dd>
+<dt><strong><code>min_frequency</code></strong> :&ensp;<code>int</code> or <code>dictionary</code></dt>
+<dd>If specified, the field values with a frequency lower than <code>min_frequency</code>
+are discarded from the index. By default, all values are preserved. The <code>min_frequency</code> can be specified as
+an integer for all fields, or as a dictionary setting the frequency for the specific field.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If the non-string value is indexed for some of the <code>fields</code>.</dd>
+</dl></div>
+</dd>
+<dt id="conllutils.create_inverse_index"><code class="name flex">
+<span>def <span class="ident">create_inverse_index</span></span>(<span>index)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return an inverse index mapping the integer indexes to string values.</p>
+<p>For the <code>index</code> with mapping <code>index[field][v] = i</code>, the inverse index has mapping <code>inverse_index[field][i] = v</code>.
+See <code><a title="conllutils.Instance.to_sentence" href="#conllutils.Instance.to_sentence">Instance.to_sentence()</a></code> method for usage of the inverse index for transformation of instances to sentences.</p></div>
+</dd>
+<dt id="conllutils.empty_id"><code class="name flex">
+<span>def <span class="ident">empty_id</span></span>(<span>word_id, index=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return new ID value for empty token indexed by <code>word_id</code> starting from 0 and <code>index</code> starting from 1.</p>
+<p>The empty token ID is encoded as a tuple with id[0] = <code>word_id</code> and id[1] = <code>index</code>. For more information about the
+ordering of the empty tokens in the sentence, see <code><a title="conllutils.Sentence" href="#conllutils.Sentence">Sentence</a></code> class.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If <code>word_id</code> &lt; 0 or <code>index</code> &lt; 1.</dd>
+</dl></div>
+</dd>
+<dt id="conllutils.multiword_id"><code class="name flex">
+<span>def <span class="ident">multiword_id</span></span>(<span>start, end)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return new ID value for multiword token spanning in the sentence across the words with ID from <code>start</code> to <code>end</code>
+(inclusive).</p>
+<p>The multiword token ID is encoded as a tuple with id[0] = <code>start</code> and id[1] = <code>end</code>. For more information about the
+ordering of the multiword tokens in the sentence, see <code><a title="conllutils.Sentence" href="#conllutils.Sentence">Sentence</a></code> class.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If <code>start</code> &lt; 1 or <code>end</code> &lt;= <code>start</code>.</dd>
+</dl></div>
+</dd>
+<dt id="conllutils.pipe"><code class="name flex">
+<span>def <span class="ident">pipe</span></span>(<span>source=None, *args)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Build a data processing <em>pipeline</em>.</p>
+<p>A <em>pipeline</em> specifies the chaining of operations performed over the processed data. The operations can be divided
+into three types:</p>
+<ul>
+<li>data sources,</li>
+<li>filters or transformations,</li>
+<li>and actions.</li>
+</ul>
+<p>The data sources generate the processed data, e.g. read the data from the ConNLL-U file. Filters and transformations
+filter data for the subsequence processing, transform data values or map one data type to another one (e.g. index
+sentences to instances or extract the texts of the sentences). Actions invoke the whole pipeline chain and perform
+the final operation with the processed data (e.g. collect the processed data in the Python list or write data to
+the CoNLL-U file.</p>
+<p>The pipeline can optionally specify only one data source, and if specified, the data source has to be configured as
+the first operation of the pipeline. Alternatively, the data source can be provided as an iterable object specified
+in the <code>source</code> argument.</p>
+<p>The pipeline objects are iterable and callable. The iterator invokes the configured data source and processes the
+data with all filters and transformations of the pipeline. Calling of <code>p(data)</code> applies the filters and
+transformations of <code>p</code> on the provided <code>data</code> and returns an iterator over the processed data. The <code>data</code> argument
+can be any iterable object (including another pipeline).</p>
+<p>The pipelines can be arbitrarily chained using the <code><a title="conllutils.pipeline.Pipeline.pipe" href="pipeline.html#conllutils.pipeline.Pipeline.pipe">Pipeline.pipe()</a></code> method, i.e. the data can be loaded and
+partially processed by some operations of the first pipeline, then processed by the second pipeline and then finally
+processed by the remaining operations of the first one.</p>
+<p>The operations can be further divided according to the data type to the operations for sentences, tokens, fields'
+values, instances etc. For an overview and more information about the operations, see the description of
+<code><a title="conllutils.pipeline.Pipeline" href="pipeline.html#conllutils.pipeline.Pipeline">Pipeline</a></code> class.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>source</code></strong> :&ensp;<code>iterable</code></dt>
+<dd>The configured data source of the pipeline.</dd>
+<dt><strong><code>*args</code></strong> :&ensp;<code>pipelines</code></dt>
+<dd>The list of the pipelines chained after the data source, i.e.
+<code>pipe(data, p1, p2, ... ,pn)</code> is equivalent to <code>pipe(data).pipe(p1, p2, ..., pn)</code>. See
+<code><a title="conllutils.pipeline.Pipeline.pipe" href="pipeline.html#conllutils.pipeline.Pipeline.pipe">Pipeline.pipe()</a></code> method for more information.</dd>
+</dl></div>
+</dd>
+<dt id="conllutils.read_conllu"><code class="name flex">
+<span>def <span class="ident">read_conllu</span></span>(<span>file, underscore_form=True, parse_comments=True, parse_feats=False, parse_deps=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read the CoNLL-U file and return an iterator over the parsed sentences.</p>
+<p>The <code>file</code> argument can be a path-like or file-like object.</p>
+<p>To parse values of FEATS or DEPS fields to dictionaries or sets of tuples, set the <code>parse_feats</code> or <code>parse_deps</code>
+arguments to True. By default the features and dependencies are not parsed and values are stored as a string.</p>
+<p>If <code>underscore_form</code> is True (default) and LEMMA field is underscore, the underscore character in the FORM field is
+parsed as the FORM value. Otherwise, it indicates an unspecified FORM value.</p>
+<p>By default, comments are parsed as the metadata dictionary. To skip comments parsing, set <code>parse_comments</code> argument
+to False.</p></div>
+</dd>
+<dt id="conllutils.write_conllu"><code class="name flex">
+<span>def <span class="ident">write_conllu</span></span>(<span>file, data, write_comments=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Write the sentences to the CoNLL-U file.</p>
+<p>The <code>file</code> argument can be a path-like or file-like object. Written <code>data</code> is an iterable object of sentences or
+one sentence. If the <code>write_comments</code> argument is True (default), sentence metadata are encoded as the comments and
+written to the file.</p></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="conllutils.DependencyTree"><code class="flex name class">
+<span>class <span class="ident">DependencyTree</span></span>
+<span>(</span><span>sentence)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A dependency tree representation of the sentence.</p>
+<p>A <em>basic</em> dependency tree is a labeled tree structure where each node of the tree corresponds to exactly one
+syntactic word in the sentence. The relations between the node and its parent (head) are labeled with the Universal
+dependencies and stored in the HEAD and DEPREL fields of the corresponding word.</p>
+<p>The DependencyTree class should not be instantiated directly. Use the <code><a title="conllutils.Sentence.to_tree" href="#conllutils.Sentence.to_tree">Sentence.to_tree()</a></code> or <code><a title="conllutils.Instance.to_tree" href="#conllutils.Instance.to_tree">Instance.to_tree()</a></code>
+methods to create a dependency representation for the sentence or indexed instance. The implementation of nodes is
+provided by <code><a title="conllutils.Node" href="#conllutils.Node">Node</a></code> class.</p>
+<p>The dependency tree object is iterable and returns an iterator over all nodes in the order of corresponding words in
+the sentence. <code>len(tree)</code> returns the number of nodes.</p>
+<p>Note that the dependency tree is constructed only from the basic dependency relations. Enhanced dependency relations
+stored in the DEPS field are not included in the tree.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>root</code></strong> :&ensp;<code><a title="conllutils.Node" href="#conllutils.Node">Node</a></code></dt>
+<dd>The root of the tree. </dd>
+<dt><strong><code>nodes</code></strong> :&ensp;<code>list</code> of <code><a title="conllutils.Node" href="#conllutils.Node">Node</a></code></dt>
+<dd>The list of all nodes in the sentence order.</dd>
+<dt><strong><code>metadata</code></strong> :&ensp;<code>any</code></dt>
+<dd>Any optional data associated with the tree, by default copied from the sentence or indexed
+instance.</dd>
+</dl></div>
+<h3>Methods</h3>
+<dl>
+<dt id="conllutils.DependencyTree.inorder"><code class="name flex">
+<span>def <span class="ident">inorder</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return an iterator traversing in-order over all nodes.</p></div>
+</dd>
+<dt id="conllutils.DependencyTree.is_projective"><code class="name flex">
+<span>def <span class="ident">is_projective</span></span>(<span>self, return_arcs=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return True if the dependency tree is projective, otherwise False.</p>
+<p>A dependency tree is projective when all its arcs are projective, i.e. for all arcs (<em>i</em>, <em>j</em>) from parent <em>i</em>
+to child <em>j</em> and for all nodes <em>k</em> between the <em>i</em> and <em>j</em> in the sentence, there must be a path from <em>i</em> to <em>k</em>.</p>
+<p>If the argument <code>return_arcs</code> is True, the function returns the list of conflicting non-projective arcs. For
+projective trees the list is empty.</p></div>
+</dd>
+<dt id="conllutils.DependencyTree.leaves"><code class="name flex">
+<span>def <span class="ident">leaves</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return an iterator over all leaves of the tree in the sentence order.</p></div>
+</dd>
+<dt id="conllutils.DependencyTree.postorder"><code class="name flex">
+<span>def <span class="ident">postorder</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return an iterator traversing post-order over all nodes.</p></div>
+</dd>
+<dt id="conllutils.DependencyTree.preorder"><code class="name flex">
+<span>def <span class="ident">preorder</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return an iterator traversing pre-order over all nodes.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="conllutils.Instance"><code class="flex name class">
+<span>class <span class="ident">Instance</span></span>
+<span>(</span><span>fields=(), metadata=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>An indexed representation of the sentence in the compact numerical form.</p>
+<p>An instance can be created from a sentence using the <code><a title="conllutils.Sentence.to_instance" href="#conllutils.Sentence.to_instance">Sentence.to_instance()</a></code> method. The sentence values are mapped
+to the numerical indexes by the provided <em>index</em> mapping. The index for a set of sentences can be created
+with the <code><a title="conllutils.create_index" href="#conllutils.create_index">create_index()</a></code> function.</p>
+<p>An instance is a dictionary type where each field is mapped to the NumPy array with the integer values continuously
+indexed for all tokens in the sentence, i.e. the field value of the <code>i</code>-th token is stored as <code>instance[field][i]</code>.
+The length of all mapped arrays is equal to the length of the sentence. The default numerical type of the arrays is
+<code>np.int64</code>.</p>
+<p>The ID field is not stored in the instance. Note that this also means that the type of tokens is not preserved. The
+FEATS and DEPS fields are indexed as unparsed strings, i.e. the features or dependencies are not indexed separately.</p>
+<p>By default, unknown values (i.e. values not mapped in the provided index) are stored as 0. Missing values (i.e. when
+a token does not have value for the indexed field) are stored as -1.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>metadata</code></strong> :&ensp;<code>any</code></dt>
+<dd>Any optional data associated with the instance, by default copied from the sentence.</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.dict</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="conllutils.Instance.length"><code class="name">var <span class="ident">length</span></code></dt>
+<dd>
+<div class="desc"><p>int: The length of the intance (i.e. the number of tokens in the indexed sentence).</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="conllutils.Instance.copy"><code class="name flex">
+<span>def <span class="ident">copy</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return a shallow copy of the instance.</p></div>
+</dd>
+<dt id="conllutils.Instance.is_projective"><code class="name flex">
+<span>def <span class="ident">is_projective</span></span>(<span>self, return_arcs=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return True if this instance can be represented as the projective dependency tree, otherwise False.</p>
+<p>See <code><a title="conllutils.DependencyTree.is_projective" href="#conllutils.DependencyTree.is_projective">DependencyTree.is_projective()</a></code> method for more information.</p></div>
+</dd>
+<dt id="conllutils.Instance.to_sentence"><code class="name flex">
+<span>def <span class="ident">to_sentence</span></span>(<span>self, inverse_index, fields=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return a new sentence build from the instance with the values re-indexed by the <code>inverse_index</code>.</p>
+<p>Optional <code>fields</code> argument specifies a subset of the fields added into the sentence. By default, all instance
+fields are included. The ID values are always generated as the sequence of integers starting from 1, which
+corresponds to the sequence of lexical words without the empty or multiword tokens.</p>
+<p>This operation is inverse to the indexing in <code><a title="conllutils.Sentence.to_instance" href="#conllutils.Sentence.to_instance">Sentence.to_instance()</a></code> method.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>KeyError</code></dt>
+<dd>If some of the instance values is not mapped in the <code>inverse_index</code>.</dd>
+</dl></div>
+</dd>
+<dt id="conllutils.Instance.to_tree"><code class="name flex">
+<span>def <span class="ident">to_tree</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return a dependency tree representation of the instance.</p>
+<p>See <code><a title="conllutils.DependencyTree" href="#conllutils.DependencyTree">DependencyTree</a></code> class for more information. All tokens referenced in the tree are indexed views, as it is
+described for the <code><a title="conllutils.Instance.token" href="#conllutils.Instance.token">Instance.token()</a></code> method. Note that the implementation assumes proper ordering of the tokens
+and that the instance does not contain empty or multiword tokens.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If the instance contains the tokens without the HEAD field (HEAD = -1), or when the instance
+does not have exactly one root with HEAD = 0.</dd>
+</dl></div>
+</dd>
+<dt id="conllutils.Instance.token"><code class="name flex">
+<span>def <span class="ident">token</span></span>(<span>self, i)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return a view to the <code>i</code>-th token of the instance.</p>
+<p>The view is a mutable mapping object, which maps fields to the scalar values stored in the instance at the
+<code>i</code>-th position, i.e. for the values of the <code>i</code>-th token view, the following condition holds
+<code>token[field] == instance[field][i]</code>.</p>
+<p>The view object supports all mapping methods and operations except the deleting of the field or setting the
+value of the field not indexed in the instance.</p></div>
+</dd>
+<dt id="conllutils.Instance.tokens"><code class="name flex">
+<span>def <span class="ident">tokens</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return an iterator over all tokens. The iterated values are token view objects.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="conllutils.Node"><code class="flex name class">
+<span>class <span class="ident">Node</span></span>
+<span>(</span><span>index, token)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A node in the dependency tree corresponding to the syntactic word in the sentence.</p>
+<p>A node object is iterable, and returns an iterator over the direct children. <code>len(node)</code> returns the number of
+children, and <code>node[i]</code> returns the <code>i</code>-th child (or sublist of children, if <code>i</code> is the slice of indices).</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>index</code></strong> :&ensp;<code>int</code></dt>
+<dd>The index of the word in the sentence (from 0).</dd>
+<dt><strong><code>token</code></strong> :&ensp;<code><a title="conllutils.Token" href="#conllutils.Token">Token</a></code> or <code>indexed token view</code></dt>
+<dd>The corresponding syntactic word.</dd>
+<dt><strong><code>parent</code></strong> :&ensp;<code><a title="conllutils.Node" href="#conllutils.Node">Node</a></code></dt>
+<dd>The parent (HEAD) of the node, or None for the root.</dd>
+</dl></div>
+<h3>Instance variables</h3>
+<dl>
+<dt id="conllutils.Node.deprel"><code class="name">var <span class="ident">deprel</span></code></dt>
+<dd>
+<div class="desc"><p>str or int: Universal dependency relation to the HEAD stored in the <code>token[DEPREL]</code>, or None if the token
+does not have DEPREL field.</p></div>
+</dd>
+<dt id="conllutils.Node.is_leaf"><code class="name">var <span class="ident">is_leaf</span></code></dt>
+<dd>
+<div class="desc"><p>bool: True, if the node is a leaf node (has no children).</p></div>
+</dd>
+<dt id="conllutils.Node.is_root"><code class="name">var <span class="ident">is_root</span></code></dt>
+<dd>
+<div class="desc"><p>bool: True, if the node is the root of the tree (has no parent).</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="conllutils.Sentence"><code class="flex name class">
+<span>class <span class="ident">Sentence</span></span>
+<span>(</span><span>tokens=(), metadata=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A list type representing the sentence, i.e. the sequence of tokens.</p>
+<p>For valid CoNLL-U sentences, tokens have to be ordered according to their IDs. The syntactic words form the sequence
+with ID=1, 2, 3, etc. Multiword tokens with the range ID 'start-end' are inserted before the first word in the range
+(i.e. before the word with ID=start). The ranges of all multiword tokens must be non-empty and non-overlapping.
+Empty tokens with the decimal IDs 'token_id.index' are inserted in the index order at the beginning of the sentence
+(if token_id=0), or immediately after the word with ID=token_id.</p>
+<p>Note that the Sentence methods are not checking the order of the tokens, and it is up to the programmer to preserve
+the correct ordering.</p>
+<p>The Sentence class provides <code><a title="conllutils.Sentence.words" href="#conllutils.Sentence.words">Sentence.words()</a></code> method to extract only the sequence of syntactic words without the
+empty or multiword tokens, and <code><a title="conllutils.Sentence.raw_tokens" href="#conllutils.Sentence.raw_tokens">Sentence.raw_tokens()</a></code> method to extract the sequence of raw tokens (i.e. how the
+sentence is written orthographically with the multiword tokens).</p>
+<p>For example, for the Spanish sentence:</p>
+<pre><code class="plaintext">1-2     vámonos
+1       vamos
+2       nos
+3-4     al
+3       a
+4       el
+5       mar
+</code></pre>
+<p>the <code>words</code> method returns the sequence of expanded syntactic words 'vamos', 'nos', 'a', 'el', 'mar', and the
+<code>raw_tokens</code> returns sequence for raw text 'vámonos', 'al', 'mar'.</p>
+<p>For the sentence with empty tokens:</p>
+<pre><code class="plaintext">1      Sue
+2      likes
+3      coffee
+4      and
+5      Bill
+5.1    likes
+6      tea
+</code></pre>
+<p>both <code>words</code> and <code>raw_tokens</code> methods return the sequence without the empty tokens 'Sue', 'likes', 'coffee', 'and',
+'Bill', 'tea'.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>metadata</code></strong> :&ensp;<code>any</code></dt>
+<dd>Any optional data associated with the sentence. By default for the CoNLL-U format, <code>metadata</code>
+are parsed from the comment lines as the dictionary of key = value pairs. If the comment string has no
+key-value format separated with <code>=</code>, it is stored as a key with None value. </dd>
+</dl>
+<p>Create an empty sentence or initialize a new sentence with the <code>tokens</code> from the provided sequence and
+optional <code>metadata</code>.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.list</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="conllutils.Sentence.from_conllu"><code class="name flex">
+<span>def <span class="ident">from_conllu</span></span>(<span>s, multiple=False, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Parse a sentence (or list of sentences) from the string in the CoNLL-U format.</p>
+<p>If the argument <code>multiple</code> is True, the function returns the list of all sentences parsed from the string.
+Otherwise (default), it returns only the first sentence. This function supports all additional keyword arguments
+as the <code><a title="conllutils.read_conllu" href="#conllutils.read_conllu">read_conllu()</a></code> function.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If there is an error parsing at least one sentence from the string.</dd>
+</dl></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="conllutils.Sentence.copy"><code class="name flex">
+<span>def <span class="ident">copy</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return a shallow copy of the sentence.</p></div>
+</dd>
+<dt id="conllutils.Sentence.get"><code class="name flex">
+<span>def <span class="ident">get</span></span>(<span>self, id, default=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return token with the specified ID.</p>
+<p>The <code>id</code> argument can be an integer from 1, tuple generated by <code><a title="conllutils.empty_id" href="#conllutils.empty_id">empty_id()</a></code> or <code><a title="conllutils.multiword_id" href="#conllutils.multiword_id">multiword_id()</a></code> functions, or
+string in CoNLL-U notation (e.g. "1" for words, "2-3" for multiword tokens, or "0.1" for empty tokens). Note
+that the implementation assumes the proper ordering of the tokens according to their IDs.</p>
+<p>If a token with the <code>id</code> cannot be found, the method returns provided <code>default</code> value or None if <code>default</code>
+is not given.</p></div>
+</dd>
+<dt id="conllutils.Sentence.is_projective"><code class="name flex">
+<span>def <span class="ident">is_projective</span></span>(<span>self, return_arcs=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return True if this sentence can be represented as the projective dependency tree, otherwise False.</p>
+<p>See <code><a title="conllutils.DependencyTree.is_projective" href="#conllutils.DependencyTree.is_projective">DependencyTree.is_projective()</a></code> method for more information.</p></div>
+</dd>
+<dt id="conllutils.Sentence.raw_tokens"><code class="name flex">
+<span>def <span class="ident">raw_tokens</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return an iterator over all raw tokens representing the written text of the sentence.</p>
+<p>The raw tokens are all multiword tokens and all words outside of the multiword ranges (excluding the empty
+tokens). Note that the implementation assumes the proper ordering of the tokens according to their IDs.</p></div>
+</dd>
+<dt id="conllutils.Sentence.text"><code class="name flex">
+<span>def <span class="ident">text</span></span>(<span>self, default_form='_')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return text of the sentence reconstructed from the raw tokens.</p>
+<p>The insertion of spaces is controlled by <code>SpaceAfter=No</code> feature in the MISC field. Unspecified forms are
+replaced with the value of <code>default_form</code> argument, which defaults to underscore '_'.</p>
+<p>Note that space is also appended after the last word unless the last token has specified <code>SpaceAfter=No</code>.</p></div>
+</dd>
+<dt id="conllutils.Sentence.to_conllu"><code class="name flex">
+<span>def <span class="ident">to_conllu</span></span>(<span>self, write_comments=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return a string representation of the sentence in the CoNLL-U format.</p>
+<p>If the <code>write_comments</code> argument is True (default), the string also includes comments generated from the
+metadata.</p></div>
+</dd>
+<dt id="conllutils.Sentence.to_instance"><code class="name flex">
+<span>def <span class="ident">to_instance</span></span>(<span>self, index, fields=None, dtype=numpy.int64)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return an instance representation of the sentence with the values indexed by the <code>index</code>.</p>
+<p>Optional <code>fields</code> argument specifies a subset of the fields added into the instance. By default, HEAD field and
+all fields from the <code>index</code> are included.</p>
+<p>The numerical type of the instance data can be specified in <code>dtype</code> argument. The default type is <code>np.int64</code>.
+See <code><a title="conllutils.Instance" href="#conllutils.Instance">Instance</a></code> class for more information.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>KeyError</code></dt>
+<dd>If some of the <code>fields</code> are not indexed in the <code>index</code>.</dd>
+</dl></div>
+</dd>
+<dt id="conllutils.Sentence.to_tree"><code class="name flex">
+<span>def <span class="ident">to_tree</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return a dependency tree representation of the sentence.</p>
+<p>See <code><a title="conllutils.DependencyTree" href="#conllutils.DependencyTree">DependencyTree</a></code> class for more information. Note that the implementation assumes the proper ordering of
+the tokens according to their IDs.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If the sentence contains the words without the HEAD field, or when the sentence does not have
+exactly one root with HEAD = 0.</dd>
+</dl></div>
+</dd>
+<dt id="conllutils.Sentence.tokens"><code class="name flex">
+<span>def <span class="ident">tokens</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return an iterator over all tokens in the sentence (alias to <code>iter(self)</code>).</p></div>
+</dd>
+<dt id="conllutils.Sentence.words"><code class="name flex">
+<span>def <span class="ident">words</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return an iterator over all syntactic words (i.e. without multiword and empty tokens).</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="conllutils.Token"><code class="flex name class">
+<span>class <span class="ident">Token</span></span>
+<span>(</span><span>fields=(), **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A dictionary type representing a token in the sentence.</p>
+<p>A token can represent a regular <em>syntactic word</em>, or can be a <em>multiword token</em> spanning across multiple words
+(e.g. like in Spanish <em>vámonos</em> = <em>vamos nos</em>), or can be an <em>empty token</em> (inserted in the extended dependency
+tree, e.g. for the analysis of ellipsis). Type of the token can be tested using the read-only <code>is_multiword</code> and
+<code>is_empty</code> properties.</p>
+<p>A token can contain mappings for the following standard CoNLL-U fields:</p>
+<ul>
+<li>ID: word index (integer starting from 1); or range of the indexes for multiword tokens; or decimal notation
+for empty tokens.</li>
+<li>FORM: word form or punctuation symbol.</li>
+<li>LEMMA: lemma or stem of word form.</li>
+<li>UPOS: Universal part-of-speech tag.</li>
+<li>XPOS: language-specific part-of-speech tag.</li>
+<li>FEATS: list of morphological features from the Universal feature inventory or language-specific extension.</li>
+<li>HEAD: head of the current word in the dependency tree representation (ID or 0 for root).</li>
+<li>DEPREL: Universal dependency relation to the HEAD.</li>
+<li>DEPS: enhanced dependency graph in the form of head-deprel pairs.</li>
+<li>MISC: any other annotation associated with the token. </li>
+</ul>
+<p>The ID values are parsed as the integers for regular words or tuples for multiword and empty tokens (see
+<code><a title="conllutils.multiword_id" href="#conllutils.multiword_id">multiword_id()</a></code> and <code><a title="conllutils.empty_id" href="#conllutils.empty_id">empty_id()</a></code> functions for more information).</p>
+<p>The HEAD values are parsed as the integers.</p>
+<p>The FORM, LEMMA, POS, XPOS, DEPREL and MISC values are strings.</p>
+<p>The FEATS are strings or parsed as the dictionaries with attribute-value mappings and multiple values stored in the
+sets.</p>
+<p>The DEPS values are strings or parsed as the set of head-deprel tuples.</p>
+<p>Create an empty token or token with the fields initialized from the provided mapping object or keyword
+arguments.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.dict</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="conllutils.Token.is_empty"><code class="name">var <span class="ident">is_empty</span></code></dt>
+<dd>
+<div class="desc"><p>bool: True if the token is an empty token, otherwise False.</p></div>
+</dd>
+<dt id="conllutils.Token.is_multiword"><code class="name">var <span class="ident">is_multiword</span></code></dt>
+<dd>
+<div class="desc"><p>bool: True if the token is a multiword token, otherwise False.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="conllutils.Token.copy"><code class="name flex">
+<span>def <span class="ident">copy</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return a shallow copy of the token.</p></div>
+</dd>
+<dt id="conllutils.Token.to_collu"><code class="name flex">
+<span>def <span class="ident">to_collu</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return a string representation of the token in the CoNLL-U format.</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="conllutils.io" href="io.html">conllutils.io</a></code></li>
+<li><code><a title="conllutils.pipeline" href="pipeline.html">conllutils.pipeline</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="conllutils.create_index" href="#conllutils.create_index">create_index</a></code></li>
+<li><code><a title="conllutils.create_inverse_index" href="#conllutils.create_inverse_index">create_inverse_index</a></code></li>
+<li><code><a title="conllutils.empty_id" href="#conllutils.empty_id">empty_id</a></code></li>
+<li><code><a title="conllutils.multiword_id" href="#conllutils.multiword_id">multiword_id</a></code></li>
+<li><code><a title="conllutils.pipe" href="#conllutils.pipe">pipe</a></code></li>
+<li><code><a title="conllutils.read_conllu" href="#conllutils.read_conllu">read_conllu</a></code></li>
+<li><code><a title="conllutils.write_conllu" href="#conllutils.write_conllu">write_conllu</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="conllutils.DependencyTree" href="#conllutils.DependencyTree">DependencyTree</a></code></h4>
+<ul class="">
+<li><code><a title="conllutils.DependencyTree.inorder" href="#conllutils.DependencyTree.inorder">inorder</a></code></li>
+<li><code><a title="conllutils.DependencyTree.is_projective" href="#conllutils.DependencyTree.is_projective">is_projective</a></code></li>
+<li><code><a title="conllutils.DependencyTree.leaves" href="#conllutils.DependencyTree.leaves">leaves</a></code></li>
+<li><code><a title="conllutils.DependencyTree.postorder" href="#conllutils.DependencyTree.postorder">postorder</a></code></li>
+<li><code><a title="conllutils.DependencyTree.preorder" href="#conllutils.DependencyTree.preorder">preorder</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="conllutils.Instance" href="#conllutils.Instance">Instance</a></code></h4>
+<ul class="two-column">
+<li><code><a title="conllutils.Instance.copy" href="#conllutils.Instance.copy">copy</a></code></li>
+<li><code><a title="conllutils.Instance.is_projective" href="#conllutils.Instance.is_projective">is_projective</a></code></li>
+<li><code><a title="conllutils.Instance.length" href="#conllutils.Instance.length">length</a></code></li>
+<li><code><a title="conllutils.Instance.to_sentence" href="#conllutils.Instance.to_sentence">to_sentence</a></code></li>
+<li><code><a title="conllutils.Instance.to_tree" href="#conllutils.Instance.to_tree">to_tree</a></code></li>
+<li><code><a title="conllutils.Instance.token" href="#conllutils.Instance.token">token</a></code></li>
+<li><code><a title="conllutils.Instance.tokens" href="#conllutils.Instance.tokens">tokens</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="conllutils.Node" href="#conllutils.Node">Node</a></code></h4>
+<ul class="">
+<li><code><a title="conllutils.Node.deprel" href="#conllutils.Node.deprel">deprel</a></code></li>
+<li><code><a title="conllutils.Node.is_leaf" href="#conllutils.Node.is_leaf">is_leaf</a></code></li>
+<li><code><a title="conllutils.Node.is_root" href="#conllutils.Node.is_root">is_root</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="conllutils.Sentence" href="#conllutils.Sentence">Sentence</a></code></h4>
+<ul class="two-column">
+<li><code><a title="conllutils.Sentence.copy" href="#conllutils.Sentence.copy">copy</a></code></li>
+<li><code><a title="conllutils.Sentence.from_conllu" href="#conllutils.Sentence.from_conllu">from_conllu</a></code></li>
+<li><code><a title="conllutils.Sentence.get" href="#conllutils.Sentence.get">get</a></code></li>
+<li><code><a title="conllutils.Sentence.is_projective" href="#conllutils.Sentence.is_projective">is_projective</a></code></li>
+<li><code><a title="conllutils.Sentence.raw_tokens" href="#conllutils.Sentence.raw_tokens">raw_tokens</a></code></li>
+<li><code><a title="conllutils.Sentence.text" href="#conllutils.Sentence.text">text</a></code></li>
+<li><code><a title="conllutils.Sentence.to_conllu" href="#conllutils.Sentence.to_conllu">to_conllu</a></code></li>
+<li><code><a title="conllutils.Sentence.to_instance" href="#conllutils.Sentence.to_instance">to_instance</a></code></li>
+<li><code><a title="conllutils.Sentence.to_tree" href="#conllutils.Sentence.to_tree">to_tree</a></code></li>
+<li><code><a title="conllutils.Sentence.tokens" href="#conllutils.Sentence.tokens">tokens</a></code></li>
+<li><code><a title="conllutils.Sentence.words" href="#conllutils.Sentence.words">words</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="conllutils.Token" href="#conllutils.Token">Token</a></code></h4>
+<ul class="">
+<li><code><a title="conllutils.Token.copy" href="#conllutils.Token.copy">copy</a></code></li>
+<li><code><a title="conllutils.Token.is_empty" href="#conllutils.Token.is_empty">is_empty</a></code></li>
+<li><code><a title="conllutils.Token.is_multiword" href="#conllutils.Token.is_multiword">is_multiword</a></code></li>
+<li><code><a title="conllutils.Token.to_collu" href="#conllutils.Token.to_collu">to_collu</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.1/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

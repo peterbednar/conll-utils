@@ -2,7 +2,7 @@
 **/__pycache__/
 **/*.py[cod]
 .vscode
-docs
+docs/tutorial
 dist
 build
 htmlcov

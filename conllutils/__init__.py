@@ -149,26 +149,26 @@ class Sentence(list):
 
     For example, for the Spanish sentence:
     ```plaintext
-        1-2     vámonos
-        1       vamos
-        2       nos
-        3-4     al
-        3       a
-        4       el
-        5       mar
+    1-2     vámonos
+    1       vamos
+    2       nos
+    3-4     al
+    3       a
+    4       el
+    5       mar
     ```
     the `words` method returns the sequence of expanded syntactic words 'vamos', 'nos', 'a', 'el', 'mar', and the
     `raw_tokens` returns sequence for raw text 'vámonos', 'al', 'mar'.
     
     For the sentence with empty tokens:
     ```plaintext
-        1      Sue
-        2      likes
-        3      coffee
-        4      and
-        5      Bill
-        5.1    likes
-        6      tea
+    1      Sue
+    2      likes
+    3      coffee
+    4      and
+    5      Bill
+    5.1    likes
+    6      tea
     ```
     both `words` and `raw_tokens` methods return the sequence without the empty tokens 'Sue', 'likes', 'coffee', 'and',
     'Bill', 'tea'.

@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>conllutils.pipeline API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.1/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:2em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>conllutils.pipeline</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="conllutils.pipeline.Pipeline"><code class="flex name class">
+<span>class <span class="ident">Pipeline</span></span>
+<span>(</span><span>source=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<h3>Instance variables</h3>
+<dl>
+<dt id="conllutils.pipeline.Pipeline.token"><code class="name">var <span class="ident">token</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="conllutils.pipeline.Pipeline.batch"><code class="name flex">
+<span>def <span class="ident">batch</span></span>(<span>self, batch_size=100)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.collect"><code class="name flex">
+<span>def <span class="ident">collect</span></span>(<span>self, n=None, l=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.count"><code class="name flex">
+<span>def <span class="ident">count</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.create_index"><code class="name flex">
+<span>def <span class="ident">create_index</span></span>(<span>self, fields=None, min_frequency=1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.filter"><code class="name flex">
+<span>def <span class="ident">filter</span></span>(<span>self, f)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.filter_field"><code class="name flex">
+<span>def <span class="ident">filter_field</span></span>(<span>self, field, f)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.filter_token"><code class="name flex">
+<span>def <span class="ident">filter_token</span></span>(<span>self, f)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.first"><code class="name flex">
+<span>def <span class="ident">first</span></span>(<span>self, default=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.flatten"><code class="name flex">
+<span>def <span class="ident">flatten</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.from_conllu"><code class="name flex">
+<span>def <span class="ident">from_conllu</span></span>(<span>self, s, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.lowercase"><code class="name flex">
+<span>def <span class="ident">lowercase</span></span>(<span>self, field, to=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.map"><code class="name flex">
+<span>def <span class="ident">map</span></span>(<span>self, f)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.map_field"><code class="name flex">
+<span>def <span class="ident">map_field</span></span>(<span>self, field, f, to=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.map_token"><code class="name flex">
+<span>def <span class="ident">map_token</span></span>(<span>self, f)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.only_fields"><code class="name flex">
+<span>def <span class="ident">only_fields</span></span>(<span>self, fields, *args)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.only_projective"><code class="name flex">
+<span>def <span class="ident">only_projective</span></span>(<span>self, projective=True)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.only_universal_deprel"><code class="name flex">
+<span>def <span class="ident">only_universal_deprel</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.only_words"><code class="name flex">
+<span>def <span class="ident">only_words</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.pipe"><code class="name flex">
+<span>def <span class="ident">pipe</span></span>(<span>self, *args)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.print"><code class="name flex">
+<span>def <span class="ident">print</span></span>(<span>self, n=None, end='\n')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.read_conllu"><code class="name flex">
+<span>def <span class="ident">read_conllu</span></span>(<span>self, filename, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.read_file"><code class="name flex">
+<span>def <span class="ident">read_file</span></span>(<span>self, filename, format, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.replace"><code class="name flex">
+<span>def <span class="ident">replace</span></span>(<span>self, field, old_value, new_value, to=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.replace_missing"><code class="name flex">
+<span>def <span class="ident">replace_missing</span></span>(<span>self, field, value, to=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.shuffle"><code class="name flex">
+<span>def <span class="ident">shuffle</span></span>(<span>self, buffer_size=1024, random=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.stream"><code class="name flex">
+<span>def <span class="ident">stream</span></span>(<span>self, max_size=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.text"><code class="name flex">
+<span>def <span class="ident">text</span></span>(<span>self, default_form='_')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.to_conllu"><code class="name flex">
+<span>def <span class="ident">to_conllu</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.to_instance"><code class="name flex">
+<span>def <span class="ident">to_instance</span></span>(<span>self, index, fields=None, dtype=numpy.int64)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.to_sentence"><code class="name flex">
+<span>def <span class="ident">to_sentence</span></span>(<span>self, inverse_index)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.upos_feats"><code class="name flex">
+<span>def <span class="ident">upos_feats</span></span>(<span>self, to='upos_feats')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.uppercase"><code class="name flex">
+<span>def <span class="ident">uppercase</span></span>(<span>self, field, to=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.write_conllu"><code class="name flex">
+<span>def <span class="ident">write_conllu</span></span>(<span>self, filename)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.write_file"><code class="name flex">
+<span>def <span class="ident">write_file</span></span>(<span>self, filename, format, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="conllutils" href="index.html">conllutils</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="conllutils.pipeline.Pipeline" href="#conllutils.pipeline.Pipeline">Pipeline</a></code></h4>
+<ul class="">
+<li><code><a title="conllutils.pipeline.Pipeline.batch" href="#conllutils.pipeline.Pipeline.batch">batch</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.collect" href="#conllutils.pipeline.Pipeline.collect">collect</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.count" href="#conllutils.pipeline.Pipeline.count">count</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.create_index" href="#conllutils.pipeline.Pipeline.create_index">create_index</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.filter" href="#conllutils.pipeline.Pipeline.filter">filter</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.filter_field" href="#conllutils.pipeline.Pipeline.filter_field">filter_field</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.filter_token" href="#conllutils.pipeline.Pipeline.filter_token">filter_token</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.first" href="#conllutils.pipeline.Pipeline.first">first</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.flatten" href="#conllutils.pipeline.Pipeline.flatten">flatten</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.from_conllu" href="#conllutils.pipeline.Pipeline.from_conllu">from_conllu</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.lowercase" href="#conllutils.pipeline.Pipeline.lowercase">lowercase</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.map" href="#conllutils.pipeline.Pipeline.map">map</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.map_field" href="#conllutils.pipeline.Pipeline.map_field">map_field</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.map_token" href="#conllutils.pipeline.Pipeline.map_token">map_token</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.only_fields" href="#conllutils.pipeline.Pipeline.only_fields">only_fields</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.only_projective" href="#conllutils.pipeline.Pipeline.only_projective">only_projective</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.only_universal_deprel" href="#conllutils.pipeline.Pipeline.only_universal_deprel">only_universal_deprel</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.only_words" href="#conllutils.pipeline.Pipeline.only_words">only_words</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.pipe" href="#conllutils.pipeline.Pipeline.pipe">pipe</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.print" href="#conllutils.pipeline.Pipeline.print">print</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.read_conllu" href="#conllutils.pipeline.Pipeline.read_conllu">read_conllu</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.read_file" href="#conllutils.pipeline.Pipeline.read_file">read_file</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.replace" href="#conllutils.pipeline.Pipeline.replace">replace</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.replace_missing" href="#conllutils.pipeline.Pipeline.replace_missing">replace_missing</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.shuffle" href="#conllutils.pipeline.Pipeline.shuffle">shuffle</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.stream" href="#conllutils.pipeline.Pipeline.stream">stream</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.text" href="#conllutils.pipeline.Pipeline.text">text</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.to_conllu" href="#conllutils.pipeline.Pipeline.to_conllu">to_conllu</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.to_instance" href="#conllutils.pipeline.Pipeline.to_instance">to_instance</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.to_sentence" href="#conllutils.pipeline.Pipeline.to_sentence">to_sentence</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.token" href="#conllutils.pipeline.Pipeline.token">token</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.upos_feats" href="#conllutils.pipeline.Pipeline.upos_feats">upos_feats</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.uppercase" href="#conllutils.pipeline.Pipeline.uppercase">uppercase</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.write_conllu" href="#conllutils.pipeline.Pipeline.write_conllu">write_conllu</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.write_file" href="#conllutils.pipeline.Pipeline.write_file">write_file</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.1/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
