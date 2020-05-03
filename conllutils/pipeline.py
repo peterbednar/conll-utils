@@ -4,7 +4,7 @@ import numpy as np
 
 from . import Sentence, Token
 from . import read_conllu, write_conllu, create_index
-from . import _feats_to_str, _deps_to_str, _parse_deps
+from . import _feats_to_str, _deps_to_str, _parse_feats, _parse_deps
 from .io import read_file, write_file
 
 class Pipeline(object):
@@ -26,6 +26,10 @@ class Pipeline(object):
 
     def upos_feats(self, to='upos_feats'):
         self.token.upos_feats(to)
+        return self
+
+    def unwind_feats(self, separator=':'):
+        self.token.unwind_feats(separator)
         return self
 
     def only_universal_deprel(self):
@@ -294,6 +298,20 @@ class _TokenPipeline(object):
                 t[to] = tag
             return t
         self.map(_upos_feats)
+        return self
+
+    def unwind_feats(self, separator=':'):
+        def _unwind_feats(t):
+            if 'feats' in t:
+                feats = t.feats
+                if isinstance(feats, str):
+                    feats = _parse_feats(feats)
+                for key, value in feats.items():
+                    if isinstance(value, set):
+                        value = ','.join(sorted(value))
+                    t[f'feats{separator}{key.lower()}'] = value
+            return t
+        self.map(_unwind_feats)
         return self
 
     def only_universal_deprel(self):
