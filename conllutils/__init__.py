@@ -828,17 +828,6 @@ def write_conllu(file, data, write_comments=True):
 def _is_chars_field(field):
     return field.endswith(':chars')
 
-def _field_key(field, value):
-    if field == FEATS:
-        return _feats_to_str(value)
-
-    if field == DEPS:
-        return _deps_to_str(value)
-
-    if not isinstance(value, str):
-        raise ValueError('Not a string value {value} for {field}.')
-    return value
-
 def _create_dictionary(sentences, fields=None):
     dic = {}
 
@@ -856,11 +845,13 @@ def _create_dictionary(sentences, fields=None):
 
                 if _is_chars_field(field):
                     for ch in value:
-                        key = _field_key(field, value)
                         dic[field][ch] += 1
                 else:
-                    key = _field_key(field, value)
-                    dic[field][key] += 1
+                    if field == FEATS:
+                        value = _feats_to_str(value)
+                    if field == DEPS:
+                        value = _deps_to_str(value)
+                    dic[field][value] += 1
 
     return dic
 
@@ -910,48 +901,34 @@ def create_inverse_index(index):
     """
     return {f: {v: k for k, v in c.items()} for f, c in index.items()}
 
-_MISSING_INDEX = -1
-
-def _copy_field(sentence, field, dtype):
-    array = np.full(len(sentence), _MISSING_INDEX, dtype=dtype)
-    for i, token in enumerate(sentence):
-        if field in token:
-            array[i] = token[field]
-    return array
-
-def _index_field(sentence, field, index, dtype):
-    array = np.full(len(sentence), _MISSING_INDEX, dtype=dtype)
-    for i, token in enumerate(sentence):
-        if field in token:
-            # index[field] Counter always returns 0 for unknown keys.
-            key = _field_key(field, token[field])
-            array[i] = index[key]
-    return array
-
-def _index_chars_field(sentence, field, index, dtype):
-    arrays = []
-    for token in sentence:
-        if field in token:
-            array = np.array([index[_field_key(field, ch)] for ch in token[field]], dtype=dtype)
-            arrays.append(array)
-        else:
-            arrays.append(None)
-    return arrays
-
 def _map_to_instance(sentence, index, fields=None, dtype=np.int64):
     if fields is None:
         fields = {HEAD} | set(index.keys())
 
+    length = len(sentence)
     instance = Instance()
     instance.metadata = sentence.metadata
 
     for field in fields:
-        if field == HEAD:
-            instance[field] = _copy_field(sentence, field, dtype)
-        elif _is_chars_field(field):
-            instance[field] = _index_chars_field(sentence, field, index[field], dtype)
-        else:
-            instance[field] = _index_field(sentence, field, index[field], dtype)
+        array = np.full(length, None, dtype=np.object) if _is_chars_field(field) else np.full(length, -1, dtype=dtype)
+
+        for i, token in enumerate(sentence):
+            if field in token:
+                value = token[field]
+                if field == HEAD:
+                    array[i] = value
+                elif _is_chars_field(field):
+                    chars = [index[field][ch] for ch in value]
+                    value = np.array(chars, dtype=dtype)
+                    array[i] = value
+                else:
+                    if field == FEATS:
+                        value = _feats_to_str(value)
+                    if field == DEPS:
+                        value = _deps_to_str(value)
+                    array[i] = index[field][value]
+
+        instance[field] = array
     
     return instance
 
@@ -968,13 +945,15 @@ def _map_to_sentence(instance, inverse_index, fields=None):
 
         for field in fields:
             index = instance[field][i]
-            if index >= 0:
+            if index is not None or index >= 0:
                 if field == HEAD:
-                    token[HEAD] = index
+                    value = index
+                elif _is_chars_field(field):
+                    value = tuple([inverse_index[field].get(ch) for ch in index])
                 else:
                     value = inverse_index[field].get(index)
-                    if value is not None:
-                        token[field] = value
+                if value is not None:
+                    token[field] = value
 
         sentence.append(token)
     
