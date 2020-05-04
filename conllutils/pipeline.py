@@ -56,6 +56,10 @@ class Pipeline(object):
         self.token.uppercase(field, to)
         return self
 
+    def split(self, field, to=None):
+        self.token.split(field, to)
+        return self
+
     def replace_missing(self, field, value, to=None):
         self.token.replace_missing(field, value, to)
         return self
@@ -366,6 +370,12 @@ class _TokenPipeline(object):
 
     def uppercase(self, field, to=None):
         self.map_field(field, lambda s: s.upper(), to)
+        return self
+
+    def split(self, field, to=None):
+        if to is None:
+            to = field + ':chars'
+        self.map_field(field, lambda s: tuple(s.split()), to)
         return self
 
     def replace_missing(self, field, value, to=None):
