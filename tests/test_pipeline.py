@@ -250,10 +250,10 @@ def test_only_universal_deprel(data4):
 
 def test_unwind_feats(data2):
     sentences = pipe().read_conllu(data2).unwind_feats().collect()
-    assert [[t.get('feats:number') for t in s] for s in sentences] == [
+    assert [[t.get('feats:Number') for t in s] for s in sentences] == [
         ['Plur', 'Plur', None, 'Plur', 'Plur', None],
         ['Sing', 'Sing', None, 'Sing', None]]
-    assert [[t.get('feats:case') for t in s] for s in sentences] == [
+    assert [[t.get('feats:Case') for t in s] for s in sentences] == [
         ['Nom', None, None, None, None, None],
         ['Nom', None, None, None, None]]
 
