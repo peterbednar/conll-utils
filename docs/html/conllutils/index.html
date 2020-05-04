@@ -56,8 +56,8 @@ from the indexes to the string values.</p>
 <dt><strong><code>sentences</code></strong> :&ensp;<code>iterable</code></dt>
 <dd>The indexed sentences.</dd>
 <dt><strong><code>fields</code></strong> :&ensp;<code>set</code></dt>
-<dd>The set of indexed fields included in the index. By default FORM, LEMMA, UPOS, XPOS, FEATS and
-DEPREL fields are included.</dd>
+<dd>The set of indexed fields included in the index. By default all string-valued fields are indexed
+except ID and HEAD.</dd>
 <dt><strong><code>min_frequency</code></strong> :&ensp;<code>int</code> or <code>dictionary</code></dt>
 <dd>If specified, the field values with a frequency lower than <code>min_frequency</code>
 are discarded from the index. By default, all values are preserved. The <code>min_frequency</code> can be specified as

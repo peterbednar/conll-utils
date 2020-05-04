@@ -282,12 +282,6 @@ def test_create_dictionary(data2):
     assert dictionary.keys() == set(FIELDS)-{ID, HEAD}
     assert dictionary[FORM] == {"They":1, "buy":1, "and":1, "sell":1, "books":1, ".":2, "I":1, "have":1, "no":1, "clue":1}
 
-    with pytest.raises(ValueError):
-        _create_dictionary(sentences, fields={ID})
-
-    with pytest.raises(ValueError):
-        _create_dictionary(sentences, fields={HEAD})
-
 def test_create_index(data2):
     sentences = list(read_conllu(data2))
     dictionary = _create_dictionary(sentences, fields=set(FIELDS)-{ID, HEAD})

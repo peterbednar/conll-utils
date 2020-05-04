@@ -394,7 +394,6 @@ def _token_to_str(token):
     return '\t'.join([_field_to_str(token, field) for field in FIELDS])
 
 def _field_to_str(token, field):
-
     if field == ID:
         return _id_to_str(token[ID])
 
@@ -826,31 +825,44 @@ def write_conllu(file, data, write_comments=True):
                 print(_token_to_str(token), file=fp)
             print(file=fp)
 
-def _field_key(token, field):
+def _is_chars_field(field):
+    return field.endswith(':chars')
 
+def _field_key(field, value):
     if field == FEATS:
-        return _feats_to_str(token[FEATS])
+        return _feats_to_str(value)
 
     if field == DEPS:
-        return _deps_to_str(token[DEPS])
+        return _deps_to_str(value)
 
-    s = token[field]
-    if not isinstance(s, str):
-        raise ValueError('Not a string value {s} for {field}.')
-    return s
+    if not isinstance(value, str):
+        raise ValueError('Not a string value {value} for {field}.')
+    return value
 
-def _create_dictionary(sentences, fields):
-    dic = {f: Counter() for f in fields}
+def _create_dictionary(sentences, fields=None):
+    dic = {}
 
     for sentence in sentences:
         for token in sentence:
-            for field in fields:
-                if field in token:
-                    key = _field_key(token, field)
-                    dic[field][key] += 1
-    return dic
+            for field, value in token.items():
+                if field == ID or field == HEAD:
+                    continue
 
-_DEFAULT_INDEX_FIELDS = {FORM, LEMMA, UPOS, XPOS, FEATS, DEPREL}
+                if fields is not None and field not in fields:
+                    continue
+
+                if field not in dic:
+                    dic[field] = Counter()
+
+                if _is_chars_field(field):
+                    for ch in value:
+                        key = _field_key(field, value)
+                        dic[field][ch] += 1
+                else:
+                    key = _field_key(field, value)
+                    dic[field][key] += 1
+
+    return dic
 
 def create_index(sentences, fields=None, min_frequency=1):
     """Return an index mapping the string values of the `sentences` to integer indexes.
@@ -867,8 +879,8 @@ def create_index(sentences, fields=None, min_frequency=1):
 
     Args:
         sentences (iterable): The indexed sentences.
-        fields (set): The set of indexed fields included in the index. By default FORM, LEMMA, UPOS, XPOS, FEATS and
-            DEPREL fields are included.
+        fields (set): The set of indexed fields included in the index. By default all string-valued fields are indexed
+            except ID and HEAD.
         min_frequency (int or dictionary): If specified, the field values with a frequency lower than `min_frequency`
             are discarded from the index. By default, all values are preserved. The `min_frequency` can be specified as
             an integer for all fields, or as a dictionary setting the frequency for the specific field.
@@ -876,9 +888,6 @@ def create_index(sentences, fields=None, min_frequency=1):
     Raises:
         ValueError: If the non-string value is indexed for some of the `fields`.
     """
-    if fields is None:
-        fields = _DEFAULT_INDEX_FIELDS
-
     dic = _create_dictionary(sentences, fields)
     index = {f: Counter() for f in dic.keys()}
 
@@ -901,28 +910,48 @@ def create_inverse_index(index):
     """
     return {f: {v: k for k, v in c.items()} for f, c in index.items()}
 
+_MISSING_INDEX = -1
+
+def _copy_field(sentence, field, dtype):
+    array = np.full(len(sentence), _MISSING_INDEX, dtype=dtype)
+    for i, token in enumerate(sentence):
+        if field in token:
+            array[i] = token[field]
+    return array
+
+def _index_field(sentence, field, index, dtype):
+    array = np.full(len(sentence), _MISSING_INDEX, dtype=dtype)
+    for i, token in enumerate(sentence):
+        if field in token:
+            # index[field] Counter always returns 0 for unknown keys.
+            key = _field_key(field, token[field])
+            array[i] = index[key]
+    return array
+
+def _index_chars_field(sentence, field, index, dtype):
+    arrays = []
+    for token in sentence:
+        if field in token:
+            array = np.array([index[_field_key(field, ch)] for ch in token[field]], dtype=dtype)
+            arrays.append(array)
+        else:
+            arrays.append(None)
+    return arrays
+
 def _map_to_instance(sentence, index, fields=None, dtype=np.int64):
     if fields is None:
         fields = {HEAD} | set(index.keys())
 
-    length = len(sentence)
     instance = Instance()
     instance.metadata = sentence.metadata
 
     for field in fields:
-        # Initialize missing values to -1.
-        array = np.full(length, -1, dtype=dtype)
-
-        for i, token in enumerate(sentence):
-            if field in token:
-                if field == HEAD:
-                    array[i] = token[HEAD]
-                else:
-                    key = _field_key(token, field)
-                    # index[field] Counter always returns 0 for unknown keys.
-                    array[i] = index[field][key]
-
-        instance[field] = array
+        if field == HEAD:
+            instance[field] = _copy_field(sentence, field, dtype)
+        elif _is_chars_field(field):
+            instance[field] = _index_chars_field(sentence, field, index[field], dtype)
+        else:
+            instance[field] = _index_field(sentence, field, index[field], dtype)
     
     return instance
 
