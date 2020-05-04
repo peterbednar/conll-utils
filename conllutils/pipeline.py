@@ -40,6 +40,10 @@ class Pipeline(object):
         self.token.only_fields(fields, *args)
         return self
 
+    def remove_fields(self, fields, *args):
+        self.token.remove_fields(fields, *args)
+        return self
+
     def filter_field(self, field, f):
         self.token.filter_field(field, f)
         return self
@@ -313,7 +317,7 @@ class _TokenPipeline(object):
                 for key, value in feats.items():
                     if isinstance(value, set):
                         value = ','.join(sorted(value))
-                    t[f'feats{separator}{key.lower()}'] = value
+                    t[f'feats{separator}{key}'] = value
             return t
         self.map(_unwind_feats)
         return self
@@ -344,6 +348,16 @@ class _TokenPipeline(object):
             [t.pop(k) for k in t.keys() - fields]
             return t
         self.map(_only_fields)
+        return self
+
+    def remove_fields(self, fields, *args):
+        if isinstance(fields, str):
+            fields = {fields}
+        fields.update(args)
+        def _remove_fields(t):
+            [t.pop(k) for k in fields]
+            return t
+        self.map(_remove_fields)
         return self
 
     def filter_field(self, field, f):
