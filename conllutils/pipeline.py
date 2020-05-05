@@ -143,8 +143,8 @@ class Pipeline(object):
         l.extend(itertools.islice(self, 0, n))
         return l
 
-    def create_index(self, fields=None, min_frequency=1):
-        return create_index(self, fields, min_frequency)
+    def create_index(self, fields=None, min_frequency=1, missing_index=None):
+        return create_index(self, fields, min_frequency, missing_index)
 
     def pipe(self, *args):
         for p in args:
