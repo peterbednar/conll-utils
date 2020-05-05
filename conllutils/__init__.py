@@ -855,7 +855,7 @@ def _create_dictionary(sentences, fields=None):
 
     return dic
 
-def create_index(sentences, fields=None, min_frequency=1):
+def create_index(sentences, fields=None, min_frequency=1, missing_index=None):
     """Return an index mapping the string values of the `sentences` to integer indexes.
 
     An index is a nested dictionary where the indexes for the field values are stored as ``index[field][value]``. See
@@ -883,13 +883,21 @@ def create_index(sentences, fields=None, min_frequency=1):
     index = {f: Counter() for f in dic.keys()}
 
     for f, c in dic.items():
-        ordered = sorted(c.items(), key=itemgetter(1,0), reverse=True)
         min_fq = min_frequency.get(f, 1) if isinstance(min_frequency, dict) else min_frequency
-        for i, (s, fq) in enumerate(ordered):
+        missing_idx = missing_index.get(f, None) if isinstance(missing_index, dict) else missing_index
+
+        i = 1
+        ordered = sorted(c.items(), key=itemgetter(1,0), reverse=True)
+        for (s, fq) in ordered:
             if fq >= min_fq:
-                index[f][s] = i + 1
+                if missing_idx is not None and i == missing_idx:
+                    i += 1
+                index[f][s] = i
+                i += 1
             else:
                 break
+        if missing_idx is not None:
+            index[f][None] = missing_idx
 
     return index
 
@@ -910,7 +918,12 @@ def _map_to_instance(sentence, index, fields=None, dtype=np.int64):
     instance.metadata = sentence.metadata
 
     for field in fields:
-        array = np.full(length, None, dtype=np.object) if _is_chars_field(field) else np.full(length, -1, dtype=dtype)
+        missing_index =  -1
+        if field in index and None in index[field]:
+            missing_index = index[field][None]
+
+        array = np.full(length, None, dtype=np.object) if _is_chars_field(field) else \
+                np.full(length, missing_index, dtype=dtype)
 
         for i, token in enumerate(sentence):
             if field in token:
