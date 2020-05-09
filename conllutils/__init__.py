@@ -641,7 +641,8 @@ class Instance(dict):
     FEATS and DEPS fields are indexed as unparsed strings, i.e. the features or dependencies are not indexed separately.
 
     By default, unknown values (i.e. values not mapped in the provided index) are stored as 0. Missing values (i.e. when
-    a token does not have value for the indexed field) are stored as -1.
+    a token does not have value for the indexed field) are stored as -1. For more information, see `create_index`
+    function.
 
     Attributes:
         metadata (any): Any optional data associated with the instance, by default copied from the sentence.
@@ -850,15 +851,15 @@ def _create_dictionary(sentences, fields=None):
 
                 if _is_chars_field(field):
                     for ch in value:
-                        ch = _index_key(field, ch)
-                        dic[field][ch] += 1
+                        key = _index_key(field, ch)
+                        dic[field][key] += 1
                 else:
                     if field == FEATS:
                         value = _feats_to_str(value)
                     if field == DEPS:
                         value = _deps_to_str(value)
-                    value = _index_key(field, value)
-                    dic[field][value] += 1
+                    key = _index_key(field, value)
+                    dic[field][key] += 1
 
     return dic
 
@@ -882,6 +883,11 @@ def create_index(sentences, fields=None, min_frequency=1, missing_index=None):
         min_frequency (int or dictionary): If specified, the field values with a frequency lower than `min_frequency`
             are discarded from the index. By default, all values are preserved. The `min_frequency` can be specified as
             an integer for all fields, or as a dictionary setting the frequency for the specific field.
+        missing_index (int or dictionary): The integer index representing the missing values (i.e. when a token does not
+            have value for the indexed field). By default, missing index is not mapped in the index dictionary, and all
+            missing values are indexed as -1. If specified, the mapping index[field][None] = `missing_index` is added
+            in the index dictionary. The `missing_index` can be specified as an integer for all fields, or as a
+            dictionary setting the missing index for the specific field.
 
     Raises:
         ValueError: If the non-string value is indexed for some of the `fields`.

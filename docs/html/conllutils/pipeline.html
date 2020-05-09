@@ -64,7 +64,7 @@
 <div class="desc"></div>
 </dd>
 <dt id="conllutils.pipeline.Pipeline.create_index"><code class="name flex">
-<span>def <span class="ident">create_index</span></span>(<span>self, fields=None, min_frequency=1)</span>
+<span>def <span class="ident">create_index</span></span>(<span>self, fields=None, min_frequency=1, missing_index=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -177,6 +177,12 @@
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="conllutils.pipeline.Pipeline.remove_fields"><code class="name flex">
+<span>def <span class="ident">remove_fields</span></span>(<span>self, fields, *args)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="conllutils.pipeline.Pipeline.replace"><code class="name flex">
 <span>def <span class="ident">replace</span></span>(<span>self, field, old_value, new_value, to=None)</span>
 </code></dt>
@@ -191,6 +197,12 @@
 </dd>
 <dt id="conllutils.pipeline.Pipeline.shuffle"><code class="name flex">
 <span>def <span class="ident">shuffle</span></span>(<span>self, buffer_size=1024, random=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="conllutils.pipeline.Pipeline.split"><code class="name flex">
+<span>def <span class="ident">split</span></span>(<span>self, field, to=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -298,9 +310,11 @@
 <li><code><a title="conllutils.pipeline.Pipeline.print" href="#conllutils.pipeline.Pipeline.print">print</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.read_conllu" href="#conllutils.pipeline.Pipeline.read_conllu">read_conllu</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.read_file" href="#conllutils.pipeline.Pipeline.read_file">read_file</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.remove_fields" href="#conllutils.pipeline.Pipeline.remove_fields">remove_fields</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.replace" href="#conllutils.pipeline.Pipeline.replace">replace</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.replace_missing" href="#conllutils.pipeline.Pipeline.replace_missing">replace_missing</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.shuffle" href="#conllutils.pipeline.Pipeline.shuffle">shuffle</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.split" href="#conllutils.pipeline.Pipeline.split">split</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.stream" href="#conllutils.pipeline.Pipeline.stream">stream</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.text" href="#conllutils.pipeline.Pipeline.text">text</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.to_conllu" href="#conllutils.pipeline.Pipeline.to_conllu">to_conllu</a></code></li>

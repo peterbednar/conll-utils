@@ -40,7 +40,7 @@
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="conllutils.create_index"><code class="name flex">
-<span>def <span class="ident">create_index</span></span>(<span>sentences, fields=None, min_frequency=1)</span>
+<span>def <span class="ident">create_index</span></span>(<span>sentences, fields=None, min_frequency=1, missing_index=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Return an index mapping the string values of the <code>sentences</code> to integer indexes.</p>
@@ -62,6 +62,12 @@ except ID and HEAD.</dd>
 <dd>If specified, the field values with a frequency lower than <code>min_frequency</code>
 are discarded from the index. By default, all values are preserved. The <code>min_frequency</code> can be specified as
 an integer for all fields, or as a dictionary setting the frequency for the specific field.</dd>
+<dt><strong><code>missing_index</code></strong> :&ensp;<code>int</code> or <code>dictionary</code></dt>
+<dd>The integer index representing the missing values (i.e. when a token does not
+have value for the indexed field). By default, missing index is not mapped in the index dictionary, and all
+missing values are indexed as -1. If specified, the mapping index[field][None] = <code>missing_index</code> is added
+in the index dictionary. The <code>missing_index</code> can be specified as an integer for all fields, or as a
+dictionary setting the missing index for the specific field.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
@@ -251,7 +257,8 @@ The length of all mapped arrays is equal to the length of the sentence. The defa
 <p>The ID field is not stored in the instance. Note that this also means that the type of tokens is not preserved. The
 FEATS and DEPS fields are indexed as unparsed strings, i.e. the features or dependencies are not indexed separately.</p>
 <p>By default, unknown values (i.e. values not mapped in the provided index) are stored as 0. Missing values (i.e. when
-a token does not have value for the indexed field) are stored as -1.</p>
+a token does not have value for the indexed field) are stored as -1. For more information, see <code><a title="conllutils.create_index" href="#conllutils.create_index">create_index()</a></code>
+function.</p>
 <h2 id="attributes">Attributes</h2>
 <dl>
 <dt><strong><code>metadata</code></strong> :&ensp;<code>any</code></dt>
