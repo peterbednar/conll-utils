@@ -886,7 +886,7 @@ def create_index(sentences, fields=None, min_frequency=1, missing_index=None):
         missing_index (int or dictionary): The integer index representing the missing values (i.e. when a token does not
             have value for the indexed field). By default, missing index is not mapped in the index dictionary, and all
             missing values are indexed as -1. If specified, the mapping index[field][None] = `missing_index` is added
-            in the index dictionary. The `missing_index` can be specified as an integer for all fields, or as a
+            into the index dictionary. The `missing_index` can be specified as an integer for all fields, or as a
             dictionary setting the missing index for the specific field.
 
     Raises:
