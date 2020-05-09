@@ -257,5 +257,14 @@ def test_unwind_feats(data2):
         ['Nom', None, None, None, None, None],
         ['Nom', None, None, None, None]]
 
+def test_remove_fields(data2):
+    sentences = pipe().read_conllu(data2).remove_fields({'id', 'form'}).collect()
+    assert [['id' in t.keys() for t in s] for s in sentences] == [[False] * len(s) for s in sentences]
+    assert [['form' in t.keys() for t in s] for s in sentences] == [[False] * len(s) for s in sentences]
+
+    sentences = pipe().read_conllu(data2).remove_fields('id', 'form').collect()
+    assert [['id' in t.keys() for t in s] for s in sentences] == [[False] * len(s) for s in sentences]
+    assert [['form' in t.keys() for t in s] for s in sentences] == [[False] * len(s) for s in sentences]
+
 if __name__ == "__main__":
     pass
