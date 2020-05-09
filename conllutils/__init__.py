@@ -828,6 +828,11 @@ def write_conllu(file, data, write_comments=True):
 def _is_chars_field(field):
     return field.endswith(':chars')
 
+def _index_key(f, v):
+    if isinstance(v, str):
+        return v
+    raise ValueError(f'Indexed non-string value {v} for {f}.')
+
 def _create_dictionary(sentences, fields=None):
     dic = {}
 
@@ -845,12 +850,14 @@ def _create_dictionary(sentences, fields=None):
 
                 if _is_chars_field(field):
                     for ch in value:
+                        ch = _index_key(field, ch)
                         dic[field][ch] += 1
                 else:
                     if field == FEATS:
                         value = _feats_to_str(value)
                     if field == DEPS:
                         value = _deps_to_str(value)
+                    value = _index_key(field, value)
                     dic[field][value] += 1
 
     return dic

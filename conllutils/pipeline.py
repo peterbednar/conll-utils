@@ -389,7 +389,7 @@ class _TokenPipeline(object):
     def split(self, field, to=None):
         if to is None:
             to = field + ':chars'
-        self.map_field(field, lambda s: tuple(s.split()), to)
+        self.map_field(field, lambda s: tuple(s), to)
         return self
 
     def replace_missing(self, field, value, to=None):
