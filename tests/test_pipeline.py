@@ -266,5 +266,9 @@ def test_remove_fields(data2):
     assert [['id' in t.keys() for t in s] for s in sentences] == [[False] * len(s) for s in sentences]
     assert [['form' in t.keys() for t in s] for s in sentences] == [[False] * len(s) for s in sentences]
 
+def test_split(data2):
+    sentences = pipe().read_conllu(data2).split('form').collect()
+    assert [[t['form:chars'] for t in s] for s in sentences] == [[tuple(t.form) for t in s] for s in sentences]
+
 if __name__ == "__main__":
     pass
