@@ -329,6 +329,17 @@ def test_map_to_instance(data1, data2):
     instances = [sentence.to_instance(index) for sentence in sentences]
     assert instances == list([instance.copy() for instance in instances])
 
+    sentences[0][0]['form:chars'] = tuple(sentences[0][0].form)
+    index = create_index(sentences, fields={'form:chars'})
+    instances = [sentence.to_instance(index) for sentence in sentences]
+
+    assert index['form:chars'] == {'y':1, 'h':2, 'e':3, 'T':4}
+    assert list(instances[0]['form:chars'][0]) == [4, 2, 3, 1]
+
+    sentences[0][0]['form'] = tuple(sentences[0][0].form)
+    with pytest.raises(ValueError):
+        create_index(sentences, fields={'form'})
+
 def test_instance_tokens(data2):
     sentences = list(read_conllu(data2))
     index = create_index(sentences, fields=set(FIELDS)-{ID, HEAD})

@@ -944,8 +944,7 @@ def _map_to_instance(sentence, index, fields=None, dtype=np.int64):
                 if field == HEAD:
                     array[i] = value
                 elif _is_chars_field(field):
-                    chars = [index[field][ch] for ch in value]
-                    value = np.array(chars, dtype=dtype)
+                    value = np.array([index[field][ch] for ch in value], dtype=dtype)
                     array[i] = value
                 else:
                     if field == FEATS:
