@@ -97,6 +97,12 @@ def test_batch():
     p = pipe(range(10)).filter(lambda x: x < 5).stream(10).batch(3)
     assert p.collect() == [[0, 1, 2], [3, 4, 0], [1, 2, 3], [4]]
 
+    p = pipe(range(5)).batch(3, size=lambda _: 2)
+    assert p.collect() == [[0, 1], [2, 3], [4]]
+
+    p = pipe(range(5)).batch(3, size=lambda _: 3)
+    assert p.collect() == [[0], [1], [2], [3], [4]]
+
 def test_shuffle():
     np.random.seed(1)
     p = pipe(range(10)).filter(lambda x: x < 5).stream(10).shuffle(5)
@@ -266,8 +272,8 @@ def test_remove_fields(data2):
     assert [['id' in t.keys() for t in s] for s in sentences] == [[False] * len(s) for s in sentences]
     assert [['form' in t.keys() for t in s] for s in sentences] == [[False] * len(s) for s in sentences]
 
-def test_split(data2):
-    sentences = pipe().read_conllu(data2).split('form').collect()
+def test_split_chars(data2):
+    sentences = pipe().read_conllu(data2).split_chars('form').collect()
     assert [[t['form:chars'] for t in s] for s in sentences] == [[tuple(t.form) for t in s] for s in sentences]
 
 if __name__ == "__main__":

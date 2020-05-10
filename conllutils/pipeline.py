@@ -60,8 +60,8 @@ class Pipeline(object):
         self.token.uppercase(field, to)
         return self
 
-    def split(self, field, to=None):
-        self.token.split(field, to)
+    def split_chars(self, field, to=None):
+        self.token.split_chars(field, to)
         return self
 
     def replace_missing(self, field, value, to=None):
@@ -161,8 +161,8 @@ class Pipeline(object):
         self.pipe(lambda source: _shuffle(source, buffer_size, random))
         return self
 
-    def batch(self, batch_size=100):
-        self.pipe(lambda source: _batch(source, batch_size))
+    def batch(self, batch_size=100, size=None):
+        self.pipe(lambda source: _batch(source, batch_size, size))
         return self
 
     def flatten(self):
@@ -208,14 +208,17 @@ def _shuffle(source, buffer_size, random):
     for elm in buffer:
         yield elm
 
-def _batch(source, batch_size):
+def _batch(source, batch_size, size=None):
+    s = 0
     batch = []
     for data in source:
-        if len(batch) < batch_size:
+        if s < batch_size:
             batch.append(data)
+            s += 1 if size is None else size(data)
         else:
             yield batch
             batch = [data]
+            s = 1 if size is None else size(data)
     if batch:
         yield batch
 
@@ -386,7 +389,7 @@ class _TokenPipeline(object):
         self.map_field(field, lambda s: s.upper(), to)
         return self
 
-    def split(self, field, to=None):
+    def split_chars(self, field, to=None):
         if to is None:
             to = field + ':chars'
         self.map_field(field, lambda s: tuple(s), to)

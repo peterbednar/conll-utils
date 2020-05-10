@@ -856,7 +856,7 @@ def _create_dictionary(sentences, fields=None):
                 else:
                     if field == FEATS:
                         value = _feats_to_str(value)
-                    if field == DEPS:
+                    elif field == DEPS:
                         value = _deps_to_str(value)
                     key = _index_key(field, value)
                     dic[field][key] += 1
@@ -997,7 +997,7 @@ def pipe(source=None, *args):
     * and actions.
 
     The data sources generate the processed data, e.g. read the data from the ConNLL-U file. Filters and transformations
-    filter data for the subsequence processing, transform data values or map one data type to another one (e.g. index
+    filter data for the subsequent processing, transform data values or map one data type to another one (e.g. index
     sentences to instances or extract the texts of the sentences). Actions invoke the whole pipeline chain and perform
     the final operation with the processed data (e.g. collect the processed data in the Python list or write data to
     the CoNLL-U file.
