@@ -276,6 +276,9 @@ class _Pipe(object):
     def __iter__(self):
         return self.iterate(self.source)
 
+    def __len__(self):
+        return sum(1 for _ in self)
+
 class _TokenPipeline(object):
 
     def __init__(self, pipeline):
