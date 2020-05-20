@@ -46,7 +46,7 @@
 <h3>Methods</h3>
 <dl>
 <dt id="conllutils.pipeline.Pipeline.batch"><code class="name flex">
-<span>def <span class="ident">batch</span></span>(<span>self, batch_size=100)</span>
+<span>def <span class="ident">batch</span></span>(<span>self, batch_size=100, size=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -129,6 +129,12 @@
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="conllutils.pipeline.Pipeline.merge_feats"><code class="name flex">
+<span>def <span class="ident">merge_feats</span></span>(<span>self, to='feats', separator=':')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="conllutils.pipeline.Pipeline.only_fields"><code class="name flex">
 <span>def <span class="ident">only_fields</span></span>(<span>self, fields, *args)</span>
 </code></dt>
@@ -201,8 +207,8 @@
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="conllutils.pipeline.Pipeline.split"><code class="name flex">
-<span>def <span class="ident">split</span></span>(<span>self, field, to=None)</span>
+<dt id="conllutils.pipeline.Pipeline.split_chars"><code class="name flex">
+<span>def <span class="ident">split_chars</span></span>(<span>self, field, to=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -302,6 +308,7 @@
 <li><code><a title="conllutils.pipeline.Pipeline.map" href="#conllutils.pipeline.Pipeline.map">map</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.map_field" href="#conllutils.pipeline.Pipeline.map_field">map_field</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.map_token" href="#conllutils.pipeline.Pipeline.map_token">map_token</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.merge_feats" href="#conllutils.pipeline.Pipeline.merge_feats">merge_feats</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.only_fields" href="#conllutils.pipeline.Pipeline.only_fields">only_fields</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.only_projective" href="#conllutils.pipeline.Pipeline.only_projective">only_projective</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.only_universal_deprel" href="#conllutils.pipeline.Pipeline.only_universal_deprel">only_universal_deprel</a></code></li>
@@ -314,7 +321,7 @@
 <li><code><a title="conllutils.pipeline.Pipeline.replace" href="#conllutils.pipeline.Pipeline.replace">replace</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.replace_missing" href="#conllutils.pipeline.Pipeline.replace_missing">replace_missing</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.shuffle" href="#conllutils.pipeline.Pipeline.shuffle">shuffle</a></code></li>
-<li><code><a title="conllutils.pipeline.Pipeline.split" href="#conllutils.pipeline.Pipeline.split">split</a></code></li>
+<li><code><a title="conllutils.pipeline.Pipeline.split_chars" href="#conllutils.pipeline.Pipeline.split_chars">split_chars</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.stream" href="#conllutils.pipeline.Pipeline.stream">stream</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.text" href="#conllutils.pipeline.Pipeline.text">text</a></code></li>
 <li><code><a title="conllutils.pipeline.Pipeline.to_conllu" href="#conllutils.pipeline.Pipeline.to_conllu">to_conllu</a></code></li>
