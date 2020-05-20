@@ -32,6 +32,10 @@ class Pipeline(object):
         self.token.unwind_feats(separator)
         return self
 
+    def merge_feats(self, to='feats', separator=':'):
+        self.token.merge_feats(to, separator)
+        return self
+
     def only_universal_deprel(self):
         self.token.only_universal_deprel()
         return self
@@ -248,10 +252,10 @@ class _Pipe(object):
 
     def _check_source(self):
         if self.operations:
-            raise RuntimeError('Source must be the first operation.')
+            raise RuntimeError('source must be the first operation')
 
         if self.source is not None or self.generator is not None:
-            raise RuntimeError('Source is already set.')
+            raise RuntimeError('source is already set')
 
     def source_iterator(self, source):
         if source is None:
@@ -259,7 +263,7 @@ class _Pipe(object):
 
         if source is None:
             if self.generator is None:
-                raise RuntimeError('No source defined.')
+                raise RuntimeError('no source defined')
             return self.generator()
 
         return self.pipe(source) if self.pipe is not None else source
@@ -326,6 +330,19 @@ class _TokenPipeline(object):
                     t[f'feats{separator}{key}'] = value
             return t
         self.map(_unwind_feats)
+        return self
+
+    def merge_feats(self, to='feats', separator=':'):
+        def _merge_feats(t):
+            feats = {}
+            for f, v in t.items():
+                if f.startswith('feats' + separator):
+                    key = f.split(separator, 1)[1]
+                    feats[key] = v
+            if feats:
+                t[to] = _feats_to_str(feats)
+            return t
+        self.map(_merge_feats)
         return self
 
     def only_universal_deprel(self):

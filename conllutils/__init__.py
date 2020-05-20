@@ -23,7 +23,7 @@ def empty_id(word_id, index=1):
         ValueError: If `word_id` < 0 or `index` < 1.
     """
     if word_id < 0 or index < 1:
-        raise ValueError('word_id must be >= 0 and index >= 1.')
+        raise ValueError('word_id must be >= 0 and index >= 1')
     return (word_id, index, _EMPTY)
 
 def multiword_id(start, end):
@@ -37,7 +37,7 @@ def multiword_id(start, end):
         ValueError: If `start` < 1 or `end` <= `start`.
     """
     if start < 1 or end <= start:
-        raise ValueError('start must be >= 1 and end > start.')
+        raise ValueError('start must be >= 1 and end > start')
     return (start, end, _MULTIWORD)
 
 class Token(dict):
@@ -100,7 +100,7 @@ class Token(dict):
         if name in _FIELD_SET:
             return self[name]
         else:
-            raise AttributeError(f'Token has no attribute {name}.')
+            raise AttributeError(f'token has no attribute {name}')
 
     def __setattr__(self, name, value):
         if name in _FIELD_SET:
@@ -300,7 +300,7 @@ class Sentence(list):
         itrs = read_conllu(StringIO(s), **kwargs)
         result = list(itrs) if multiple else next(itrs, None)
         if not result:
-            raise ValueError('No sentence found.')
+            raise ValueError('no sentence found')
         return result
 
     def copy(self):
@@ -580,20 +580,20 @@ class DependencyTree(object):
             token = node.token
             head = token.get(HEAD)
             if head is None or head == -1:
-                raise ValueError(f'Token at {index} has no HEAD.')
+                raise ValueError(f'token at {index} has no HEAD')
 
             if head == 0:
                 if root == None:
                     root = node
                 else:
-                    raise ValueError(f'Multiple roots found at {index}.')
+                    raise ValueError(f'multiple roots found at {index}')
             else:
                 parent = nodes[head-1]
                 node.parent = parent
                 parent._children.append(node)
 
         if root is None:
-            raise ValueError('No root found.')
+            raise ValueError('no root found')
 
         return root, nodes
 
@@ -623,7 +623,7 @@ class _IndexedToken(MutableMapping):
 
     def __delitem__(self, key):
         # Remove key operation is not supported for the token view.
-        raise TypeError('Not supported for token views.')
+        raise TypeError('not supported for token views')
 
 class Instance(dict):
     """An indexed representation of the sentence in the compact numerical form.
@@ -663,7 +663,7 @@ class Instance(dict):
         if name in _FIELD_SET:
             return self[name]
         else:
-            raise AttributeError(f'Instance has no attribute {name}.')
+            raise AttributeError(f'instance has no attribute {name}')
 
     def __setattr__(self, name, value):
         if name in _FIELD_SET:
@@ -832,7 +832,7 @@ def _is_chars_field(field):
 def _index_key(f, v):
     if isinstance(v, str):
         return v
-    raise ValueError(f'Indexed non-string value {v} for {f}.')
+    raise ValueError(f'indexing non-string value {v} for {f}')
 
 def _create_dictionary(sentences, fields=None):
     dic = {}

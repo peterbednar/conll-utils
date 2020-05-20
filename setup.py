@@ -1,7 +1,7 @@
 from setuptools import setup
 from os import path
 
-VERSION = "1.1.3"
+VERSION = "1.1.4"
 
 with open(path.join(path.abspath(path.dirname(__file__)), 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
