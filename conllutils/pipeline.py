@@ -368,7 +368,8 @@ class _TokenPipeline(object):
             fields = {fields}
         fields.update(args)
         def _only_fields(t):
-            [t.pop(k) for k in t.keys() - fields]
+            for f in t.keys() - fields:
+                del t[f]
             return t
         self.map(_only_fields)
         return self
@@ -378,7 +379,9 @@ class _TokenPipeline(object):
             fields = {fields}
         fields.update(args)
         def _remove_fields(t):
-            [t.pop(k) for k in fields]
+            for f in fields:
+                if f in t:
+                    del t[f]
             return t
         self.map(_remove_fields)
         return self
