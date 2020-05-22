@@ -1,5 +1,6 @@
 import os
 import re
+import copy
 from collections import Counter
 from collections.abc import MutableMapping
 from operator import itemgetter
@@ -306,6 +307,9 @@ class Sentence(list):
     def copy(self):
         """Return a shallow copy of the sentence."""
         return Sentence(self, self.metadata)
+
+    def __deepcopy__(self, memo):
+        return Sentence([copy.deepcopy(token, memo) for token in self], self.metadata)
     
     def __str__(self):
         return self.text()
@@ -731,6 +735,9 @@ class Instance(dict):
     def copy(self):
         """Return a shallow copy of the instance."""
         return Instance(self, self.metadata)
+
+    def __deepcopy__(self, memo):
+        return Instance(copy.deepcopy(dict(self), memo), self.metadata)
 
 def _is_projective(heads, return_arcs=False):
 
