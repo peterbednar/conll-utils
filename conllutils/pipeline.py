@@ -179,6 +179,9 @@ class Pipeline(object):
     def __iter__(self):
         return self._pipeline.iterate(None)
 
+    def __len__(self):
+        return self.count()
+
     def _prev_opr(self):
         return self._pipeline.operations[-1] if self._pipeline.operations else None
 
@@ -279,9 +282,6 @@ class _Pipe(object):
 
     def __iter__(self):
         return self.iterate(self.source)
-
-    def __len__(self):
-        return sum(1 for _ in self)
 
 class _TokenPipeline(object):
 
